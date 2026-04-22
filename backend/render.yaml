@@ -1,0 +1,27 @@
+# Render Blueprint — deploy via "New +" → "Blueprint" in the Render dashboard,
+# or edit/confirm settings via the normal web-service flow.
+services:
+  - type: web
+    name: 24ghanta-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false        # paste Neon connection string in the dashboard
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false        # e.g. https://24ghanta.vercel.app
+      - key: VERCEL_PREVIEW
+        value: "true"
+      - key: AUTO_MIGRATE
+        value: "true"
+      - key: AUTO_SEED
+        value: "true"
