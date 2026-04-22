@@ -1,4 +1,6 @@
 -- 24ghantanepal Database Schema (PostgreSQL)
+-- 1. Create database:  createdb 24ghantanepal
+-- 2. Run schema:       psql -d 24ghantanepal -f schema.sql
 
 CREATE TABLE IF NOT EXISTS admin_users (
   id SERIAL PRIMARY KEY,
@@ -18,18 +20,15 @@ CREATE TABLE IF NOT EXISTS categories (
   name TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL,
   color TEXT,
-  -- SEO Fields
   meta_title TEXT,
   meta_description TEXT,
   meta_keywords TEXT
 );
 
--- Proper Tags table for SEO tag pages (e.g. /tag/politics)
 CREATE TABLE IF NOT EXISTS tags (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL,
-  -- SEO Fields for the tag's own page
   meta_title TEXT,
   meta_description TEXT
 );
@@ -42,20 +41,20 @@ CREATE TABLE IF NOT EXISTS articles (
   content TEXT,
   category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
   author_id INTEGER REFERENCES authors(id) ON DELETE SET NULL,
-  image_url TEXT NOT NULL,
-  image_alt TEXT,
-  published_at TIMESTAMP NOT NULL,
-  updated_at TIMESTAMP,
+  image_url TEXT NOT NULL DEFAULT '',
+  image_alt TEXT DEFAULT '',
+  published_at TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT NOW(),
   read_time_minutes INTEGER DEFAULT 5,
   is_featured BOOLEAN DEFAULT FALSE,
   is_breaking BOOLEAN DEFAULT FALSE,
-  -- SEO Fields
+  is_published BOOLEAN DEFAULT FALSE,
+  views INTEGER DEFAULT 0,
   meta_title TEXT,
   meta_description TEXT,
   meta_keywords TEXT
 );
 
--- Join table for many-to-many relationship between articles and tags
 CREATE TABLE IF NOT EXISTS article_tags (
   article_id INTEGER REFERENCES articles(id) ON DELETE CASCADE,
   tag_id INTEGER REFERENCES tags(id) ON DELETE CASCADE,
@@ -67,21 +66,20 @@ CREATE TABLE IF NOT EXISTS videos (
   slug TEXT UNIQUE NOT NULL,
   title TEXT NOT NULL,
   description TEXT,
-  thumbnail_url TEXT NOT NULL,
+  thumbnail_url TEXT NOT NULL DEFAULT '',
   video_url TEXT,
   embed_url TEXT,
-  duration_seconds INTEGER,
+  duration_seconds INTEGER DEFAULT 0,
   category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
-  published_at TIMESTAMP NOT NULL,
+  published_at TIMESTAMP DEFAULT NOW(),
   views INTEGER DEFAULT 0,
   type TEXT DEFAULT 'video',
-  -- SEO Fields
+  is_published BOOLEAN DEFAULT FALSE,
   meta_title TEXT,
   meta_description TEXT,
   meta_keywords TEXT
 );
 
--- Join table for many-to-many relationship between videos and tags
 CREATE TABLE IF NOT EXISTS video_tags (
   video_id INTEGER REFERENCES videos(id) ON DELETE CASCADE,
   tag_id INTEGER REFERENCES tags(id) ON DELETE CASCADE,
@@ -103,6 +101,15 @@ CREATE TABLE IF NOT EXISTS poll_options (
   votes INTEGER DEFAULT 0
 );
 
--- Insert a default admin user (username: admin, password: admin123 - make sure to change it!)
-INSERT INTO admin_users (username, password_hash) 
-VALUES ('admin', '$2a$10$wT0E.qE.P0V6K.6Z6T3mQO0G5Z8O.jE.mZ0K.wT0E.qE.P0V6K.6Z');
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_articles_slug ON articles(slug);
+CREATE INDEX IF NOT EXISTS idx_articles_category ON articles(category_id);
+CREATE INDEX IF NOT EXISTS idx_articles_published ON articles(is_published);
+CREATE INDEX IF NOT EXISTS idx_videos_slug ON videos(slug);
+CREATE INDEX IF NOT EXISTS idx_tags_slug ON tags(slug);
+CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug);
+
+-- Default admin (username: admin, password: admin123)
+INSERT INTO admin_users (username, password_hash)
+VALUES ('admin', '$2b$10$LzBfvfBH1ZtXifxB.uTyS.8NzRcND8Oy1lekgsobRB/TDmPVf.Ch2')
+ON CONFLICT (username) DO NOTHING;

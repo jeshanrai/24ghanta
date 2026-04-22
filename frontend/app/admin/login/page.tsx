@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Lock, User, ArrowRight, ShieldCheck } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -56,13 +57,20 @@ export default function AdminLoginPage() {
         className="max-w-md w-full z-10 transition-all duration-500 transform translate-y-0 opacity-100"
       >
         <div className="text-center mb-10">
-          <div
-            className="w-16 h-16 bg-gradient-to-br from-red-600 to-red-800 rounded-2xl mx-auto flex items-center justify-center shadow-[0_0_30px_rgba(220,38,38,0.4)] mb-6"
-          >
-            <ShieldCheck className="w-8 h-8 text-white" />
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <Image
+              src="/24ghantalogo.jpg"
+              alt="24 Ghanta"
+              width={64}
+              height={64}
+              className="h-16 w-16 rounded-xl shadow-[0_0_30px_rgba(220,38,38,0.4)]"
+              priority
+            />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">
-            24Ghanta<span className="text-red-500">Nepal</span>
+          <h1 className="text-3xl font-bold tracking-tight mb-2 flex items-center justify-center gap-1">
+            <span className="text-red-500">24</span>
+            <span className="text-white">Ghanta</span>
+            <span className="text-gray-400 font-normal ml-1">CMS</span>
           </h1>
           <p className="text-gray-400 text-sm font-medium tracking-wide uppercase">
             Secure Admin Portal
