@@ -13,7 +13,7 @@ export function SectionBlock({ title, href, color, children, className }: Sectio
   return (
     <section className={className}>
       <SectionHeader title={title} href={href} color={color} />
-      {children}
+      <div className="animate-fade-in-up stagger-1">{children}</div>
     </section>
   );
 }

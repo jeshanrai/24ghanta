@@ -9,7 +9,7 @@ export function TrendingLink({ topic }: TrendingLinkProps) {
   return (
     <Link
       href={topic.href}
-      className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-200 whitespace-nowrap"
+      className="link-underline text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors duration-300 whitespace-nowrap"
     >
       {topic.label}
     </Link>

@@ -12,8 +12,8 @@ export function ArticleCardList({ article, showImage = true }: ArticleCardListPr
   return (
     <article className="py-4 border-b border-[var(--color-border-light)] last:border-b-0">
       <Link href={`/article/${article.slug}`} className="group flex gap-4">
-        <div className="flex-1 min-w-0">
-          <h3 className="font-headline text-h3 text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors duration-200 line-clamp-2">
+        <div className="flex-1 min-w-0 transition-transform duration-300 ease-out group-hover:translate-x-0.5">
+          <h3 className="font-headline text-h3 text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors duration-300 line-clamp-2">
             {article.title}
           </h3>
           {article.excerpt && (
@@ -26,13 +26,13 @@ export function ArticleCardList({ article, showImage = true }: ArticleCardListPr
           </div>
         </div>
         {showImage && (
-          <div className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-24">
+          <div className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-24 overflow-hidden rounded-sm">
             <OptimizedImage
               src={article.imageUrl}
               alt={article.imageAlt}
               fill
               containerClassName="w-full h-full relative"
-              className="group-hover:opacity-90 transition-opacity duration-200"
+              className="group-hover:scale-105 transition-transform duration-500 ease-out"
             />
           </div>
         )}

@@ -11,22 +11,24 @@ export function HeroSidebar({ articles }: HeroSidebarProps) {
   const [topArticle, ...restArticles] = articles;
 
   return (
-    <div className="lg:col-span-1">
+    <div>
       {topArticle && (
-        <ArticleCardMedium
-          article={topArticle}
-          showExcerpt={false}
-          showCategory={false}
-        />
+        <div className="animate-fade-in-up stagger-2">
+          <ArticleCardMedium
+            article={topArticle}
+            showExcerpt={false}
+            showCategory={false}
+          />
+        </div>
       )}
-      <div className="mt-4">
+      <div className="mt-4 animate-fade-in-up stagger-3">
         <GenZPromoCard />
       </div>
-      <div className="mt-4">
+      <div className="mt-4 animate-fade-in-up stagger-4">
         <UpliftLocalPromoCard />
       </div>
       {restArticles.length > 0 && (
-        <div className="mt-4">
+        <div className="mt-4 animate-fade-in-up stagger-5">
           {restArticles.slice(0, 1).map((article) => (
             <ArticleCardList key={article.id} article={article} />
           ))}

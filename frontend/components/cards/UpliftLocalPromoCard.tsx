@@ -11,7 +11,7 @@ const previewImages = [
 export function UpliftLocalPromoCard() {
   return (
     <Link href="/uplift-local" className="block group">
-      <div className="relative overflow-hidden rounded-sm bg-gradient-to-br from-[#f8f4f0] to-[#efe8e0] p-5 ">
+      <div className="card-lift relative overflow-hidden rounded-sm bg-gradient-to-br from-[#f8f4f0] to-[#efe8e0] p-5">
         {/* Decorative gradient orbs */}
         <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-[#c41d2f]/10 blur-2xl" />
         <div className="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-[#d97706]/10 blur-2xl" />

@@ -33,7 +33,7 @@ export default function HomePage() {
           sidebarArticles={sidebarArticles}
         />
 
-        <div className="my-8 border-t border-[var(--color-border)]" />
+        <div className="section-divider my-8" />
 
         <VideoSection videos={videos} />
       </div>
@@ -44,14 +44,14 @@ export default function HomePage() {
         {sportsArticles.length > 0 && (
           <>
             <CategorySection category={sportsCategory} articles={sportsArticles} />
-            <div className="my-8 border-t border-[var(--color-border)]" />
+            <div className="section-divider my-8" />
           </>
         )}
 
         {businessArticles.length > 0 && (
           <>
             <CategorySection category={businessCategory} articles={businessArticles} />
-            <div className="my-8 border-t border-[var(--color-border)]" />
+            <div className="section-divider my-8" />
           </>
         )}
 

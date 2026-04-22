@@ -4,13 +4,13 @@ import Image from 'next/image';
 export function GenZPromoCard() {
   return (
     <Link href="/genz" className="block group">
-      <div className="relative overflow-hidden rounded-sm h-[180px]">
+      <div className="shine-hover card-lift relative overflow-hidden rounded-sm h-[180px]">
         {/* Background Image */}
         <Image
           src="https://picsum.photos/seed/genz/400/300"
           alt="Gen Z"
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          className="object-cover group-hover:scale-[1.08] transition-transform duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
           sizes="(max-width: 768px) 100vw, 400px"
         />
 

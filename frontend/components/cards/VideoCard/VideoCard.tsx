@@ -12,13 +12,13 @@ export function VideoCard({ video }: VideoCardProps) {
   return (
     <article className="group">
       <Link href={`/video/${video.slug}`} className="block">
-        <div className="aspect-video relative overflow-hidden">
+        <div className="shine-hover aspect-video relative overflow-hidden rounded-sm">
           <OptimizedImage
             src={video.thumbnailUrl}
             alt={video.title}
             fill
             containerClassName="w-full h-full relative"
-            className="group-hover:scale-105 transition-transform duration-300"
+            className="group-hover:scale-[1.07] transition-transform duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
           />
           <PlayOverlay />
           <DurationBadge seconds={video.durationSeconds} />

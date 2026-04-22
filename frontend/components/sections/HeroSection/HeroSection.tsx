@@ -14,8 +14,12 @@ export function HeroSection({
   return (
     <section className="py-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <HeroMain article={featuredArticle} />
-        <HeroSidebar articles={sidebarArticles} />
+        <div className="lg:col-span-2 animate-fade-in-up">
+          <HeroMain article={featuredArticle} />
+        </div>
+        <div className="lg:col-span-1 animate-fade-in-up stagger-2">
+          <HeroSidebar articles={sidebarArticles} />
+        </div>
       </div>
     </section>
   );

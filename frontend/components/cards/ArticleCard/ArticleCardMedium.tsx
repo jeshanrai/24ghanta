@@ -17,13 +17,13 @@ export function ArticleCardMedium({
   return (
     <article className="group">
       <Link href={`/article/${article.slug}`} className="block">
-        <div className="aspect-video relative overflow-hidden">
+        <div className="shine-hover aspect-video relative overflow-hidden rounded-sm">
           <OptimizedImage
             src={article.imageUrl}
             alt={article.imageAlt}
             fill
             containerClassName="w-full h-full relative"
-            className="group-hover:scale-105 transition-transform duration-300"
+            className="group-hover:scale-[1.06] transition-transform duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
           />
         </div>
         <div className="mt-3">
@@ -32,7 +32,7 @@ export function ArticleCardMedium({
               {article.category.name}
             </Badge>
           )}
-          <h3 className="font-headline text-h2 text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors duration-200 line-clamp-3">
+          <h3 className="font-headline text-h2 text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors duration-300 line-clamp-3">
             {article.title}
           </h3>
           {showExcerpt && article.excerpt && (

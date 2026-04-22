@@ -6,9 +6,5 @@ interface HeroMainProps {
 }
 
 export function HeroMain({ article }: HeroMainProps) {
-  return (
-    <div className="lg:col-span-2">
-      <ArticleCardLarge article={article} priority />
-    </div>
-  );
+  return <ArticleCardLarge article={article} priority />;
 }

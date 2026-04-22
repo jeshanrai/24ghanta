@@ -46,15 +46,15 @@ export function ShortStoriesCarousel({ videos, onVideoClick }: ShortStoriesCarou
                   onClick={() => onVideoClick(index)}
                   className="block w-full text-left"
                 >
-                  <div className="aspect-[3/4] relative overflow-hidden rounded-lg cursor-pointer">
+                  <div className="shine-hover aspect-[3/4] relative overflow-hidden rounded-lg cursor-pointer transition-transform duration-500 ease-out group-hover:-translate-y-1">
                     <OptimizedImage
                       src={video.thumbnailUrl}
                       alt={video.title}
                       fill
                       containerClassName="w-full h-full relative"
-                      className="group-hover:scale-105 transition-transform duration-300"
+                      className="group-hover:scale-[1.08] transition-transform duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-4">
                       <h3 className="text-sm font-medium text-white line-clamp-3 leading-snug">
                         {video.title}

@@ -17,23 +17,27 @@ export function ArticleCardLarge({
   return (
     <article className="group">
       <Link href={`/article/${article.slug}`} className="block relative">
-        <div className="aspect-[16/10] lg:aspect-[16/9] relative overflow-hidden rounded-sm">
+        <div className="shine-hover aspect-[16/10] lg:aspect-[16/9] relative overflow-hidden rounded-sm">
           <OptimizedImage
             src={article.imageUrl}
             alt={article.imageAlt}
             fill
             priority={priority}
             containerClassName="w-full h-full relative"
-            className="group-hover:scale-105 transition-transform duration-500"
+            className="group-hover:scale-[1.06] transition-transform duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent transition-opacity duration-300 group-hover:from-black/90" />
           <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6">
             {article.isBreaking && (
-              <Badge variant="breaking" className="mb-3">
-                Breaking
-              </Badge>
+              <div className="mb-3 inline-flex items-center gap-2 animate-fade-in-up">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--color-breaking)] opacity-75 animate-pulse-dot" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-breaking)]" />
+                </span>
+                <Badge variant="breaking">Breaking</Badge>
+              </div>
             )}
-            <h2 className="font-headline text-h1 lg:text-hero text-white line-clamp-3">
+            <h2 className="font-headline text-h1 lg:text-hero text-white line-clamp-3 transition-transform duration-500 ease-out group-hover:translate-y-[-2px]">
               {article.title}
             </h2>
             <div className="mt-2 text-xs text-white/80">
@@ -44,7 +48,7 @@ export function ArticleCardLarge({
       </Link>
 
       {activePoll && (
-        <div className="mt-4 pt-4 border-t border-[var(--color-border)]">
+        <div className="mt-4 pt-4 border-t border-[var(--color-border)] animate-fade-in-up stagger-3">
           <Poll poll={activePoll} compact />
         </div>
       )}

@@ -18,8 +18,14 @@ export function VideoSection({
   return (
     <SectionBlock title={title} href={href}>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {videos.slice(0, 4).map((video) => (
-          <VideoCard key={video.id} video={video} />
+        {videos.slice(0, 4).map((video, idx) => (
+          <div
+            key={video.id}
+            className="animate-fade-in-up"
+            style={{ animationDelay: `${idx * 80}ms` }}
+          >
+            <VideoCard video={video} />
+          </div>
         ))}
       </div>
     </SectionBlock>

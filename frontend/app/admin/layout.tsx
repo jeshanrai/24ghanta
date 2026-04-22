@@ -12,6 +12,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [user, setUser] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
 
   const isLoginRoute = pathname === "/admin/login";
 
@@ -23,6 +24,32 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setUser(username);
     setChecking(false);
   }, [router, isLoginRoute, pathname]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+    
+    // Initial check
+    if (typeof window !== "undefined") {
+      handleResize();
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, []);
+
+  // Close sidebar on mobile when route changes
+  useEffect(() => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, [pathname, isMobile]);
 
   function handleLogout() {
     localStorage.removeItem("24ghanta_admin_token");
@@ -52,11 +79,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex">
-      <aside className={`${sidebarOpen ? "w-64" : "w-20"} transition-all duration-300 bg-white border-r border-gray-200 shadow-[4px_0_24px_rgba(0,0,0,0.02)] fixed h-full z-20 overflow-hidden flex flex-col`}>
-        <div className="h-16 flex items-center px-4 border-b border-gray-100">
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 mr-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+      {/* Mobile Sidebar Overlay */}
+      {isMobile && sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-20 transition-opacity"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`
+        fixed h-full z-30 flex flex-col bg-white border-r border-gray-200 shadow-[4px_0_24px_rgba(0,0,0,0.02)]
+        transition-all duration-300 ease-in-out
+        ${sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full w-64 md:translate-x-0 md:w-20"}
+      `}>
+        <div className="h-16 flex items-center px-4 border-b border-gray-100 shrink-0">
+          <button 
+            onClick={() => setSidebarOpen(!sidebarOpen)} 
+            className="p-2 mr-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors hidden md:block shrink-0"
+          >
             <Menu className="w-5 h-5" />
           </button>
+          
+          {/* Mobile close button (optional, but good for UX) */}
+          <button 
+            onClick={() => setSidebarOpen(false)} 
+            className="p-2 mr-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors md:hidden shrink-0"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
           <div className={`flex items-center gap-2 overflow-hidden transition-opacity duration-300 ${sidebarOpen ? "opacity-100" : "opacity-0 w-0"}`}>
             <Image
               src="/24ghantalogo.jpg"
@@ -66,10 +118,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               className="h-8 w-8 rounded-lg shrink-0"
               priority
             />
-            <span className="font-bold text-gray-900 tracking-tight whitespace-nowrap">24Ghanta<span className="text-red-600">CMS</span></span>
+            <span className="font-bold text-gray-900 tracking-tight whitespace-nowrap">
+              24Ghanta<span className="text-red-600">CMS</span>
+            </span>
           </div>
         </div>
-        <nav className="flex-1 py-6 px-3 flex flex-col gap-1">
+        <nav className="flex-1 py-6 px-3 flex flex-col gap-1 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = pathname === item.href || (pathname.startsWith(item.href + "/") && item.href !== "/admin") || (item.href === "/admin" && pathname === "/admin");
             const Icon = item.icon;
@@ -78,22 +132,42 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group relative overflow-hidden ${isActive ? "bg-red-50 text-red-600" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}`}>
                 {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-600 rounded-r-full" />}
                 <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-red-600" : "text-gray-400 group-hover:text-gray-600"} transition-colors`} />
-                <span className={`font-medium text-sm whitespace-nowrap transition-opacity duration-300 ${sidebarOpen ? "opacity-100" : "opacity-0"}`}>{item.label}</span>
+                <span className={`font-medium text-sm whitespace-nowrap transition-opacity duration-300 ${sidebarOpen ? "opacity-100" : "opacity-0"}`}>
+                  {item.label}
+                </span>
               </Link>
             );
           })}
         </nav>
       </aside>
-      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${sidebarOpen ? "ml-64" : "ml-20"}`}>
-        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-10 flex items-center justify-between px-6 lg:px-8">
-          <div />
-          <div className="flex items-center gap-4">
-            <Link href="/" target="_blank" className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-              <ExternalLink className="w-4 h-4" /><span className="hidden sm:inline">View Site</span>
+
+      {/* Main Content Area */}
+      <div className={`
+        flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out w-full
+        ${sidebarOpen ? "md:ml-64" : "md:ml-20"}
+        ml-0
+      `}>
+        <header className="h-16 bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3">
+            {/* Mobile Hamburger Menu in Header */}
+            <button 
+              onClick={() => setSidebarOpen(true)} 
+              className="p-2 -ml-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors md:hidden"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <span className="font-bold text-gray-900 tracking-tight md:hidden">
+              24Ghanta<span className="text-red-600">CMS</span>
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Link href="/" target="_blank" className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+              <ExternalLink className="w-4 h-4" /><span>View Site</span>
             </Link>
-            <div className="w-px h-6 bg-gray-200" />
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-red-100 to-red-200 border border-red-300 flex items-center justify-center font-bold text-red-700 shadow-sm">
+            <div className="hidden sm:block w-px h-6 bg-gray-200" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-red-100 to-red-200 border border-red-300 flex items-center justify-center font-bold text-red-700 shadow-sm shrink-0">
                 {user ? user.charAt(0).toUpperCase() : "A"}
               </div>
               <div className="hidden sm:block text-sm">
@@ -101,12 +175,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <p className="text-gray-500 text-xs mt-1">Administrator</p>
               </div>
             </div>
-            <button onClick={handleLogout} className="p-2 ml-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Logout">
+            <button onClick={handleLogout} className="p-2 ml-1 sm:ml-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0" title="Logout">
               <LogOut className="w-5 h-5" />
             </button>
           </div>
         </header>
-        <main className="flex-1 p-6 lg:p-8 w-full max-w-7xl mx-auto">{children}</main>
+        
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full max-w-7xl mx-auto overflow-x-hidden">
+          {children}
+        </main>
       </div>
     </div>
   );
