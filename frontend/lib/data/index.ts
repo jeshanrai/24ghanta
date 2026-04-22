@@ -13,6 +13,9 @@ export {
   mockShortStories,
   getLatestVideos,
   getShortStories,
+  getAllVideos,
+  getVideoBySlug,
+  getRelatedVideos,
 } from './mockVideos';
 
 export {

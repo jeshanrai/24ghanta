@@ -491,6 +491,53 @@ img {
   animation: expand-x 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Nav item hover effect: center-out underline + background tint */
+.nav-item {
+  border-radius: 0.375rem;
+  isolation: isolate;
+}
+
+.nav-item::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  height: 2px;
+  width: 0;
+  background: var(--color-primary);
+  transform: translateX(-50%);
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 2px;
+}
+
+.nav-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--color-primary);
+  opacity: 0;
+  border-radius: inherit;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.nav-item:hover::before {
+  width: calc(100% - 1rem);
+}
+
+.nav-item:hover::after {
+  opacity: 0.06;
+}
+
+.nav-item--active::before {
+  width: calc(100% - 1rem);
+}
+
+.nav-item--active::after {
+  opacity: 0.08;
+}
+
 /* Reduce motion for accessibility */
 @media (prefers-reduced-motion: reduce) {
   *,

@@ -259,6 +259,24 @@ export const getLatestVideos = (limit = 4): Video[] => {
     .slice(0, limit);
 };
 
+export const getAllVideos = (): Video[] => {
+  return [...mockVideos].sort(
+    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+  );
+};
+
+export const getVideoBySlug = (slug: string): Video | undefined => {
+  return [...mockVideos, ...mockShortStories].find((v) => v.slug === slug);
+};
+
+export const getRelatedVideos = (slug: string, limit = 4): Video[] => {
+  const target = mockVideos.find((v) => v.slug === slug);
+  if (!target) return mockVideos.slice(0, limit);
+  return mockVideos
+    .filter((v) => v.slug !== slug && v.category.slug === target.category.slug)
+    .slice(0, limit);
+};
+
 export const getShortStories = (limit = 10): Video[] => {
   return mockShortStories.slice(0, limit);
 };

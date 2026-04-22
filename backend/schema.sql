@@ -101,6 +101,19 @@ CREATE TABLE IF NOT EXISTS poll_options (
   votes INTEGER DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS trending_items (
+  id SERIAL PRIMARY KEY,
+  label TEXT NOT NULL,
+  href TEXT NOT NULL DEFAULT '#',
+  priority INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT TRUE,
+  badge TEXT,
+  expires_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_trending_active ON trending_items(is_active, priority);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_articles_slug ON articles(slug);
 CREATE INDEX IF NOT EXISTS idx_articles_category ON articles(category_id);

@@ -15,11 +15,11 @@ export const mainNavItems: NavItem[] = [
 ];
 
 export const trendingTopics: TrendingTopic[] = [
-  { id: '1', label: 'Breaking News', href: '/breaking' },
-  { id: '2', label: 'Elections 2024', href: '/elections' },
-  { id: '3', label: 'Cricket World Cup', href: '/cricket' },
-  { id: '4', label: 'Stock Market', href: '/markets' },
-  { id: '5', label: 'Weather Update', href: '/weather' },
+  { id: '1', label: 'Breaking News', href: '/' },
+  { id: '2', label: 'Politics', href: '/category/politics' },
+  { id: '3', label: 'Cricket & Sports', href: '/category/sports' },
+  { id: '4', label: 'Stock Market', href: '/category/business' },
+  { id: '5', label: 'Tech Today', href: '/category/technology' },
 ];
 
 export const footerColumns: FooterColumn[] = [
