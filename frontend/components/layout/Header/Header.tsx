@@ -7,9 +7,11 @@ import { SearchButton } from './SearchButton';
 import { UserActions } from './UserActions';
 import { MobileMenuButton } from './MobileMenuButton';
 import { MobileMenu } from './MobileMenu';
+import { SearchOverlay } from './SearchOverlay';
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -30,7 +32,7 @@ export function Header() {
           <MainNav />
 
           <div className="flex items-center gap-2">
-            <SearchButton />
+            <SearchButton onClick={() => setIsSearchOpen(true)} />
             <UserActions />
             <MobileMenuButton isOpen={isMobileMenuOpen} onClick={toggleMobileMenu} />
           </div>
@@ -38,6 +40,7 @@ export function Header() {
       </div>
 
       <MobileMenu isOpen={isMobileMenuOpen} onClose={closeMobileMenu} />
+      <SearchOverlay open={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   );
 }

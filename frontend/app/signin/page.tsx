@@ -2,12 +2,16 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui';
+
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 type Mode = 'signin' | 'signup';
 type Status = 'idle' | 'submitting' | 'error';
 
 export default function SignInPage() {
+  const router = useRouter();
   const [mode, setMode] = useState<Mode>('signin');
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
@@ -18,12 +22,33 @@ export default function SignInPage() {
     setStatus('submitting');
     setError(null);
     try {
-      // TODO: wire to backend /api/auth/signin or /signup once available
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      setError('Authentication is not yet enabled. Please check back soon.');
-      setStatus('error');
-    } catch {
-      setError('Something went wrong. Please try again.');
+      const endpoint = mode === 'signin' ? '/api/auth/signin' : '/api/auth/signup';
+      const body =
+        mode === 'signin'
+          ? { email: form.email, password: form.password }
+          : { email: form.email, password: form.password, name: form.name };
+
+      const res = await fetch(`${API}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data?.error || (mode === 'signin' ? 'Failed to sign in' : 'Failed to create account'));
+      }
+
+      if (data?.token) {
+        localStorage.setItem('user_token', data.token);
+        if (data.user) {
+          localStorage.setItem('user_profile', JSON.stringify(data.user));
+        }
+      }
+
+      router.push('/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
       setStatus('error');
     }
   };

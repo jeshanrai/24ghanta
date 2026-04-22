@@ -1,40 +1,81 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getArticleBySlug, getRelatedArticles, getArticlesByCategory } from '@/lib/data';
-import { formatDate, formatReadTime } from '@/lib/utils';
-import { Badge } from '@/components/ui';
+import {
+  getArticleBySlug,
+  getRelatedArticles,
+  getArticlesByCategory,
+  getAllArticleSlugs,
+} from '@/lib/data';
+import {
+  formatDate,
+  formatFullDate,
+  formatReadTime,
+  buildArticleBody,
+} from '@/lib/utils';
+import { Badge, ShareButtons } from '@/components/ui';
 import { ArticleCardList } from '@/components/cards';
 
 interface ArticlePageProps {
-  params: Promise<{
-    slug: string;
-  }>;
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateStaticParams() {
+  return getAllArticleSlugs().map((slug) => ({ slug }));
+}
+
+export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const article = getArticleBySlug(slug);
+
+  if (!article) return { title: 'Article not found - 24Ghanta' };
+
+  return {
+    title: `${article.title} - 24Ghanta`,
+    description: article.excerpt ?? article.title,
+    openGraph: {
+      title: article.title,
+      description: article.excerpt,
+      images: [article.imageUrl],
+      type: 'article',
+      publishedTime: article.publishedAt,
+      authors: [article.author.name],
+    },
+  };
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
   const article = getArticleBySlug(slug);
 
-  if (!article) {
-    notFound();
-  }
+  if (!article) notFound();
 
   const relatedArticles = getRelatedArticles(article.id, 4);
   const categoryArticles = getArticlesByCategory(article.category.slug, 5).filter(
     (a) => a.id !== article.id
   );
+  const blocks = buildArticleBody(article);
 
   return (
-    <div className="container py-8">
+    <div className="container py-8 animate-fade-in-up">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}
         <article className="lg:col-span-2">
-          {/* Category Badge */}
-          <div className="mb-4">
+          {/* Category + Breaking */}
+          <div className="flex items-center gap-2 mb-4">
             <Link href={`/category/${article.category.slug}`}>
-              <Badge variant="primary">{article.category.name}</Badge>
+              <Badge color={article.category.color}>{article.category.name}</Badge>
             </Link>
+            {article.isBreaking && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-[var(--color-breaking)]">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--color-breaking)] opacity-75 animate-pulse-dot" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-breaking)]" />
+                </span>
+                Breaking
+              </span>
+            )}
           </div>
 
           {/* Title */}
@@ -50,99 +91,126 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           )}
 
           {/* Author and Meta */}
-          <div className="flex items-center gap-4 mb-6 pb-6 border-b border-[var(--color-border)]">
-            {article.author.avatarUrl && (
-              <Image
-                src={article.author.avatarUrl}
-                alt={article.author.name}
-                width={48}
-                height={48}
-                className="rounded-full"
-              />
-            )}
-            <div>
-              <p className="font-medium text-[var(--color-text-primary)]">
-                {article.author.name}
-              </p>
-              <p className="text-sm text-[var(--color-text-secondary)]">
-                {formatDate(article.publishedAt)} &middot; {formatReadTime(article.readTimeMinutes)}
-              </p>
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-6 border-b border-[var(--color-border)]">
+            <div className="flex items-center gap-4">
+              {article.author.avatarUrl && (
+                <Image
+                  src={article.author.avatarUrl}
+                  alt={article.author.name}
+                  width={48}
+                  height={48}
+                  className="rounded-full"
+                />
+              )}
+              <div>
+                <p className="font-medium text-[var(--color-text-primary)]">
+                  {article.author.name}
+                </p>
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  <time dateTime={article.publishedAt}>{formatFullDate(article.publishedAt)}</time>
+                  {' · '}
+                  {formatReadTime(article.readTimeMinutes)}
+                </p>
+              </div>
             </div>
+            <ShareButtons title={article.title} slug={article.slug} />
           </div>
 
           {/* Featured Image */}
-          <div className="relative aspect-video mb-8 rounded-lg overflow-hidden">
-            <Image
-              src={article.imageUrl}
-              alt={article.imageAlt}
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
+          <figure className="mb-8">
+            <div className="relative aspect-video rounded-lg overflow-hidden">
+              <Image
+                src={article.imageUrl}
+                alt={article.imageAlt}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+            {article.imageAlt && (
+              <figcaption className="mt-2 text-xs text-[var(--color-text-muted)] italic">
+                {article.imageAlt}
+              </figcaption>
+            )}
+          </figure>
 
           {/* Article Content */}
-          <div className="prose prose-lg max-w-none">
-            <p>
-              {article.excerpt} This is the beginning of the full article content. In a real
-              implementation, this would come from a CMS or database.
-            </p>
-            <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-              incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-              exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-            </p>
-            <h2>Key Highlights</h2>
-            <ul>
-              <li>Important point about the topic covered in this article</li>
-              <li>Another significant development that readers should know</li>
-              <li>Expert opinions and analysis on the matter</li>
-              <li>What this means for the future</li>
-            </ul>
-            <p>
-              Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-              fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-              culpa qui officia deserunt mollit anim id est laborum.
-            </p>
-            <blockquote>
-              &ldquo;This is a significant development that will have far-reaching implications
-              for the industry and stakeholders involved.&rdquo;
-            </blockquote>
-            <p>
-              Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium
-              doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore
-              veritatis et quasi architecto beatae vitae dicta sunt explicabo.
-            </p>
-            <h2>What Experts Say</h2>
-            <p>
-              Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed
-              quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
-            </p>
-            <p>
-              Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur,
-              adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et
-              dolore magnam aliquam quaerat voluptatem.
-            </p>
+          <div className="space-y-5 text-[17px] leading-[1.75] text-[var(--color-text-primary)] max-w-none">
+            {blocks.map((block, idx) => {
+              if (block.type === 'paragraph') {
+                return (
+                  <p key={idx} className={idx === 0 ? 'text-lg first-letter:text-5xl first-letter:font-bold first-letter:font-serif first-letter:float-left first-letter:mr-2 first-letter:leading-[0.9] first-letter:text-[var(--color-primary)]' : ''}>
+                    {block.text}
+                  </p>
+                );
+              }
+              if (block.type === 'heading') {
+                return (
+                  <h2
+                    key={idx}
+                    className="font-headline text-2xl lg:text-3xl font-bold mt-8 mb-2 pb-2 border-b border-[var(--color-border-light)]"
+                  >
+                    {block.text}
+                  </h2>
+                );
+              }
+              if (block.type === 'list' && block.items) {
+                return (
+                  <ul key={idx} className="list-disc pl-6 space-y-2 marker:text-[var(--color-primary)]">
+                    {block.items.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                );
+              }
+              if (block.type === 'quote') {
+                return (
+                  <blockquote
+                    key={idx}
+                    className="relative border-l-4 border-[var(--color-primary)] pl-5 py-2 my-6 italic text-xl text-[var(--color-text-primary)]"
+                  >
+                    <span aria-hidden="true" className="absolute -top-2 -left-1 text-5xl leading-none text-[var(--color-primary)] opacity-30 font-serif">&ldquo;</span>
+                    {block.text}
+                  </blockquote>
+                );
+              }
+              return null;
+            })}
           </div>
 
           {/* Tags */}
           {article.tags && article.tags.length > 0 && (
-            <div className="mt-8 pt-6 border-t border-[var(--color-border)]">
-              <h3 className="text-sm font-semibold text-[var(--color-text-secondary)] uppercase mb-3">
+            <div className="mt-10 pt-6 border-t border-[var(--color-border)]">
+              <h3 className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wide mb-3">
                 Tags
               </h3>
               <div className="flex flex-wrap gap-2">
                 {article.tags.map((tag) => (
-                  <span
+                  <Link
                     key={tag}
-                    className="px-3 py-1 bg-[var(--color-surface)] text-[var(--color-text-secondary)] text-sm rounded-full"
+                    href={`/search?q=${encodeURIComponent(tag)}`}
+                    className="px-3 py-1 bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-primary)] hover:text-white text-sm rounded-full transition-colors duration-200"
                   >
-                    {tag}
-                  </span>
+                    #{tag}
+                  </Link>
                 ))}
               </div>
             </div>
           )}
+
+          {/* Footer share */}
+          <div className="mt-8 pt-6 border-t border-[var(--color-border)] flex flex-wrap items-center justify-between gap-4">
+            <p className="text-sm text-[var(--color-text-secondary)]">
+              Published {formatDate(article.publishedAt)} in{' '}
+              <Link
+                href={`/category/${article.category.slug}`}
+                className="text-[var(--color-primary)] font-medium link-underline"
+              >
+                {article.category.name}
+              </Link>
+            </p>
+            <ShareButtons title={article.title} slug={article.slug} />
+          </div>
         </article>
 
         {/* Sidebar */}
@@ -162,16 +230,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           )}
 
           {/* Related Articles */}
-          <div>
-            <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-4 pb-2 border-b-2 border-[var(--color-primary)]">
-              Related Stories
-            </h3>
-            <div className="space-y-4">
-              {relatedArticles.map((relatedArticle) => (
-                <ArticleCardList key={relatedArticle.id} article={relatedArticle} />
-              ))}
+          {relatedArticles.length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-4 pb-2 border-b-2 border-[var(--color-primary)]">
+                Related Stories
+              </h3>
+              <div className="space-y-4">
+                {relatedArticles.map((relatedArticle) => (
+                  <ArticleCardList key={relatedArticle.id} article={relatedArticle} />
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </aside>
       </div>
     </div>

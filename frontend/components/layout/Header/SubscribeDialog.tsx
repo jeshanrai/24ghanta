@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui';
 import { CloseIcon } from '@/components/icons';
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 interface SubscribeDialogProps {
   open: boolean;
   onClose: () => void;
@@ -12,6 +14,7 @@ interface SubscribeDialogProps {
 export function SubscribeDialog({ open, onClose }: SubscribeDialogProps) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'done'>('idle');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -31,9 +34,22 @@ export function SubscribeDialog({ open, onClose }: SubscribeDialogProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('submitting');
-    // TODO: wire to backend /api/newsletter once available
-    await new Promise((r) => setTimeout(r, 600));
-    setStatus('done');
+    setError(null);
+    try {
+      const res = await fetch(`${API}/api/newsletter`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || 'Failed to subscribe');
+      }
+      setStatus('done');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setStatus('idle');
+    }
   };
 
   return (
@@ -90,6 +106,9 @@ export function SubscribeDialog({ open, onClose }: SubscribeDialogProps) {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2.5 border border-[var(--color-border)] rounded-sm focus:outline-none focus:border-[var(--color-primary)] transition-colors"
             />
+            {error && (
+              <p className="text-sm text-[var(--color-error)] animate-fade-in">{error}</p>
+            )}
             <Button
               type="submit"
               variant="primary"

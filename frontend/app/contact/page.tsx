@@ -3,21 +3,33 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui';
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 
 export default function ContactPage() {
   const [status, setStatus] = useState<Status>('idle');
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('sending');
+    setError(null);
     try {
-      // TODO: wire to backend /api/contact once available
-      await new Promise((resolve) => setTimeout(resolve, 700));
+      const res = await fetch(`${API}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || 'Failed to submit message');
+      }
       setStatus('sent');
       setForm({ name: '', email: '', subject: '', message: '' });
-    } catch {
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
       setStatus('error');
     }
   };
@@ -117,10 +129,8 @@ export default function ContactPage() {
                 Thanks — we received your message.
               </span>
             )}
-            {status === 'error' && (
-              <span className="text-sm text-[var(--color-error)]">
-                Something went wrong. Please try again.
-              </span>
+            {status === 'error' && error && (
+              <span className="text-sm text-[var(--color-error)]">{error}</span>
             )}
           </div>
         </form>
