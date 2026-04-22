@@ -1,0 +1,1 @@
+export { ShortStoryCard } from './ShortStoryCard';

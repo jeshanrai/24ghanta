@@ -1,0 +1,379 @@
+@import "tailwindcss";
+
+:root {
+  /* Primary Colors */
+  --color-primary: #c41d2f;
+  --color-primary-hover: #a31825;
+
+  /* Background Colors */
+  --color-background: #ffffff;
+  --color-surface: #f8f8f8;
+  --color-surface-hover: #f0f0f0;
+
+  /* Text Colors */
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #6b6b6b;
+  --color-text-muted: #999999;
+  --color-text-inverse: #ffffff;
+
+  /* Border Colors */
+  --color-border: #e5e5e5;
+  --color-border-light: #f0f0f0;
+  --color-border-dark: #d0d0d0;
+
+  /* Semantic Colors */
+  --color-breaking: #c41d2f;
+  --color-live: #c41d2f;
+  --color-error: #dc2626;
+  --color-success: #16a34a;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+  /* Spacing */
+  --spacing-section: 3rem;
+  --spacing-block: 1.5rem;
+  --spacing-card: 1rem;
+  --spacing-gap: 1.5rem;
+
+  /* Header */
+  --header-height: 64px;
+  --header-height-desktop: 72px;
+
+  /* Max Width */
+  --max-width: 1440px;
+  --content-max-width: 1200px;
+}
+
+@theme inline {
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-text-primary);
+  --color-primary: var(--color-primary);
+  --color-muted: var(--color-text-secondary);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Base Styles */
+body {
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography Utilities */
+.font-headline {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.font-body {
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Text Sizes */
+.text-hero {
+  font-size: 2.5rem;
+  line-height: 1.1;
+}
+
+.text-h1 {
+  font-size: 2rem;
+  line-height: 1.15;
+}
+
+.text-h2 {
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+.text-h3 {
+  font-size: 1.125rem;
+  line-height: 1.3;
+}
+
+.text-body {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.text-small {
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+/* Link Styles */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+/* Image Styles */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Focus Styles */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-dark);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Container */
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Aspect Ratios */
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+
+.aspect-portrait {
+  aspect-ratio: 3 / 4;
+}
+
+/* Line Clamp Utilities */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* ========================================
+   GEN Z THEME
+   ======================================== */
+
+.genz-theme {
+  /* Gen Z Color Palette - Bold & Colorful */
+  --genz-bg: #0f0f0f;
+  --genz-surface: #1a1a1a;
+  --genz-surface-hover: #252525;
+
+  /* Vibrant Accent Colors */
+  --genz-coral: #FF6B6B;
+  --genz-teal: #4ECDC4;
+  --genz-yellow: #FFE66D;
+  --genz-mint: #95E1D3;
+  --genz-pink: #F38181;
+  --genz-purple: #AA96DA;
+  --genz-blue: #6C5CE7;
+  --genz-orange: #FD9644;
+
+  /* Text Colors */
+  --genz-text: #ffffff;
+  --genz-text-muted: #888888;
+  --genz-text-dim: #555555;
+
+  /* Gradients */
+  --genz-gradient-1: linear-gradient(135deg, #FF6B6B 0%, #FFE66D 100%);
+  --genz-gradient-2: linear-gradient(135deg, #4ECDC4 0%, #95E1D3 100%);
+  --genz-gradient-3: linear-gradient(135deg, #AA96DA 0%, #6C5CE7 100%);
+  --genz-gradient-4: linear-gradient(135deg, #F38181 0%, #FF6B6B 100%);
+  --genz-gradient-rainbow: linear-gradient(90deg, #FF6B6B, #FFE66D, #4ECDC4, #AA96DA, #F38181);
+
+  /* Glow Effects */
+  --genz-glow-coral: 0 0 20px rgba(255, 107, 107, 0.4);
+  --genz-glow-teal: 0 0 20px rgba(78, 205, 196, 0.4);
+  --genz-glow-purple: 0 0 20px rgba(170, 150, 218, 0.4);
+}
+
+/* Gen Z Animations */
+@keyframes genz-gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes genz-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes genz-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes genz-glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(255, 107, 107, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.6); }
+}
+
+.genz-animate-gradient {
+  background-size: 200% 200%;
+  animation: genz-gradient-shift 3s ease infinite;
+}
+
+.genz-animate-pulse {
+  animation: genz-pulse 2s ease-in-out infinite;
+}
+
+.genz-animate-float {
+  animation: genz-float 3s ease-in-out infinite;
+}
+
+.genz-animate-glow {
+  animation: genz-glow 2s ease-in-out infinite;
+}
+
+/* Gen Z Typography */
+.genz-heading {
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.genz-heading-xl {
+  font-size: 3rem;
+  line-height: 1;
+  font-weight: 900;
+}
+
+/* Gen Z Card Styles */
+.genz-card {
+  background: var(--genz-surface);
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.genz-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Gen Z Gradient Border */
+.genz-gradient-border {
+  position: relative;
+  background: var(--genz-surface);
+  border-radius: 1rem;
+}
+
+.genz-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 1.125rem;
+  background: var(--genz-gradient-rainbow);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.genz-gradient-border:hover::before {
+  opacity: 1;
+}
+
+/* Gen Z Tag/Pill Styles */
+.genz-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
