@@ -77,28 +77,28 @@ export default function CategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-gray-900">Categories</h1><p className="text-sm text-gray-500 mt-1">{items.length} categories</p></div>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div><h1 className="text-xl sm:text-2xl font-bold text-gray-900">Categories</h1><p className="text-sm text-gray-500 mt-1">{items.length} categories</p></div>
         <button onClick={startNew} className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700"><Plus className="w-4 h-4" /> Add Category</button>
       </div>
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-5 space-y-4">
         {showNew && renderForm()}
         {loading ? <div className="py-16 text-center"><div className="w-8 h-8 border-4 border-red-600/30 border-t-red-600 rounded-full animate-spin mx-auto" /></div> :
         items.length === 0 ? <p className="py-12 text-center text-gray-400">No categories. Create your first one!</p> :
         <div className="space-y-2">{items.map(item => (
           <div key={item.id}>
             {editing === item.id ? renderForm(item.id) : (
-              <div className="flex items-center justify-between py-3 px-4 rounded-xl hover:bg-gray-50 group">
-                <div className="flex items-center gap-3">
-                  {item.color && <div className="w-3 h-3 rounded-full" style={{ background: item.color }} />}
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{item.name}</p>
-                    <p className="text-xs text-gray-400 font-mono">/{item.slug}</p>
+              <div className="flex items-center justify-between py-3 px-3 sm:px-4 rounded-xl hover:bg-gray-50 group">
+                <div className="flex items-center gap-3 min-w-0">
+                  {item.color && <div className="w-3 h-3 rounded-full shrink-0" style={{ background: item.color }} />}
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
+                    <p className="text-xs text-gray-400 font-mono truncate">/{item.slug}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{item.article_count || 0} articles</span>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full hidden sm:inline">{item.article_count || 0} articles</span>
+                  <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     <button onClick={() => startEdit(item)} className="p-1.5 rounded-lg hover:bg-gray-100"><Pencil className="w-4 h-4 text-blue-600" /></button>
                     <button onClick={() => remove(item.id)} className="p-1.5 rounded-lg hover:bg-red-50"><Trash2 className="w-4 h-4 text-red-500" /></button>
                   </div>

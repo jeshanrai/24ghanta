@@ -63,11 +63,11 @@ export default function TagsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-gray-900">Tags</h1><p className="text-sm text-gray-500 mt-1">{items.length} tags</p></div>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div><h1 className="text-xl sm:text-2xl font-bold text-gray-900">Tags</h1><p className="text-sm text-gray-500 mt-1">{items.length} tags</p></div>
         <button onClick={startNew} className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700"><Plus className="w-4 h-4" /> Add Tag</button>
       </div>
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-5 space-y-4">
         {showNew && renderForm()}
         {loading ? <div className="py-16 text-center"><div className="w-8 h-8 border-4 border-red-600/30 border-t-red-600 rounded-full animate-spin mx-auto" /></div> :
         items.length === 0 ? <p className="py-12 text-center text-gray-400">No tags. Create your first one!</p> :
@@ -77,7 +77,7 @@ export default function TagsPage() {
               <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-xl group">
                 <span className="text-sm font-medium text-gray-800">{item.name}</span>
                 <span className="text-[10px] text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded">{item.article_count || 0}</span>
-                <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="flex gap-0.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                   <button onClick={() => startEdit(item)} className="p-1 rounded hover:bg-gray-200"><Pencil className="w-3 h-3 text-blue-600" /></button>
                   <button onClick={() => remove(item.id)} className="p-1 rounded hover:bg-red-100"><Trash2 className="w-3 h-3 text-red-500" /></button>
                 </div>

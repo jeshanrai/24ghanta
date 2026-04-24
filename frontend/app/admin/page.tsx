@@ -23,11 +23,11 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div><h1 className="text-2xl font-bold text-gray-900">Dashboard</h1><p className="text-sm text-gray-500 mt-1">Overview of your CMS</p></div>
         <Link href="/admin/articles/new" className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-all"><Plus className="w-4 h-4" /> New Article</Link>
       </div>
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
         {[
           { href: "/admin/articles", icon: FileText, color: "blue", label: "Articles", value: s.articles.total, sub: `${s.articles.published} published` },
           { href: "/admin/articles", icon: Eye, color: "purple", label: "Total Views", value: s.articles.totalViews?.toLocaleString() || 0, sub: "All time" },
@@ -36,16 +36,16 @@ export default function AdminDashboard() {
           { href: "/admin/tags", icon: Tag, color: "orange", label: "Tags", value: s.tags.total, sub: "SEO tags" },
           { href: "/admin/authors", icon: UserPen, color: "indigo", label: "Authors", value: s.authors.total, sub: "Writers" },
         ].map((c) => (
-          <Link key={c.label} href={c.href} className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-all group">
+          <Link key={c.label} href={c.href} className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 hover:shadow-md transition-all group">
             <div className="flex items-center justify-between mb-3">
               <div className={`w-10 h-10 rounded-xl bg-${c.color}-50 flex items-center justify-center group-hover:scale-110 transition-transform`}>
                 <c.icon className={`w-5 h-5 text-${c.color}-600`} />
               </div>
               <ArrowUpRight className="w-4 h-4 text-gray-300 group-hover:text-red-500 transition-colors" />
             </div>
-            <p className="text-2xl font-bold text-gray-900">{c.value}</p>
-            <p className="text-xs text-gray-500 mt-1">{c.label}</p>
-            <p className="text-[10px] text-green-600 font-medium mt-2">{c.sub}</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900">{c.value}</p>
+            <p className="text-[11px] sm:text-xs text-gray-500 mt-1">{c.label}</p>
+            <p className="text-[10px] text-green-600 font-medium mt-1 sm:mt-2">{c.sub}</p>
           </Link>
         ))}
       </div>

@@ -155,14 +155,14 @@ export default function AuthorsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Authors</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Authors</h1>
           <p className="text-sm text-gray-500 mt-1">{items.length} authors · manage credentials to give them CMS access</p>
         </div>
         <button onClick={startNew} className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700"><Plus className="w-4 h-4" /> Add Author</button>
       </div>
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-5 space-y-4">
         {showNew && renderForm()}
         {loading ? (
           <div className="py-16 text-center"><div className="w-8 h-8 border-4 border-red-600/30 border-t-red-600 rounded-full animate-spin mx-auto" /></div>
@@ -194,9 +194,9 @@ export default function AuthorsPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{item.article_count || 0} articles</span>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full hidden sm:inline">{item.article_count || 0} articles</span>
+                      <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         <button onClick={() => startEdit(item)} className="p-1.5 rounded-lg hover:bg-gray-100" title="Edit"><Pencil className="w-4 h-4 text-blue-600" /></button>
                         <button onClick={() => remove(item.id)} className="p-1.5 rounded-lg hover:bg-red-50" title="Delete"><Trash2 className="w-4 h-4 text-red-500" /></button>
                       </div>

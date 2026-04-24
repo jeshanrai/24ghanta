@@ -33,7 +33,7 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div><h1 className="text-2xl font-bold text-gray-900">Settings</h1><p className="text-sm text-gray-500 mt-1">Manage your admin account</p></div>
+      <div><h1 className="text-xl sm:text-2xl font-bold text-gray-900">Settings</h1><p className="text-sm text-gray-500 mt-1">Manage your admin account</p></div>
 
       <div className="max-w-xl">
         <div className="bg-white rounded-2xl border border-gray-100 p-6">

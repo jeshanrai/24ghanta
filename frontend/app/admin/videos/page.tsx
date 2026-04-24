@@ -33,44 +33,72 @@ export default function VideosPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-gray-900">Videos</h1><p className="text-sm text-gray-500 mt-1">{pagination.total} total videos</p></div>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div><h1 className="text-xl sm:text-2xl font-bold text-gray-900">Videos</h1><p className="text-sm text-gray-500 mt-1">{pagination.total} total videos</p></div>
         <Link href="/admin/videos/new" className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700"><Plus className="w-4 h-4" /> Add Video</Link>
       </div>
-      <div className="bg-white rounded-2xl border border-gray-100 p-4">
+      <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-4">
         <div className="mb-4">
-          <div className="relative max-w-md">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search videos..." className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500" />
           </div>
         </div>
         {loading ? <div className="py-16 text-center"><div className="w-8 h-8 border-4 border-red-600/30 border-t-red-600 rounded-full animate-spin mx-auto" /></div> :
         videos.length === 0 ? <p className="py-16 text-center text-gray-400">No videos found.</p> :
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead><tr className="border-b border-gray-100">
-              <th className="text-left py-3 px-3 text-gray-500 font-medium">Title</th>
-              <th className="text-left py-3 px-3 text-gray-500 font-medium">Type</th>
-              <th className="text-left py-3 px-3 text-gray-500 font-medium">Category</th>
-              <th className="text-left py-3 px-3 text-gray-500 font-medium">Views</th>
-              <th className="text-left py-3 px-3 text-gray-500 font-medium">Status</th>
-              <th className="text-right py-3 px-3 text-gray-500 font-medium">Actions</th>
-            </tr></thead>
-            <tbody>{videos.map(v => (
-              <tr key={v.id} className="border-b border-gray-50 hover:bg-gray-50/50">
-                <td className="py-3 px-3"><Link href={`/admin/videos/${v.id}`} className="font-medium text-gray-900 hover:text-red-600 transition-colors line-clamp-1">{v.title}</Link></td>
-                <td className="py-3 px-3"><span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{v.type || "video"}</span></td>
-                <td className="py-3 px-3 text-gray-600">{v.category_name || "—"}</td>
-                <td className="py-3 px-3 text-gray-600">{v.views || 0}</td>
-                <td className="py-3 px-3"><span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${v.is_published ? "bg-green-50 text-green-700" : "bg-orange-50 text-orange-700"}`}>{v.is_published ? "Published" : "Draft"}</span></td>
-                <td className="py-3 px-3"><div className="flex items-center justify-end gap-1">
-                  <Link href={`/admin/videos/${v.id}`} className="p-1.5 rounded-lg hover:bg-gray-100"><Pencil className="w-4 h-4 text-blue-600" /></Link>
-                  <button onClick={() => deleteVideo(v.id)} className="p-1.5 rounded-lg hover:bg-red-50"><Trash2 className="w-4 h-4 text-red-500" /></button>
-                </div></td>
-              </tr>
-            ))}</tbody>
-          </table>
-        </div>}
+        <>
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-gray-100">
+                <th className="text-left py-3 px-3 text-gray-500 font-medium">Title</th>
+                <th className="text-left py-3 px-3 text-gray-500 font-medium">Type</th>
+                <th className="text-left py-3 px-3 text-gray-500 font-medium">Category</th>
+                <th className="text-left py-3 px-3 text-gray-500 font-medium">Views</th>
+                <th className="text-left py-3 px-3 text-gray-500 font-medium">Status</th>
+                <th className="text-right py-3 px-3 text-gray-500 font-medium">Actions</th>
+              </tr></thead>
+              <tbody>{videos.map(v => (
+                <tr key={v.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                  <td className="py-3 px-3"><Link href={`/admin/videos/${v.id}`} className="font-medium text-gray-900 hover:text-red-600 transition-colors line-clamp-1">{v.title}</Link></td>
+                  <td className="py-3 px-3"><span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{v.type || "video"}</span></td>
+                  <td className="py-3 px-3 text-gray-600">{v.category_name || "—"}</td>
+                  <td className="py-3 px-3 text-gray-600">{v.views || 0}</td>
+                  <td className="py-3 px-3"><span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${v.is_published ? "bg-green-50 text-green-700" : "bg-orange-50 text-orange-700"}`}>{v.is_published ? "Published" : "Draft"}</span></td>
+                  <td className="py-3 px-3"><div className="flex items-center justify-end gap-1">
+                    <Link href={`/admin/videos/${v.id}`} className="p-1.5 rounded-lg hover:bg-gray-100"><Pencil className="w-4 h-4 text-blue-600" /></Link>
+                    <button onClick={() => deleteVideo(v.id)} className="p-1.5 rounded-lg hover:bg-red-50"><Trash2 className="w-4 h-4 text-red-500" /></button>
+                  </div></td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden divide-y divide-gray-50">
+            {videos.map(v => (
+              <div key={v.id} className="py-3 px-1">
+                <div className="flex items-start justify-between gap-2">
+                  <Link href={`/admin/videos/${v.id}`} className="text-sm font-medium text-gray-900 hover:text-red-600 transition-colors line-clamp-2 flex-1">
+                    {v.title}
+                  </Link>
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 ${v.is_published ? "bg-green-50 text-green-700" : "bg-orange-50 text-orange-700"}`}>
+                    {v.is_published ? "Live" : "Draft"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                  <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{v.type || "video"}</span>
+                  {v.category_name && <span className="text-[10px] text-gray-400">{v.category_name}</span>}
+                  <span className="text-[10px] text-gray-400">{v.views || 0} views</span>
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <Link href={`/admin/videos/${v.id}`} className="p-1.5 rounded-lg hover:bg-gray-100"><Pencil className="w-3.5 h-3.5 text-blue-600" /></Link>
+                  <button onClick={() => deleteVideo(v.id)} className="p-1.5 rounded-lg hover:bg-red-50"><Trash2 className="w-3.5 h-3.5 text-red-500" /></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>}
         {pagination.totalPages > 1 && (
           <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
             <p className="text-xs text-gray-500">Page {pagination.page} of {pagination.totalPages}</p>

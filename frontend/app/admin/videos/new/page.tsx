@@ -86,14 +86,14 @@ export default function NewVideoPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Link href="/admin/videos" className="p-2 rounded-lg hover:bg-gray-100"><ArrowLeft className="w-5 h-5 text-gray-600" /></Link>
-          <h1 className="text-2xl font-bold text-gray-900">Add Video</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Add Video</h1>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => handleSubmit(false)} disabled={saving || !form.title} className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50 disabled:opacity-50"><Save className="w-4 h-4" /> Save Draft</button>
-          <button onClick={() => handleSubmit(true)} disabled={saving || !form.title} className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 disabled:opacity-50"><Globe className="w-4 h-4" /> Publish</button>
+          <button onClick={() => handleSubmit(false)} disabled={saving || !form.title} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50 disabled:opacity-50"><Save className="w-4 h-4" /> Save Draft</button>
+          <button onClick={() => handleSubmit(true)} disabled={saving || !form.title} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 disabled:opacity-50"><Globe className="w-4 h-4" /> Publish</button>
         </div>
       </div>
       {error && <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">{error}</div>}
