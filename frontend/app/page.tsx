@@ -1,6 +1,6 @@
 import { HeroSection, VideoSection, ShortStoriesSection, CategorySection } from '@/components/sections';
 import {
-  fetchFeaturedArticle,
+  fetchHeroArticles,
   fetchLatestArticles,
   fetchArticlesByCategory,
   fetchLatestVideos,
@@ -13,7 +13,7 @@ export const revalidate = 30;
 
 export default async function HomePage() {
   const [
-    featuredArticle,
+    heroArticles,
     latestArticles,
     videos,
     shortStories,
@@ -25,7 +25,7 @@ export default async function HomePage() {
     entertainmentArticles,
     activePoll,
   ] = await Promise.all([
-    fetchFeaturedArticle(),
+    fetchHeroArticles(),
     fetchLatestArticles(10),
     fetchLatestVideos(4),
     fetchShortStories(10),
@@ -38,16 +38,18 @@ export default async function HomePage() {
     fetchActivePoll(),
   ]);
 
-  const sidebarArticles = featuredArticle
-    ? latestArticles.filter((a) => a.id !== featuredArticle.id).slice(0, 5)
-    : latestArticles.slice(0, 5);
+  // Exclude hero articles from the sidebar to avoid duplicates
+  const heroIds = new Set(heroArticles.map((a) => a.id));
+  const sidebarArticles = latestArticles
+    .filter((a) => !heroIds.has(a.id))
+    .slice(0, 5);
 
   return (
     <div>
       <div className="container py-6">
-        {featuredArticle ? (
+        {heroArticles.length > 0 ? (
           <HeroSection
-            featuredArticle={featuredArticle}
+            heroArticles={heroArticles}
             sidebarArticles={sidebarArticles}
             activePoll={activePoll}
           />

@@ -75,6 +75,27 @@ router.get('/featured', async (_req: Request, res: Response) => {
   }
 });
 
+// GET /api/articles/hero — top 5 articles for the hero slider (breaking first, then newest)
+router.get('/hero', async (_req: Request, res: Response) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT ${ARTICLE_SELECT}
+       FROM articles a
+       ${ARTICLE_JOIN}
+       WHERE a.is_published = TRUE
+       ORDER BY
+         a.is_breaking DESC,
+         a.published_at DESC NULLS LAST,
+         a.id DESC
+       LIMIT 5`
+    );
+    res.json({ data: rows.map(mapArticleRow) });
+  } catch (error) {
+    console.error('Hero articles error:', error);
+    res.status(500).json({ error: 'Failed to load hero articles' });
+  }
+});
+
 // GET /api/articles/search?q=keyword&limit=20
 router.get('/search', async (req: Request, res: Response) => {
   const q = (req.query.q as string | undefined)?.trim();

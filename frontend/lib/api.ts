@@ -31,6 +31,10 @@ export async function fetchFeaturedArticle(): Promise<Article | null> {
   return api<Article>('/api/articles/featured');
 }
 
+export async function fetchHeroArticles(): Promise<Article[]> {
+  return (await api<Article[]>('/api/articles/hero')) ?? [];
+}
+
 export async function fetchLatestArticles(limit = 10): Promise<Article[]> {
   return (await api<Article[]>(`/api/articles?limit=${limit}`)) ?? [];
 }

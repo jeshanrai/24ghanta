@@ -1,3 +1,3 @@
 export { HeroSection } from './HeroSection';
-export { HeroMain } from './HeroMain';
+export { HeroSlider } from './HeroSlider';
 export { HeroSidebar } from './HeroSidebar';
