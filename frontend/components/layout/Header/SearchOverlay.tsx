@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { SearchIcon, CloseIcon } from '@/components/icons';
-import { mockArticles } from '@/lib/data';
+import type { Article } from '@/lib/types';
+
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 interface SearchOverlayProps {
   open: boolean;
@@ -13,6 +15,8 @@ interface SearchOverlayProps {
 
 export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
   const [query, setQuery] = useState('');
+  const [results, setResults] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -31,22 +35,45 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  useEffect(() => {
+    const q = query.trim();
+    if (!q) {
+      setResults([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    const controller = new AbortController();
+    const debounce = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `${API}/api/articles/search?q=${encodeURIComponent(q)}&limit=6`,
+          { signal: controller.signal }
+        );
+        if (!res.ok) throw new Error('search failed');
+        const data = await res.json();
+        setResults(data?.data ?? []);
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          setResults([]);
+        }
+      } finally {
+        setLoading(false);
+      }
+    }, 200);
+    return () => {
+      controller.abort();
+      clearTimeout(debounce);
+    };
+  }, [query]);
 
-  const normalized = query.trim().toLowerCase();
-  const results = normalized
-    ? mockArticles
-        .filter((a) => {
-          const haystack = `${a.title} ${a.excerpt ?? ''} ${a.category.name}`.toLowerCase();
-          return haystack.includes(normalized);
-        })
-        .slice(0, 6)
-    : [];
+  if (!open) return null;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!normalized) return;
-    router.push(`/search?q=${encodeURIComponent(normalized)}`);
+    const q = query.trim();
+    if (!q) return;
+    router.push(`/search?q=${encodeURIComponent(q)}`);
     onClose();
   };
 
@@ -86,9 +113,11 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
           </form>
         </div>
 
-        {normalized && (
+        {query.trim() && (
           <div className="container pb-4">
-            {results.length === 0 ? (
+            {loading ? (
+              <p className="text-sm text-[var(--color-text-muted)] py-4">Searching…</p>
+            ) : results.length === 0 ? (
               <p className="text-sm text-[var(--color-text-muted)] py-4">
                 No matches for &quot;{query}&quot;. Press Enter to search anyway.
               </p>

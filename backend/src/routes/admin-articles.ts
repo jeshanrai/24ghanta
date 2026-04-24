@@ -48,9 +48,15 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
   } catch (error) { console.error('Get article error:', error); res.status(500).json({ error: 'Internal server error' }); }
 });
 
+function parseDisplayOrder(v: unknown): number | null {
+  if (v === null || v === undefined || v === '') return null;
+  const n = typeof v === 'number' ? v : parseInt(String(v), 10);
+  return Number.isFinite(n) ? n : null;
+}
+
 // POST / — create article
 router.post('/', async (req: AuthRequest, res: Response) => {
-  const { title, slug, excerpt, content, category_id, author_id, image_url, image_alt, is_featured, is_breaking, is_published, meta_title, meta_description, meta_keywords, tag_ids, published_at } = req.body;
+  const { title, slug, excerpt, content, category_id, author_id, image_url, image_alt, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords, tag_ids, published_at } = req.body;
   if (!title || !slug || !image_url) return res.status(400).json({ error: 'Title, slug, and image_url are required' });
   const client = await pool.connect();
   try {
@@ -58,9 +64,9 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     const readTime = Math.max(1, Math.ceil((content || '').split(/\s+/).length / 200));
     const pubAt = is_published ? (published_at || new Date().toISOString()) : published_at || null;
     const { rows } = await client.query(
-      `INSERT INTO articles (title, slug, excerpt, content, category_id, author_id, image_url, image_alt, published_at, updated_at, read_time_minutes, is_featured, is_breaking, is_published, meta_title, meta_description, meta_keywords)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),$10,$11,$12,$13,$14,$15,$16) RETURNING *`,
-      [title, slug, excerpt, content, category_id || null, author_id || null, image_url, image_alt || '', pubAt, readTime, is_featured || false, is_breaking || false, is_published || false, meta_title || null, meta_description || null, meta_keywords || null]
+      `INSERT INTO articles (title, slug, excerpt, content, category_id, author_id, image_url, image_alt, published_at, updated_at, read_time_minutes, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),$10,$11,$12,$13,$14,$15,$16,$17) RETURNING *`,
+      [title, slug, excerpt, content, category_id || null, author_id || null, image_url, image_alt || '', pubAt, readTime, is_featured || false, is_breaking || false, is_published || false, parseDisplayOrder(display_order), meta_title || null, meta_description || null, meta_keywords || null]
     );
     if (tag_ids?.length) {
       const vals = tag_ids.map((_: number, i: number) => `($1, $${i + 2})`).join(',');
@@ -77,15 +83,15 @@ router.post('/', async (req: AuthRequest, res: Response) => {
 
 // PUT /:id — update article
 router.put('/:id', async (req: AuthRequest, res: Response) => {
-  const { title, slug, excerpt, content, category_id, author_id, image_url, image_alt, is_featured, is_breaking, is_published, meta_title, meta_description, meta_keywords, tag_ids, published_at } = req.body;
+  const { title, slug, excerpt, content, category_id, author_id, image_url, image_alt, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords, tag_ids, published_at } = req.body;
   if (!title || !slug || !image_url) return res.status(400).json({ error: 'Title, slug, and image_url are required' });
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const readTime = Math.max(1, Math.ceil((content || '').split(/\s+/).length / 200));
     const { rows } = await client.query(
-      `UPDATE articles SET title=$1, slug=$2, excerpt=$3, content=$4, category_id=$5, author_id=$6, image_url=$7, image_alt=$8, published_at=$9, updated_at=NOW(), read_time_minutes=$10, is_featured=$11, is_breaking=$12, is_published=$13, meta_title=$14, meta_description=$15, meta_keywords=$16 WHERE id=$17 RETURNING *`,
-      [title, slug, excerpt, content, category_id || null, author_id || null, image_url, image_alt || '', published_at || null, readTime, is_featured || false, is_breaking || false, is_published || false, meta_title || null, meta_description || null, meta_keywords || null, req.params.id]
+      `UPDATE articles SET title=$1, slug=$2, excerpt=$3, content=$4, category_id=$5, author_id=$6, image_url=$7, image_alt=$8, published_at=$9, updated_at=NOW(), read_time_minutes=$10, is_featured=$11, is_breaking=$12, is_published=$13, display_order=$14, meta_title=$15, meta_description=$16, meta_keywords=$17 WHERE id=$18 RETURNING *`,
+      [title, slug, excerpt, content, category_id || null, author_id || null, image_url, image_alt || '', published_at || null, readTime, is_featured || false, is_breaking || false, is_published || false, parseDisplayOrder(display_order), meta_title || null, meta_description || null, meta_keywords || null, req.params.id]
     );
     if (rows.length === 0) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Article not found' }); }
     await client.query('DELETE FROM article_tags WHERE article_id = $1', [req.params.id]);

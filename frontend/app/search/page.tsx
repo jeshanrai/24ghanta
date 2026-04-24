@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { mockArticles } from '@/lib/data';
+import { fetchSearchArticles } from '@/lib/api';
 import { ArticleCardList } from '@/components/cards';
+
+export const revalidate = 30;
 
 export const metadata: Metadata = {
   title: 'Search - 24Ghanta',
@@ -15,14 +17,8 @@ interface SearchPageProps {
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const { q } = await searchParams;
   const query = (q ?? '').trim();
-  const normalized = query.toLowerCase();
 
-  const results = normalized
-    ? mockArticles.filter((a) => {
-        const haystack = `${a.title} ${a.excerpt ?? ''} ${a.category.name}`.toLowerCase();
-        return haystack.includes(normalized);
-      })
-    : [];
+  const results = query ? await fetchSearchArticles(query, 40) : [];
 
   return (
     <div className="container py-8 lg:py-10 animate-fade-in-up">

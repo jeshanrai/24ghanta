@@ -49,11 +49,16 @@ CREATE TABLE IF NOT EXISTS articles (
   is_featured BOOLEAN DEFAULT FALSE,
   is_breaking BOOLEAN DEFAULT FALSE,
   is_published BOOLEAN DEFAULT FALSE,
+  display_order INTEGER,
   views INTEGER DEFAULT 0,
   meta_title TEXT,
   meta_description TEXT,
   meta_keywords TEXT
 );
+
+-- Safe ALTER for databases created before display_order existed
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS display_order INTEGER;
+CREATE INDEX IF NOT EXISTS idx_articles_display_order ON articles(display_order);
 
 CREATE TABLE IF NOT EXISTS article_tags (
   article_id INTEGER REFERENCES articles(id) ON DELETE CASCADE,
@@ -75,10 +80,13 @@ CREATE TABLE IF NOT EXISTS videos (
   views INTEGER DEFAULT 0,
   type TEXT DEFAULT 'video',
   is_published BOOLEAN DEFAULT FALSE,
+  display_order INTEGER,
   meta_title TEXT,
   meta_description TEXT,
   meta_keywords TEXT
 );
+
+ALTER TABLE videos ADD COLUMN IF NOT EXISTS display_order INTEGER;
 
 CREATE TABLE IF NOT EXISTS video_tags (
   video_id INTEGER REFERENCES videos(id) ON DELETE CASCADE,

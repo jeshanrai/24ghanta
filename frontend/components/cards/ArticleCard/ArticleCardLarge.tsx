@@ -2,18 +2,19 @@ import Link from 'next/link';
 import type { Article } from '@/lib/types';
 import { formatReadTimeShort } from '@/lib/utils';
 import { OptimizedImage, Badge, Poll } from '@/components/ui';
-import { getActivePoll } from '@/lib/data/polls';
+import type { Poll as PollType } from '@/lib/data/polls';
 
 interface ArticleCardLargeProps {
   article: Article;
   priority?: boolean;
+  activePoll?: PollType | null;
 }
 
 export function ArticleCardLarge({
   article,
   priority = false,
+  activePoll,
 }: ArticleCardLargeProps) {
-  const activePoll = getActivePoll();
   return (
     <article className="group">
       <Link href={`/article/${article.slug}`} className="block relative">

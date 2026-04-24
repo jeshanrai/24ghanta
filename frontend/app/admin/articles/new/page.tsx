@@ -18,6 +18,7 @@ export default function NewArticlePage() {
   const [form, setForm] = useState({
     title: "", slug: "", excerpt: "", content: "", category_id: "", author_id: "",
     image_url: "", image_alt: "", is_featured: false, is_breaking: false, is_published: false,
+    display_order: "" as string,
     meta_title: "", meta_description: "", meta_keywords: "", tag_ids: [] as number[],
   });
   const [showSeo, setShowSeo] = useState(false);
@@ -128,6 +129,17 @@ export default function NewArticlePage() {
           <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
             <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={form.is_featured} onChange={e => update("is_featured", e.target.checked)} className="w-4 h-4 text-red-600 rounded" /><span className="text-sm text-gray-700">Featured Article</span></label>
             <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={form.is_breaking} onChange={e => update("is_breaking", e.target.checked)} className="w-4 h-4 text-red-600 rounded" /><span className="text-sm text-gray-700">Breaking News</span></label>
+            <div className="pt-2 border-t border-gray-100">
+              <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Display Order</label>
+              <input
+                type="number"
+                value={form.display_order}
+                onChange={e => update("display_order", e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                placeholder="Leave blank for newest-first"
+              />
+              <p className="text-xs text-gray-400 mt-1.5">Lower number = higher on the page. Blank = sort by published date.</p>
+            </div>
           </div>
         </div>
       </div>

@@ -1,23 +1,21 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getVideoBySlug, getRelatedVideos, mockVideos } from '@/lib/data';
+import { fetchVideoBySlug, fetchLatestVideos } from '@/lib/api';
 import { VideoCard } from '@/components/cards';
 import { OptimizedImage, Badge } from '@/components/ui';
 import { formatDate, formatDuration } from '@/lib/utils';
 import { PlayIcon } from '@/components/icons';
 
+export const revalidate = 30;
+
 interface VideoPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateStaticParams() {
-  return mockVideos.map((v) => ({ slug: v.slug }));
-}
-
 export async function generateMetadata({ params }: VideoPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const video = getVideoBySlug(slug);
+  const video = await fetchVideoBySlug(slug);
 
   if (!video) return { title: 'Video not found - 24Ghanta' };
 
@@ -29,11 +27,14 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
 
 export default async function VideoPage({ params }: VideoPageProps) {
   const { slug } = await params;
-  const video = getVideoBySlug(slug);
+  const video = await fetchVideoBySlug(slug);
 
   if (!video) notFound();
 
-  const related = getRelatedVideos(slug, 4);
+  const allVideos = await fetchLatestVideos(12);
+  const related = allVideos
+    .filter((v) => v.slug !== slug && v.category.slug === video.category.slug)
+    .slice(0, 4);
   const viewsLabel = typeof video.views === 'number'
     ? `${video.views.toLocaleString()} views`
     : null;

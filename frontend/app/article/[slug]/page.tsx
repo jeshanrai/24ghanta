@@ -3,11 +3,10 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-  getArticleBySlug,
-  getRelatedArticles,
-  getArticlesByCategory,
-  getAllArticleSlugs,
-} from '@/lib/data';
+  fetchArticleBySlug,
+  fetchRelatedArticles,
+  fetchArticlesByCategory,
+} from '@/lib/api';
 import {
   formatDate,
   formatFullDate,
@@ -17,17 +16,15 @@ import {
 import { Badge, ShareButtons } from '@/components/ui';
 import { ArticleCardList } from '@/components/cards';
 
+export const revalidate = 30;
+
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateStaticParams() {
-  return getAllArticleSlugs().map((slug) => ({ slug }));
-}
-
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await fetchArticleBySlug(slug);
 
   if (!article) return { title: 'Article not found - 24Ghanta' };
 
@@ -47,14 +44,15 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await fetchArticleBySlug(slug);
 
   if (!article) notFound();
 
-  const relatedArticles = getRelatedArticles(article.id, 4);
-  const categoryArticles = getArticlesByCategory(article.category.slug, 5).filter(
-    (a) => a.id !== article.id
-  );
+  const [relatedArticles, categoryArticlesRaw] = await Promise.all([
+    fetchRelatedArticles(slug, 4),
+    fetchArticlesByCategory(article.category.slug, 5),
+  ]);
+  const categoryArticles = categoryArticlesRaw.filter((a) => a.id !== article.id);
   const blocks = buildArticleBody(article);
 
   return (
