@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Search, Trash2, Eye, EyeOff, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Search, Trash2, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
+import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 function getToken() { return localStorage.getItem("24ghanta_admin_token") || ""; }
@@ -88,7 +89,9 @@ export default function ArticlesPage() {
                 <td className="py-3 px-3"><span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${a.is_published ? "bg-green-50 text-green-700" : "bg-orange-50 text-orange-700"}`}>{a.is_published ? "Published" : "Draft"}</span></td>
                 <td className="py-3 px-3 text-gray-600">{a.views || 0}</td>
                 <td className="py-3 px-3"><div className="flex items-center justify-end gap-1">
-                  <button onClick={() => togglePublish(a.id)} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors" title={a.is_published ? "Unpublish" : "Publish"}>{a.is_published ? <EyeOff className="w-4 h-4 text-gray-500" /> : <Eye className="w-4 h-4 text-green-600" />}</button>
+                  <div className="flex items-center px-2" title={a.is_published ? "Unpublish" : "Publish"}>
+                    <ToggleSwitch checked={a.is_published} onChange={() => togglePublish(a.id)} />
+                  </div>
                   <Link href={`/admin/articles/${a.id}`} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"><Pencil className="w-4 h-4 text-blue-600" /></Link>
                   <button onClick={() => deleteArticle(a.id)} className="p-1.5 rounded-lg hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4 text-red-500" /></button>
                 </div></td>

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Globe } from "lucide-react";
+import { ArrowLeft, Save, Globe, Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -24,6 +24,9 @@ export default function NewArticlePage() {
     meta_title: "", meta_description: "", meta_keywords: "", tag_ids: [] as number[],
   });
   const [showSeo, setShowSeo] = useState(false);
+
+  const [newTagName, setNewTagName] = useState("");
+  const [isCreatingTag, setIsCreatingTag] = useState(false);
 
   useEffect(() => {
     const storedRole = localStorage.getItem("24ghanta_admin_role") === "author" ? "author" : "admin";
@@ -51,6 +54,33 @@ export default function NewArticlePage() {
 
   function toggleTag(id: number) {
     setForm(f => ({ ...f, tag_ids: f.tag_ids.includes(id) ? f.tag_ids.filter(t => t !== id) : [...f.tag_ids, id] }));
+  }
+
+  async function createTag(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newTagName.trim()) return;
+    setIsCreatingTag(true);
+    try {
+      const slug = slugify(newTagName);
+      const res = await fetch(`${API}/api/admin/tags`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ name: newTagName.trim(), slug })
+      });
+      if (res.ok) {
+        const newTag = await res.json();
+        setTags(prev => [...prev, newTag]);
+        setForm(f => ({ ...f, tag_ids: [...f.tag_ids, newTag.id] }));
+        setNewTagName("");
+      } else {
+        const d = await res.json();
+        alert(d.error || "Failed to create tag");
+      }
+    } catch (err) {
+      alert("Failed to create tag");
+    } finally {
+      setIsCreatingTag(false);
+    }
   }
 
   async function handleSubmit(publish: boolean) {
@@ -141,6 +171,23 @@ export default function NewArticlePage() {
               ))}
               {tags.length === 0 && <p className="text-xs text-gray-400">No tags created yet.</p>}
             </div>
+            <form onSubmit={createTag} className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+                <input
+                  type="text"
+                  value={newTagName}
+                  onChange={e => setNewTagName(e.target.value)}
+                  placeholder="New tag name"
+                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-red-400"
+                />
+                <button
+                  type="submit"
+                  disabled={isCreatingTag || !newTagName.trim()}
+                  className="p-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                  title="Create tag"
+                >
+                  {isCreatingTag ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                </button>
+              </form>
           </div>
 
           {role !== "author" && (

@@ -14,7 +14,7 @@ router.get('/', requireAuth, async (_req: AuthRequest, res: Response) => {
   } catch (error) { console.error('List tags error:', error); res.status(500).json({ error: 'Internal server error' }); }
 });
 
-router.post('/', requireAdmin, async (req: AuthRequest, res: Response) => {
+router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
   const { name, slug, meta_title, meta_description } = req.body;
   if (!name || !slug) return res.status(400).json({ error: 'Name and slug are required' });
   try {

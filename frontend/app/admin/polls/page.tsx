@@ -5,14 +5,13 @@ import {
   BarChart3,
   Plus,
   Trash2,
-  ToggleLeft,
-  ToggleRight,
   RotateCcw,
   Edit3,
   X,
   Check,
   AlertCircle,
 } from "lucide-react";
+import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -316,21 +315,9 @@ export default function AdminPolls() {
 
               {/* Actions */}
               <div className="flex items-center gap-1 border-t border-gray-50 pt-3">
-                <button
-                  onClick={() => handleToggle(poll.id)}
-                  className={`p-2 rounded-lg transition-colors text-xs flex items-center gap-1.5 ${
-                    poll.is_active
-                      ? "text-green-600 hover:bg-green-50"
-                      : "text-gray-400 hover:bg-gray-100"
-                  }`}
-                  title={poll.is_active ? "Deactivate" : "Activate"}
-                >
-                  {poll.is_active ? (
-                    <ToggleRight className="w-4 h-4" />
-                  ) : (
-                    <ToggleLeft className="w-4 h-4" />
-                  )}
-                </button>
+                <div className="px-2 py-1" title={poll.is_active ? "Deactivate" : "Activate"}>
+                  <ToggleSwitch checked={poll.is_active} onChange={() => handleToggle(poll.id)} />
+                </div>
                 <button
                   onClick={() => openEdit(poll)}
                   className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -463,19 +450,7 @@ export default function AdminPolls() {
                     Only one poll can be active at a time
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsActive(!isActive)}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${
-                    isActive ? "bg-green-500" : "bg-gray-300"
-                  }`}
-                >
-                  <span
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                      isActive ? "translate-x-5" : ""
-                    }`}
-                  />
-                </button>
+                <ToggleSwitch checked={isActive} onChange={() => setIsActive(!isActive)} />
               </div>
 
               {/* End date (optional) */}

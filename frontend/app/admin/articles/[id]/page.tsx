@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Save, Globe, Trash2 } from "lucide-react";
+import { ArrowLeft, Save, Globe, Trash2, Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 function getToken() { return localStorage.getItem("24ghanta_admin_token") || ""; }
+function slugify(s: string) { return s.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").trim(); }
 
 export default function EditArticlePage() {
   const router = useRouter();
@@ -26,6 +27,8 @@ export default function EditArticlePage() {
     display_order: "" as string,
     meta_title: "", meta_description: "", meta_keywords: "", tag_ids: [] as number[], published_at: "",
   });
+  const [newTagName, setNewTagName] = useState("");
+  const [isCreatingTag, setIsCreatingTag] = useState(false);
 
   useEffect(() => {
     const storedRole = localStorage.getItem("24ghanta_admin_role") === "author" ? "author" : "admin";
@@ -56,6 +59,33 @@ export default function EditArticlePage() {
 
   function update(key: string, val: any) { setForm(f => ({ ...f, [key]: val })); }
   function toggleTag(tid: number) { setForm(f => ({ ...f, tag_ids: f.tag_ids.includes(tid) ? f.tag_ids.filter(t => t !== tid) : [...f.tag_ids, tid] })); }
+
+  async function createTag(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newTagName.trim()) return;
+    setIsCreatingTag(true);
+    try {
+      const slug = slugify(newTagName);
+      const res = await fetch(`${API}/api/admin/tags`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+        body: JSON.stringify({ name: newTagName.trim(), slug })
+      });
+      if (res.ok) {
+        const newTag = await res.json();
+        setAllTags(prev => [...prev, newTag]);
+        setForm(f => ({ ...f, tag_ids: [...f.tag_ids, newTag.id] }));
+        setNewTagName("");
+      } else {
+        const d = await res.json();
+        alert(d.error || "Failed to create tag");
+      }
+    } catch (err) {
+      alert("Failed to create tag");
+    } finally {
+      setIsCreatingTag(false);
+    }
+  }
 
   async function handleSave(publish?: boolean) {
     setSaving(true); setError("");
@@ -141,6 +171,23 @@ export default function EditArticlePage() {
             <div className="flex flex-wrap gap-2">{allTags.map(t => (
               <button key={t.id} onClick={() => toggleTag(t.id)} className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${form.tag_ids.includes(t.id) ? "bg-red-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>{t.name}</button>
             ))}{allTags.length === 0 && <p className="text-xs text-gray-400">No tags yet.</p>}</div>
+            <form onSubmit={createTag} className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+                <input
+                  type="text"
+                  value={newTagName}
+                  onChange={e => setNewTagName(e.target.value)}
+                  placeholder="New tag name"
+                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-red-400"
+                />
+                <button
+                  type="submit"
+                  disabled={isCreatingTag || !newTagName.trim()}
+                  className="p-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                  title="Create tag"
+                >
+                  {isCreatingTag ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                </button>
+              </form>
           </div>
           {role !== "author" && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">

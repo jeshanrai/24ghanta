@@ -7,8 +7,6 @@ import {
   Download,
   Plus,
   Trash2,
-  ToggleLeft,
-  ToggleRight,
   ChevronLeft,
   ChevronRight,
   Users,
@@ -17,6 +15,7 @@ import {
   RefreshCw,
   X,
 } from "lucide-react";
+import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -378,23 +377,9 @@ export default function AdminSubscribers() {
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => handleToggle(sub.id)}
-                            className={`p-2 rounded-lg transition-colors ${
-                              sub.is_active
-                                ? "text-green-600 hover:bg-green-50"
-                                : "text-gray-400 hover:bg-gray-100"
-                            }`}
-                            title={
-                              sub.is_active ? "Deactivate" : "Activate"
-                            }
-                          >
-                            {sub.is_active ? (
-                              <ToggleRight className="w-5 h-5" />
-                            ) : (
-                              <ToggleLeft className="w-5 h-5" />
-                            )}
-                          </button>
+                          <div className="px-2" title={sub.is_active ? "Deactivate" : "Activate"}>
+                            <ToggleSwitch checked={sub.is_active} onChange={() => handleToggle(sub.id)} />
+                          </div>
                           <button
                             onClick={() => handleDelete(sub.id)}
                             className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -431,9 +416,9 @@ export default function AdminSubscribers() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <button onClick={() => handleToggle(sub.id)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100">
-                      {sub.is_active ? <ToggleRight className="w-4 h-4 text-green-600" /> : <ToggleLeft className="w-4 h-4" />}
-                    </button>
+                    <div className="px-2">
+                      <ToggleSwitch checked={sub.is_active} onChange={() => handleToggle(sub.id)} />
+                    </div>
                     <button onClick={() => handleDelete(sub.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50">
                       <Trash2 className="w-4 h-4" />
                     </button>
