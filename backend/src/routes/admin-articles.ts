@@ -1,9 +1,18 @@
 import { Router, Response } from 'express';
 import pool from '../db';
 import { requireAuth, AuthRequest } from '../middleware/auth';
+import { notifySubscribers } from '../mailer';
 
 const router = Router();
 router.use(requireAuth);
+
+/** Returns { where, params } that scope to author_id when the caller is an author. */
+async function ensureOwnership(req: AuthRequest, id: string | number): Promise<boolean> {
+  if (req.role !== 'author') return true;
+  const { rows } = await pool.query('SELECT author_id FROM articles WHERE id = $1', [id]);
+  if (rows.length === 0) return false;
+  return rows[0].author_id === req.authorId;
+}
 
 // GET / — list articles with pagination, search, filters
 router.get('/', async (req: AuthRequest, res: Response) => {
@@ -17,6 +26,13 @@ router.get('/', async (req: AuthRequest, res: Response) => {
   let where = 'WHERE 1=1';
   const params: any[] = [];
   let idx = 1;
+
+  // Authors only ever see their own articles
+  if (req.role === 'author') {
+    where += ` AND a.author_id = $${idx}`;
+    params.push(req.authorId);
+    idx++;
+  }
 
   if (search) { where += ` AND (a.title ILIKE $${idx} OR a.excerpt ILIKE $${idx})`; params.push(`%${search}%`); idx++; }
   if (categoryId) { where += ` AND a.category_id = $${idx}`; params.push(parseInt(categoryId)); idx++; }
@@ -43,6 +59,9 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
       `SELECT a.*, c.name as category_name, au.name as author_name FROM articles a
        LEFT JOIN categories c ON a.category_id = c.id LEFT JOIN authors au ON a.author_id = au.id WHERE a.id = $1`, [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ error: 'Article not found' });
+    if (req.role === 'author' && rows[0].author_id !== req.authorId) {
+      return res.status(403).json({ error: 'You can only access your own articles' });
+    }
     const tagRes = await pool.query(`SELECT t.id, t.name, t.slug FROM tags t INNER JOIN article_tags at ON t.id = at.tag_id WHERE at.article_id = $1`, [req.params.id]);
     res.json({ ...rows[0], tags: tagRes.rows });
   } catch (error) { console.error('Get article error:', error); res.status(500).json({ error: 'Internal server error' }); }
@@ -58,6 +77,12 @@ function parseDisplayOrder(v: unknown): number | null {
 router.post('/', async (req: AuthRequest, res: Response) => {
   const { title, slug, excerpt, content, category_id, author_id, image_url, image_alt, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords, tag_ids, published_at } = req.body;
   if (!title || !slug || !image_url) return res.status(400).json({ error: 'Title, slug, and image_url are required' });
+  // Authors can only write as themselves; admins can pick any author
+  const effectiveAuthorId = req.role === 'author' ? req.authorId : (author_id || null);
+  // Authors cannot self-feature, self-promote to breaking, or pin position
+  const effectiveFeatured = req.role === 'author' ? false : (is_featured || false);
+  const effectiveBreaking = req.role === 'author' ? false : (is_breaking || false);
+  const effectiveDisplayOrder = req.role === 'author' ? null : parseDisplayOrder(display_order);
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -66,13 +91,28 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     const { rows } = await client.query(
       `INSERT INTO articles (title, slug, excerpt, content, category_id, author_id, image_url, image_alt, published_at, updated_at, read_time_minutes, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),$10,$11,$12,$13,$14,$15,$16,$17) RETURNING *`,
-      [title, slug, excerpt, content, category_id || null, author_id || null, image_url, image_alt || '', pubAt, readTime, is_featured || false, is_breaking || false, is_published || false, parseDisplayOrder(display_order), meta_title || null, meta_description || null, meta_keywords || null]
+      [title, slug, excerpt, content, category_id || null, effectiveAuthorId, image_url, image_alt || '', pubAt, readTime, effectiveFeatured, effectiveBreaking, is_published || false, effectiveDisplayOrder, meta_title || null, meta_description || null, meta_keywords || null]
     );
     if (tag_ids?.length) {
       const vals = tag_ids.map((_: number, i: number) => `($1, $${i + 2})`).join(',');
       await client.query(`INSERT INTO article_tags (article_id, tag_id) VALUES ${vals}`, [rows[0].id, ...tag_ids]);
     }
     await client.query('COMMIT');
+    
+    // Notify subscribers if published
+    if (rows[0].is_published) {
+      const authorRes = await pool.query('SELECT name FROM authors WHERE id = $1', [rows[0].author_id]);
+      const categoryRes = rows[0].category_id ? await pool.query('SELECT name FROM categories WHERE id = $1', [rows[0].category_id]) : { rows: [] };
+      notifySubscribers({
+        title: rows[0].title,
+        slug: rows[0].slug,
+        excerpt: rows[0].excerpt,
+        image_url: rows[0].image_url,
+        category_name: categoryRes.rows[0]?.name,
+        author_name: authorRes.rows[0]?.name,
+      });
+    }
+    
     res.status(201).json(rows[0]);
   } catch (error: any) {
     await client.query('ROLLBACK');
@@ -85,13 +125,21 @@ router.post('/', async (req: AuthRequest, res: Response) => {
 router.put('/:id', async (req: AuthRequest, res: Response) => {
   const { title, slug, excerpt, content, category_id, author_id, image_url, image_alt, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords, tag_ids, published_at } = req.body;
   if (!title || !slug || !image_url) return res.status(400).json({ error: 'Title, slug, and image_url are required' });
+  if (!(await ensureOwnership(req, req.params.id))) {
+    return res.status(403).json({ error: 'You can only edit your own articles' });
+  }
+  // Authors cannot re-assign their articles or self-feature/break/pin
+  const effectiveAuthorId = req.role === 'author' ? req.authorId : (author_id || null);
+  const effectiveFeatured = req.role === 'author' ? false : (is_featured || false);
+  const effectiveBreaking = req.role === 'author' ? false : (is_breaking || false);
+  const effectiveDisplayOrder = req.role === 'author' ? null : parseDisplayOrder(display_order);
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const readTime = Math.max(1, Math.ceil((content || '').split(/\s+/).length / 200));
     const { rows } = await client.query(
       `UPDATE articles SET title=$1, slug=$2, excerpt=$3, content=$4, category_id=$5, author_id=$6, image_url=$7, image_alt=$8, published_at=$9, updated_at=NOW(), read_time_minutes=$10, is_featured=$11, is_breaking=$12, is_published=$13, display_order=$14, meta_title=$15, meta_description=$16, meta_keywords=$17 WHERE id=$18 RETURNING *`,
-      [title, slug, excerpt, content, category_id || null, author_id || null, image_url, image_alt || '', published_at || null, readTime, is_featured || false, is_breaking || false, is_published || false, parseDisplayOrder(display_order), meta_title || null, meta_description || null, meta_keywords || null, req.params.id]
+      [title, slug, excerpt, content, category_id || null, effectiveAuthorId, image_url, image_alt || '', published_at || null, readTime, effectiveFeatured, effectiveBreaking, is_published || false, effectiveDisplayOrder, meta_title || null, meta_description || null, meta_keywords || null, req.params.id]
     );
     if (rows.length === 0) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Article not found' }); }
     await client.query('DELETE FROM article_tags WHERE article_id = $1', [req.params.id]);
@@ -110,6 +158,9 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
 
 // DELETE /:id
 router.delete('/:id', async (req: AuthRequest, res: Response) => {
+  if (!(await ensureOwnership(req, req.params.id))) {
+    return res.status(403).json({ error: 'You can only delete your own articles' });
+  }
   try {
     const { rowCount } = await pool.query('DELETE FROM articles WHERE id = $1', [req.params.id]);
     if (rowCount === 0) return res.status(404).json({ error: 'Article not found' });
@@ -119,10 +170,28 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
 
 // PATCH /:id/toggle — toggle publish
 router.patch('/:id/toggle', async (req: AuthRequest, res: Response) => {
+  if (!(await ensureOwnership(req, req.params.id))) {
+    return res.status(403).json({ error: 'You can only toggle your own articles' });
+  }
   try {
     const { rows } = await pool.query(
       `UPDATE articles SET is_published = NOT is_published, published_at = CASE WHEN NOT is_published THEN COALESCE(published_at, NOW()) ELSE published_at END, updated_at = NOW() WHERE id = $1 RETURNING *`, [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ error: 'Article not found' });
+    
+    // Notify subscribers if it was just published
+    if (rows[0].is_published) {
+      const authorRes = await pool.query('SELECT name FROM authors WHERE id = $1', [rows[0].author_id]);
+      const categoryRes = rows[0].category_id ? await pool.query('SELECT name FROM categories WHERE id = $1', [rows[0].category_id]) : { rows: [] };
+      notifySubscribers({
+        title: rows[0].title,
+        slug: rows[0].slug,
+        excerpt: rows[0].excerpt,
+        image_url: rows[0].image_url,
+        category_name: categoryRes.rows[0]?.name,
+        author_name: authorRes.rows[0]?.name,
+      });
+    }
+
     res.json(rows[0]);
   } catch (error) { console.error('Toggle article error:', error); res.status(500).json({ error: 'Internal server error' }); }
 });

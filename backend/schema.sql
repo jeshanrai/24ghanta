@@ -12,8 +12,30 @@ CREATE TABLE IF NOT EXISTS admin_users (
 CREATE TABLE IF NOT EXISTS authors (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
-  avatar_url TEXT
+  avatar_url TEXT,
+  username TEXT UNIQUE,
+  email TEXT,
+  password_hash TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Back-compat ALTERs for DBs created before the credential columns existed
+ALTER TABLE authors ADD COLUMN IF NOT EXISTS username TEXT;
+ALTER TABLE authors ADD COLUMN IF NOT EXISTS email TEXT;
+ALTER TABLE authors ADD COLUMN IF NOT EXISTS password_hash TEXT;
+ALTER TABLE authors ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;
+ALTER TABLE authors ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();
+
+-- Unique constraint on username only if it doesn't exist yet
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'authors_username_key'
+  ) THEN
+    ALTER TABLE authors ADD CONSTRAINT authors_username_key UNIQUE (username);
+  END IF;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 CREATE TABLE IF NOT EXISTS categories (
   id SERIAL PRIMARY KEY,
@@ -76,6 +98,7 @@ CREATE TABLE IF NOT EXISTS videos (
   embed_url TEXT,
   duration_seconds INTEGER DEFAULT 0,
   category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
+  author_id INTEGER REFERENCES authors(id) ON DELETE SET NULL,
   published_at TIMESTAMP DEFAULT NOW(),
   views INTEGER DEFAULT 0,
   type TEXT DEFAULT 'video',
@@ -87,6 +110,8 @@ CREATE TABLE IF NOT EXISTS videos (
 );
 
 ALTER TABLE videos ADD COLUMN IF NOT EXISTS display_order INTEGER;
+ALTER TABLE videos ADD COLUMN IF NOT EXISTS author_id INTEGER REFERENCES authors(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_videos_author ON videos(author_id);
 
 CREATE TABLE IF NOT EXISTS video_tags (
   video_id INTEGER REFERENCES videos(id) ON DELETE CASCADE,

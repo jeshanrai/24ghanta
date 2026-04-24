@@ -34,6 +34,12 @@ export default function AdminLoginPage() {
 
       localStorage.setItem("24ghanta_admin_token", data.token);
       localStorage.setItem("24ghanta_admin_user", data.username);
+      localStorage.setItem("24ghanta_admin_role", data.role || "admin");
+      if (data.id != null) {
+        localStorage.setItem("24ghanta_admin_id", String(data.id));
+      } else {
+        localStorage.removeItem("24ghanta_admin_id");
+      }
       router.push("/admin");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Login failed");

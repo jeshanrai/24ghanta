@@ -1,9 +1,9 @@
 import { Router, Response } from 'express';
 import pool from '../db';
-import { requireAuth, AuthRequest } from '../middleware/auth';
+import { requireAdmin, AuthRequest } from '../middleware/auth';
 
 const router = Router();
-router.use(requireAuth);
+router.use(requireAdmin);
 
 // GET all trending items (admin view — includes inactive)
 router.get('/', async (_req: AuthRequest, res: Response) => {

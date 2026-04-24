@@ -14,6 +14,7 @@ import adminTagsRouter from './admin-tags';
 import adminVideosRouter from './admin-videos';
 import adminAuthorsRouter from './admin-authors';
 import adminTrendingRouter from './admin-trending';
+import adminNewsletterRouter from './admin-newsletter';
 
 const router = Router();
 
@@ -35,5 +36,6 @@ router.use('/admin/tags', adminTagsRouter);
 router.use('/admin/videos', adminVideosRouter);
 router.use('/admin/authors', adminAuthorsRouter);
 router.use('/admin/trending', adminTrendingRouter);
+router.use('/admin/newsletter', adminNewsletterRouter);
 
 export default router;

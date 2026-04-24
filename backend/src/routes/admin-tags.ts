@@ -1,11 +1,11 @@
 import { Router, Response } from 'express';
 import pool from '../db';
-import { requireAuth, AuthRequest } from '../middleware/auth';
+import { requireAuth, requireAdmin, AuthRequest } from '../middleware/auth';
 
 const router = Router();
-router.use(requireAuth);
 
-router.get('/', async (_req: AuthRequest, res: Response) => {
+// Authors can list tags (for the article form picker) but cannot mutate them.
+router.get('/', requireAuth, async (_req: AuthRequest, res: Response) => {
   try {
     const result = await pool.query(
       `SELECT t.*, COUNT(at.article_id) as article_count FROM tags t LEFT JOIN article_tags at ON t.id = at.tag_id GROUP BY t.id ORDER BY t.name`
@@ -14,7 +14,7 @@ router.get('/', async (_req: AuthRequest, res: Response) => {
   } catch (error) { console.error('List tags error:', error); res.status(500).json({ error: 'Internal server error' }); }
 });
 
-router.post('/', async (req: AuthRequest, res: Response) => {
+router.post('/', requireAdmin, async (req: AuthRequest, res: Response) => {
   const { name, slug, meta_title, meta_description } = req.body;
   if (!name || !slug) return res.status(400).json({ error: 'Name and slug are required' });
   try {
@@ -26,7 +26,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.put('/:id', async (req: AuthRequest, res: Response) => {
+router.put('/:id', requireAdmin, async (req: AuthRequest, res: Response) => {
   const { name, slug, meta_title, meta_description } = req.body;
   if (!name || !slug) return res.status(400).json({ error: 'Name and slug required' });
   try {
@@ -39,7 +39,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.delete('/:id', async (req: AuthRequest, res: Response) => {
+router.delete('/:id', requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const { rowCount } = await pool.query('DELETE FROM tags WHERE id = $1', [req.params.id]);
     if (rowCount === 0) return res.status(404).json({ error: 'Tag not found' });

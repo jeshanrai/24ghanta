@@ -18,6 +18,8 @@ export default function EditArticlePage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [showSeo, setShowSeo] = useState(false);
+  const [role, setRole] = useState<"admin" | "author">("admin");
+  const [currentAuthorId, setCurrentAuthorId] = useState<string>("");
   const [form, setForm] = useState({
     title: "", slug: "", excerpt: "", content: "", category_id: "", author_id: "",
     image_url: "", image_alt: "", is_featured: false, is_breaking: false, is_published: false,
@@ -26,6 +28,9 @@ export default function EditArticlePage() {
   });
 
   useEffect(() => {
+    const storedRole = localStorage.getItem("24ghanta_admin_role") === "author" ? "author" : "admin";
+    setRole(storedRole);
+    setCurrentAuthorId(localStorage.getItem("24ghanta_admin_id") || "");
     const h = { Authorization: `Bearer ${getToken()}` };
     Promise.all([
       fetch(`${API}/api/admin/categories`, { headers: h }).then(r => r.ok ? r.json() : []),
@@ -117,7 +122,15 @@ export default function EditArticlePage() {
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Category</label>
               <select value={form.category_id} onChange={e => update("category_id", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"><option value="">Select</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Author</label>
-              <select value={form.author_id} onChange={e => update("author_id", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"><option value="">Select</option>{authors.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
+              {role === "author" ? (
+                <div className="px-4 py-2.5 border border-gray-200 bg-gray-50 rounded-xl text-sm text-gray-700">
+                  {authors.find(a => String(a.id) === (form.author_id || currentAuthorId))?.name || "You"}
+                  <span className="ml-2 text-xs text-gray-400">(locked to your account)</span>
+                </div>
+              ) : (
+                <select value={form.author_id} onChange={e => update("author_id", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"><option value="">Select</option>{authors.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</select>
+              )}
+            </div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Image URL *</label>
               <input value={form.image_url} onChange={e => update("image_url", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20" /></div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Image Alt</label>
@@ -129,21 +142,23 @@ export default function EditArticlePage() {
               <button key={t.id} onClick={() => toggleTag(t.id)} className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${form.tag_ids.includes(t.id) ? "bg-red-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>{t.name}</button>
             ))}{allTags.length === 0 && <p className="text-xs text-gray-400">No tags yet.</p>}</div>
           </div>
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
-            <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={form.is_featured} onChange={e => update("is_featured", e.target.checked)} className="w-4 h-4 text-red-600 rounded" /><span className="text-sm text-gray-700">Featured Article</span></label>
-            <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={form.is_breaking} onChange={e => update("is_breaking", e.target.checked)} className="w-4 h-4 text-red-600 rounded" /><span className="text-sm text-gray-700">Breaking News</span></label>
-            <div className="pt-2 border-t border-gray-100">
-              <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Display Order</label>
-              <input
-                type="number"
-                value={form.display_order}
-                onChange={e => update("display_order", e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"
-                placeholder="Leave blank for newest-first"
-              />
-              <p className="text-xs text-gray-400 mt-1.5">Lower number = higher on the page. Blank = sort by published date.</p>
+          {role !== "author" && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
+              <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={form.is_featured} onChange={e => update("is_featured", e.target.checked)} className="w-4 h-4 text-red-600 rounded" /><span className="text-sm text-gray-700">Featured Article</span></label>
+              <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={form.is_breaking} onChange={e => update("is_breaking", e.target.checked)} className="w-4 h-4 text-red-600 rounded" /><span className="text-sm text-gray-700">Breaking News</span></label>
+              <div className="pt-2 border-t border-gray-100">
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Display Order</label>
+                <input
+                  type="number"
+                  value={form.display_order}
+                  onChange={e => update("display_order", e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                  placeholder="Leave blank for newest-first"
+                />
+                <p className="text-xs text-gray-400 mt-1.5">Lower number = higher on the page. Blank = sort by published date.</p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

@@ -11,22 +11,33 @@ function slugify(s: string) { return s.toLowerCase().replace(/[^a-z0-9\s-]/g, ""
 export default function NewVideoPage() {
   const router = useRouter();
   const [categories, setCategories] = useState<any[]>([]);
+  const [authors, setAuthors] = useState<any[]>([]);
   const [allTags, setAllTags] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [showSeo, setShowSeo] = useState(false);
+  const [role, setRole] = useState<"admin" | "author">("admin");
+  const [currentAuthorId, setCurrentAuthorId] = useState<string>("");
   const [form, setForm] = useState({
     title: "", slug: "", description: "", thumbnail_url: "", video_url: "", embed_url: "",
-    duration_seconds: 0, category_id: "", type: "video", is_published: false,
+    duration_seconds: 0, category_id: "", author_id: "", type: "video", is_published: false,
     meta_title: "", meta_description: "", meta_keywords: "", tag_ids: [] as number[],
   });
 
   useEffect(() => {
+    const storedRole = localStorage.getItem("24ghanta_admin_role") === "author" ? "author" : "admin";
+    const storedId = localStorage.getItem("24ghanta_admin_id") || "";
+    setRole(storedRole);
+    setCurrentAuthorId(storedId);
+    if (storedRole === "author" && storedId) {
+      setForm(f => ({ ...f, author_id: storedId }));
+    }
     const h = { Authorization: `Bearer ${getToken()}` };
     Promise.all([
       fetch(`${API}/api/admin/categories`, { headers: h }).then(r => r.ok ? r.json() : []),
+      fetch(`${API}/api/admin/authors`, { headers: h }).then(r => r.ok ? r.json() : []),
       fetch(`${API}/api/admin/tags`, { headers: h }).then(r => r.ok ? r.json() : []),
-    ]).then(([c, t]) => { setCategories(c); setAllTags(t); });
+    ]).then(([c, a, t]) => { setCategories(c); setAuthors(a); setAllTags(t); });
   }, []);
 
   function update(key: string, val: any) {
@@ -88,6 +99,18 @@ export default function NewVideoPage() {
               <input value={form.thumbnail_url} onChange={e => update("thumbnail_url", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20" placeholder="https://..." /></div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Category</label>
               <select value={form.category_id} onChange={e => update("category_id", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"><option value="">Select</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+            <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Author</label>
+              {role === "author" ? (
+                <div className="px-4 py-2.5 border border-gray-200 bg-gray-50 rounded-xl text-sm text-gray-700">
+                  {authors.find(a => String(a.id) === currentAuthorId)?.name || "You"}
+                  <span className="ml-2 text-xs text-gray-400">(locked)</span>
+                </div>
+              ) : (
+                <select value={form.author_id} onChange={e => update("author_id", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20">
+                  <option value="">Select author</option>{authors.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                </select>
+              )}
+            </div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Type</label>
               <select value={form.type} onChange={e => update("type", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20">
                 <option value="video">Video</option><option value="youtube">YouTube</option><option value="instagram">Instagram</option>

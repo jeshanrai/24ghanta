@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { LogOut, LayoutDashboard, FileText, Settings, ExternalLink, Menu, ShieldCheck, BarChart3, Video, Tag, UserPen } from "lucide-react";
+import { LogOut, LayoutDashboard, FileText, Settings, ExternalLink, Menu, BarChart3, Video, Tag, UserPen, Mail } from "lucide-react";
+
+type AdminRole = "admin" | "author";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState<string | null>(null);
+  const [role, setRole] = useState<AdminRole>("admin");
   const [checking, setChecking] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -20,8 +23,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (isLoginRoute) { setChecking(false); return; }
     const token = localStorage.getItem("24ghanta_admin_token");
     const username = localStorage.getItem("24ghanta_admin_user");
+    const storedRole = localStorage.getItem("24ghanta_admin_role");
     if (!token) { router.push("/admin/login"); return; }
+    const resolvedRole: AdminRole = storedRole === "author" ? "author" : "admin";
     setUser(username);
+    setRole(resolvedRole);
+
+    // Authors don't get access to admin-only sections — redirect them home.
+    const adminOnlyPrefixes = ["/admin/categories", "/admin/tags", "/admin/authors", "/admin/subscribers", "/admin/settings"];
+    if (resolvedRole === "author" && adminOnlyPrefixes.some(p => pathname === p || pathname.startsWith(p + "/"))) {
+      router.replace("/admin");
+      return;
+    }
+
     setChecking(false);
   }, [router, isLoginRoute, pathname]);
 
@@ -54,6 +68,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   function handleLogout() {
     localStorage.removeItem("24ghanta_admin_token");
     localStorage.removeItem("24ghanta_admin_user");
+    localStorage.removeItem("24ghanta_admin_role");
+    localStorage.removeItem("24ghanta_admin_id");
     router.push("/admin/login");
   }
 
@@ -67,15 +83,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  const navItems = [
+  const adminNav = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/articles", label: "Articles", icon: FileText },
     { href: "/admin/videos", label: "Videos", icon: Video },
     { href: "/admin/categories", label: "Categories", icon: BarChart3 },
     { href: "/admin/tags", label: "Tags", icon: Tag },
     { href: "/admin/authors", label: "Authors", icon: UserPen },
+    { href: "/admin/subscribers", label: "Subscribers", icon: Mail },
     { href: "/admin/settings", label: "Settings", icon: Settings },
   ];
+  const authorNav = [
+    { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/admin/articles", label: "My Articles", icon: FileText },
+    { href: "/admin/videos", label: "My Videos", icon: Video },
+  ];
+  const navItems = role === "author" ? authorNav : adminNav;
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex">
@@ -172,7 +195,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <div className="hidden sm:block text-sm">
                 <p className="font-semibold text-gray-900 leading-none">{user}</p>
-                <p className="text-gray-500 text-xs mt-1">Administrator</p>
+                <p className="text-gray-500 text-xs mt-1">{role === "author" ? "Author" : "Administrator"}</p>
               </div>
             </div>
             <button onClick={handleLogout} className="p-2 ml-1 sm:ml-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0" title="Logout">
