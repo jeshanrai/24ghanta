@@ -1,22 +1,54 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Poll as PollType } from '@/lib/data/polls';
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 interface PollProps {
-  poll: PollType;
+  poll?: PollType;
   compact?: boolean;
 }
 
-export function Poll({ poll, compact = false }: PollProps) {
+export function Poll({ poll: propPoll, compact = false }: PollProps) {
+  const [poll, setPoll] = useState<PollType | null>(propPoll ?? null);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
+  const [loading, setLoading] = useState(!propPoll);
 
-  const handleVote = (optionId: string) => {
-    if (hasVoted) return;
+  useEffect(() => {
+    if (propPoll) {
+      setPoll(propPoll);
+      return;
+    }
+    // Fetch active poll from API
+    fetch(`${API}/api/polls/active`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.data) setPoll(data.data);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [propPoll]);
+
+  const handleVote = async (optionId: string) => {
+    if (hasVoted || !poll) return;
     setSelectedOption(optionId);
     setHasVoted(true);
+    // Send vote to API
+    try {
+      await fetch(`${API}/api/polls/${poll.id}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ optionId: parseInt(optionId) }),
+      });
+    } catch {
+      // Vote recorded locally even if API fails
+    }
   };
+
+  if (loading) return null;
+  if (!poll) return null;
 
   const getPercentage = (votes: number): number => {
     if (poll.totalVotes === 0) return 0;
