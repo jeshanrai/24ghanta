@@ -8,6 +8,26 @@ import { notifySubscribers } from '../mailer';
 const router = Router();
 router.use(requireAuth);
 
+/**
+ * Fire-and-forget newsletter notification.
+ *
+ * `notifySubscribers` is async and we deliberately don't await it: publishing
+ * shouldn't block on email delivery. But that means any synchronous throw OR
+ * rejected promise becomes an unhandled rejection that could crash the worker.
+ *
+ * setImmediate detaches it from the request stack, and the .catch() guarantees
+ * a rejection always lands somewhere — never bubbles up to the process.
+ */
+function safeNotify(article: Parameters<typeof notifySubscribers>[0]): void {
+  setImmediate(() => {
+    Promise.resolve()
+      .then(() => notifySubscribers(article))
+      .catch((err) => {
+        console.error('❌ notifySubscribers crashed:', err);
+      });
+  });
+}
+
 /** Returns { where, params } that scope to author_id when the caller is an author. */
 async function ensureOwnership(req: AuthRequest, id: string | number): Promise<boolean> {
   if (req.role !== 'author') return true;
@@ -70,7 +90,7 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
 function parseDisplayOrder(v: unknown): number | null {
   if (v === null || v === undefined || v === '') return null;
   const n = typeof v === 'number' ? v : parseInt(String(v), 10);
-  return Number.isFinite(n) ? n : null;
+  return Number.isFinite(n) && n >= 0 ? n : null;
 }
 
 // POST / — create article
@@ -109,7 +129,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     if (rows[0].is_published) {
       const authorRes = await pool.query('SELECT name FROM authors WHERE id = $1', [rows[0].author_id]);
       const categoryRes = rows[0].category_id ? await pool.query('SELECT name FROM categories WHERE id = $1', [rows[0].category_id]) : { rows: [] };
-      notifySubscribers({
+      safeNotify({
         title: rows[0].title,
         slug: rows[0].slug,
         excerpt: rows[0].excerpt,
@@ -198,7 +218,7 @@ router.patch('/:id/toggle', async (req: AuthRequest, res: Response) => {
     if (rows[0].is_published) {
       const authorRes = await pool.query('SELECT name FROM authors WHERE id = $1', [rows[0].author_id]);
       const categoryRes = rows[0].category_id ? await pool.query('SELECT name FROM categories WHERE id = $1', [rows[0].category_id]) : { rows: [] };
-      notifySubscribers({
+      safeNotify({
         title: rows[0].title,
         slug: rows[0].slug,
         excerpt: rows[0].excerpt,

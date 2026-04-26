@@ -8,10 +8,23 @@ import { confirmAction } from "@/components/ui/ConfirmDialog";
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 function getToken() { return localStorage.getItem("24ghanta_admin_token") || ""; }
 
+const STATIC_CATEGORIES = [
+  { id: 1, name: "World" },
+  { id: 2, name: "India" },
+  { id: 3, name: "Politics" },
+  { id: 4, name: "Sports" },
+  { id: 5, name: "Entertainment" },
+  { id: 6, name: "Business" },
+  { id: 7, name: "Technology" },
+  { id: 8, name: "Health" },
+  { id: 9, name: "Lifestyle" },
+  { id: 10, name: "Science" },
+  { id: 11, name: "Gen Z" }
+];
+
 export default function ArticlesPage() {
   const [articles, setArticles] = useState<any[]>([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
-  const [categories, setCategories] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [catFilter, setCatFilter] = useState("");
@@ -30,8 +43,6 @@ export default function ArticlesPage() {
   }
 
   useEffect(() => {
-    fetch(`${API}/api/admin/categories`, { headers: { Authorization: `Bearer ${getToken()}` } })
-      .then(r => r.ok ? r.json() : []).then(setCategories).catch(() => {});
     load();
   }, []);
 
@@ -85,7 +96,7 @@ export default function ArticlesPage() {
             </select>
             <select value={catFilter} onChange={e => setCatFilter(e.target.value)} className="flex-1 sm:flex-none px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20">
               <option value="">All Categories</option>
-              {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {STATIC_CATEGORIES.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
         </div>

@@ -8,9 +8,22 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 function getToken() { return localStorage.getItem("24ghanta_admin_token") || ""; }
 function slugify(s: string) { return s.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").trim(); }
 
+const STATIC_CATEGORIES = [
+  { id: 1, name: "World" },
+  { id: 2, name: "India" },
+  { id: 3, name: "Politics" },
+  { id: 4, name: "Sports" },
+  { id: 5, name: "Entertainment" },
+  { id: 6, name: "Business" },
+  { id: 7, name: "Technology" },
+  { id: 8, name: "Health" },
+  { id: 9, name: "Lifestyle" },
+  { id: 10, name: "Science" },
+  { id: 11, name: "Gen Z" }
+];
+
 export default function NewArticlePage() {
   const router = useRouter();
-  const [categories, setCategories] = useState<any[]>([]);
   const [authors, setAuthors] = useState<any[]>([]);
   const [tags, setTags] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
@@ -38,10 +51,9 @@ export default function NewArticlePage() {
     }
     const h = { Authorization: `Bearer ${getToken()}` };
     Promise.all([
-      fetch(`${API}/api/admin/categories`, { headers: h }).then(r => r.ok ? r.json() : []),
       fetch(`${API}/api/admin/authors`, { headers: h }).then(r => r.ok ? r.json() : []),
       fetch(`${API}/api/admin/tags`, { headers: h }).then(r => r.ok ? r.json() : []),
-    ]).then(([c, a, t]) => { setCategories(c); setAuthors(a); setTags(t); });
+    ]).then(([a, t]) => { setAuthors(a); setTags(t); });
   }, []);
 
   function update(key: string, val: any) {
@@ -143,7 +155,7 @@ export default function NewArticlePage() {
           <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Category</label>
               <select value={form.category_id} onChange={e => update("category_id", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20">
-                <option value="">Select category</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                <option value="">Select category</option>{STATIC_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select></div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Author</label>
               {role === "author" ? (
@@ -198,12 +210,13 @@ export default function NewArticlePage() {
                 <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Display Order</label>
                 <input
                   type="number"
+                  min="0"
                   value={form.display_order}
                   onChange={e => update("display_order", e.target.value)}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"
-                  placeholder="Leave blank for newest-first"
+                  placeholder="e.g., 1"
                 />
-                <p className="text-xs text-gray-400 mt-1.5">Lower number = higher on the page. Blank = sort by published date.</p>
+                <p className="text-xs text-gray-400 mt-1.5">Lower number = higher on the page. Leave blank to sort by published date.</p>
               </div>
             </div>
           )}

@@ -9,11 +9,24 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 function getToken() { return localStorage.getItem("24ghanta_admin_token") || ""; }
 function slugify(s: string) { return s.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").trim(); }
 
+const STATIC_CATEGORIES = [
+  { id: 1, name: "World" },
+  { id: 2, name: "India" },
+  { id: 3, name: "Politics" },
+  { id: 4, name: "Sports" },
+  { id: 5, name: "Entertainment" },
+  { id: 6, name: "Business" },
+  { id: 7, name: "Technology" },
+  { id: 8, name: "Health" },
+  { id: 9, name: "Lifestyle" },
+  { id: 10, name: "Science" },
+  { id: 11, name: "Gen Z" }
+];
+
 export default function EditVideoPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
-  const [categories, setCategories] = useState<any[]>([]);
   const [authors, setAuthors] = useState<any[]>([]);
   const [allTags, setAllTags] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
@@ -36,12 +49,11 @@ export default function EditVideoPage() {
     setCurrentAuthorId(localStorage.getItem("24ghanta_admin_id") || "");
     const h = { Authorization: `Bearer ${getToken()}` };
     Promise.all([
-      fetch(`${API}/api/admin/categories`, { headers: h }).then(r => r.ok ? r.json() : []),
       fetch(`${API}/api/admin/authors`, { headers: h }).then(r => r.ok ? r.json() : []),
       fetch(`${API}/api/admin/tags`, { headers: h }).then(r => r.ok ? r.json() : []),
       fetch(`${API}/api/admin/videos/${id}`, { headers: h }).then(r => r.ok ? r.json() : null),
-    ]).then(([c, a, t, video]) => {
-      setCategories(c); setAuthors(a); setAllTags(t);
+    ]).then(([a, t, video]) => {
+      setAuthors(a); setAllTags(t);
       if (video) setForm({
         title: video.title || "", slug: video.slug || "", description: video.description || "",
         thumbnail_url: video.thumbnail_url || "", video_url: video.video_url || "", embed_url: video.embed_url || "",
@@ -167,7 +179,7 @@ export default function EditVideoPage() {
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Thumbnail URL *</label>
               <input value={form.thumbnail_url} onChange={e => update("thumbnail_url", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20" /></div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Category</label>
-              <select value={form.category_id} onChange={e => update("category_id", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"><option value="">Select</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+              <select value={form.category_id} onChange={e => update("category_id", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"><option value="">Select</option>{STATIC_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Author</label>
               {role === "author" ? (
                 <div className="px-4 py-2.5 border border-gray-200 bg-gray-50 rounded-xl text-sm text-gray-700">

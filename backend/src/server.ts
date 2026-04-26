@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import apiRoutes from './routes';
 import { applySchema } from './migrate';
 import { seedIfEmpty } from './seed';
+import rateLimit from 'express-rate-limit';
 
 // Load environment variables
 dotenv.config();
@@ -43,8 +44,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
+// ── Rate Limiting ──
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // Limit each IP to 1000 requests per windowMs
+  message: { error: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // ── API Routes ──
-app.use('/api', apiRoutes);
+app.use('/api', apiLimiter, apiRoutes);
 
 // ── Health Check ──
 app.get('/health', (_req, res) => {
