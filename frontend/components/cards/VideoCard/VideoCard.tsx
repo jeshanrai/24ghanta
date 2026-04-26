@@ -12,7 +12,7 @@ export function VideoCard({ video }: VideoCardProps) {
   return (
     <article className="group">
       <Link href={`/video/${video.slug}`} className="block">
-        <div className="shine-hover aspect-video relative overflow-hidden rounded-sm">
+        <div className="shine-hover aspect-video relative overflow-hidden rounded-md shadow-sm group-hover:shadow-lg transition-shadow duration-500">
           <OptimizedImage
             src={video.thumbnailUrl}
             alt={video.title}
@@ -24,7 +24,7 @@ export function VideoCard({ video }: VideoCardProps) {
           <DurationBadge seconds={video.durationSeconds} />
         </div>
         <div className="mt-3">
-          <h3 className="font-headline text-h3 text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors duration-200 line-clamp-2">
+          <h3 className="font-headline text-h3 text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors duration-200 line-clamp-2 leading-snug">
             {video.title}
           </h3>
         </div>

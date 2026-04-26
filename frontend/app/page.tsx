@@ -46,7 +46,7 @@ export default async function HomePage() {
 
   return (
     <div>
-      <div className="container py-6">
+      <div className="container pt-6 pb-10">
         {heroArticles.length > 0 ? (
           <HeroSection
             heroArticles={heroArticles}
@@ -59,27 +59,25 @@ export default async function HomePage() {
             message="Articles created in the admin panel will appear here as soon as they're published."
           />
         )}
-
-        <div className="section-divider my-8" />
-
-        {videos.length > 0 && <VideoSection videos={videos} />}
       </div>
+
+      {videos.length > 0 && (
+        <div className="bg-[var(--color-surface)] border-y border-[var(--color-border)]">
+          <div className="container py-12">
+            <VideoSection videos={videos} />
+          </div>
+        </div>
+      )}
 
       {shortStories.length > 0 && <ShortStoriesSection videos={shortStories} />}
 
-      <div className="container py-6">
+      <div className="container py-12 space-y-12">
         {sportsCategory && sportsArticles.length > 0 && (
-          <>
-            <CategorySection category={sportsCategory} articles={sportsArticles} />
-            <div className="section-divider my-8" />
-          </>
+          <CategorySection category={sportsCategory} articles={sportsArticles} />
         )}
 
         {businessCategory && businessArticles.length > 0 && (
-          <>
-            <CategorySection category={businessCategory} articles={businessArticles} />
-            <div className="section-divider my-8" />
-          </>
+          <CategorySection category={businessCategory} articles={businessArticles} />
         )}
 
         {entertainmentCategory && entertainmentArticles.length > 0 && (

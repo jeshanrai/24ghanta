@@ -17,7 +17,7 @@ export function ArticleCardMedium({
   return (
     <article className="group">
       <Link href={`/article/${article.slug}`} className="block">
-        <div className="shine-hover aspect-video relative overflow-hidden rounded-sm">
+        <div className="shine-hover aspect-video relative overflow-hidden rounded-md shadow-sm group-hover:shadow-md transition-shadow duration-500">
           <OptimizedImage
             src={article.imageUrl}
             alt={article.imageAlt}
@@ -25,24 +25,24 @@ export function ArticleCardMedium({
             containerClassName="w-full h-full relative"
             className="group-hover:scale-[1.06] transition-transform duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
           />
-        </div>
-        <div className="mt-3">
           {showCategory && (
-            <Badge color={article.category.color} className="mb-2">
-              {article.category.name}
-            </Badge>
+            <div className="absolute top-3 left-3 z-10">
+              <Badge color={article.category.color}>{article.category.name}</Badge>
+            </div>
           )}
-          <h3 className="font-headline text-h2 text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors duration-300 line-clamp-3">
+        </div>
+        <div className="mt-4">
+          <h3 className="font-headline text-h2 text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors duration-300 line-clamp-3 leading-snug">
             {article.title}
           </h3>
           {showExcerpt && article.excerpt && (
-            <p className="mt-2 text-small text-[var(--color-text-secondary)] line-clamp-2">
+            <p className="mt-2 text-small text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
               {article.excerpt}
             </p>
           )}
-          <div className="mt-3 flex items-center gap-3 text-xs text-[var(--color-text-muted)]">
+          <div className="mt-3 flex items-center gap-2 text-xs text-[var(--color-text-muted)] font-medium">
             <span>{formatDate(article.publishedAt)}</span>
-            <span>•</span>
+            <span className="w-1 h-1 rounded-full bg-[var(--color-text-muted)]" />
             <span>{formatReadTimeShort(article.readTimeMinutes)}</span>
           </div>
         </div>
