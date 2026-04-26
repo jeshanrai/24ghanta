@@ -1,7 +1,49 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { trendingTopics } from '@/lib/constants';
 import { TrendingLink } from './TrendingLink';
 
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
+interface Topic {
+  id: string;
+  label: string;
+  href: string;
+  badge: string | null;
+}
+
+const fallbackTopics: Topic[] = trendingTopics.map(t => ({ ...t, badge: null }));
+
 export function TrendingBar() {
+  const [topics, setTopics] = useState<Topic[]>(fallbackTopics);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API}/api/trending`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(payload => {
+        if (cancelled) return;
+        const items = payload?.data ?? [];
+        if (items.length > 0) {
+          setTopics(
+            items.map((i: { id: number; label: string; href: string; badge: string | null }) => ({
+              id: String(i.id),
+              label: i.label,
+              href: i.href,
+              badge: i.badge,
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (topics.length === 0) return null;
+
   return (
     <div className="bg-[var(--color-surface)] border-b border-[var(--color-border)] animate-fade-in-down">
       <div className="container">
@@ -14,14 +56,21 @@ export function TrendingBar() {
             Trending:
           </span>
           <div className="flex items-center gap-4">
-            {trendingTopics.map((topic, index) => (
+            {topics.map((topic, index) => (
               <div
                 key={topic.id}
                 className="flex items-center gap-4 animate-fade-in-left"
                 style={{ animationDelay: `${index * 60}ms` }}
               >
-                <TrendingLink topic={topic} />
-                {index < trendingTopics.length - 1 && (
+                <div className="flex items-center gap-1.5">
+                  {topic.badge && (
+                    <span className="px-1.5 py-0.5 rounded-sm bg-[var(--color-primary)] text-white text-[10px] font-bold uppercase tracking-wide whitespace-nowrap">
+                      {topic.badge}
+                    </span>
+                  )}
+                  <TrendingLink topic={{ id: topic.id, label: topic.label, href: topic.href }} />
+                </div>
+                {index < topics.length - 1 && (
                   <span className="text-[var(--color-border-dark)]">•</span>
                 )}
               </div>

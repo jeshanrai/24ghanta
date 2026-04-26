@@ -104,3 +104,15 @@ export async function fetchCategoryBySlug(slug: string): Promise<Category | null
 export async function fetchActivePoll(): Promise<Poll | null> {
   return api<Poll>('/api/polls/active');
 }
+
+// ── Trending ───────────────────────────────────────────
+export interface TrendingItem {
+  id: number;
+  label: string;
+  href: string;
+  badge: string | null;
+}
+
+export async function fetchTrendingItems(): Promise<TrendingItem[]> {
+  return (await api<TrendingItem[]>('/api/trending')) ?? [];
+}

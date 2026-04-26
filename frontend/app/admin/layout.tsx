@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { LogOut, LayoutDashboard, FileText, Settings, ExternalLink, Menu, BarChart3, Video, Tag, UserPen, Mail, Vote } from "lucide-react";
+import { LogOut, LayoutDashboard, FileText, Settings, ExternalLink, Menu, BarChart3, Video, Tag, UserPen, Mail, Vote, TrendingUp } from "lucide-react";
 import { ConfirmDialogProvider } from "@/components/ui/ConfirmDialog";
 
 type AdminRole = "admin" | "author";
@@ -31,7 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setRole(resolvedRole);
 
     // Authors don't get access to admin-only sections — redirect them home.
-    const adminOnlyPrefixes = ["/admin/categories", "/admin/tags", "/admin/authors", "/admin/subscribers", "/admin/polls", "/admin/settings"];
+    const adminOnlyPrefixes = ["/admin/categories", "/admin/tags", "/admin/authors", "/admin/subscribers", "/admin/polls", "/admin/trending", "/admin/settings"];
     if (resolvedRole === "author" && adminOnlyPrefixes.some(p => pathname === p || pathname.startsWith(p + "/"))) {
       router.replace("/admin");
       return;
@@ -93,6 +93,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/authors", label: "Authors", icon: UserPen },
     { href: "/admin/subscribers", label: "Subscribers", icon: Mail },
     { href: "/admin/polls", label: "Polls", icon: Vote },
+    { href: "/admin/trending", label: "Trending Bar", icon: TrendingUp },
     { href: "/admin/settings", label: "Settings", icon: Settings },
   ];
   const authorNav = [
