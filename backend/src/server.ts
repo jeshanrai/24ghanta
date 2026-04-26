@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
@@ -58,6 +58,33 @@ app.get('/health', (_req, res) => {
 // ── 404 Handler ──
 app.use((_req, res) => {
   res.status(404).json({ error: 'Route not found' });
+});
+
+// ── Global Error Handler ──
+// Catches synchronous throws AND rejected promises bubbled up from async
+// handlers. Without this, an unhandled rejection would crash the entire process.
+// Note: Express requires the 4-arg signature for error middleware.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
+  // CORS rejection — surface as 403 rather than 500
+  if (err instanceof Error && err.message.startsWith('CORS:')) {
+    return res.status(403).json({ error: err.message });
+  }
+
+  console.error('[unhandled]', req.method, req.originalUrl, err);
+
+  // Don't leak internals to clients
+  if (!res.headersSent) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Last-ditch process-level safety nets — log instead of crashing the worker.
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[uncaughtException]', err);
 });
 
 // ── Start Server ──

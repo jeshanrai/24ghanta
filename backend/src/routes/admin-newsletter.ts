@@ -1,15 +1,14 @@
 import { Router, Response } from 'express';
 import pool from '../db';
 import { requireAdmin, AuthRequest } from '../middleware/auth';
+import { parsePagination } from '../utils/pagination';
 
 const router = Router();
 router.use(requireAdmin);
 
 // GET / — list all subscribers with pagination, search, filters
 router.get('/', async (req: AuthRequest, res: Response) => {
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 20;
-  const offset = (page - 1) * limit;
+  const { page, limit, offset } = parsePagination(req.query);
   const search = req.query.search as string;
   const status = req.query.status as string; // 'active' | 'inactive'
 

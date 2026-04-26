@@ -13,7 +13,7 @@ interface SocialLinksProps {
 
 export function SocialLinks({ centered = false }: SocialLinksProps) {
   return (
-    <div className={`flex items-center gap-4 ${centered ? 'justify-center' : ''}`}>
+    <div className={`flex items-center gap-3 ${centered ? 'justify-center mt-4' : 'mt-2'}`}>
       {socialLinks.map((social) => {
         const Icon = social.icon;
         return (
@@ -23,9 +23,9 @@ export function SocialLinks({ centered = false }: SocialLinksProps) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={social.label}
-            className="text-gray-400 hover:text-white transition-colors duration-200"
+            className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-white/10 text-gray-400 hover:text-white hover:border-white/40 hover:bg-white/5 transition-all duration-200"
           >
-            <Icon size={18} className="md:w-5 md:h-5" />
+            <Icon size={18} />
           </a>
         );
       })}
