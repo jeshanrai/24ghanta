@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
 import {
   fetchArticleBySlug,
@@ -13,7 +12,7 @@ import {
   formatReadTime,
   buildArticleBody,
 } from '@/lib/utils';
-import { Badge, ShareButtons } from '@/components/ui';
+import { Badge, ShareButtons, SafeImage } from '@/components/ui';
 import { ArticleCardList } from '@/components/cards';
 
 export const revalidate = 30;
@@ -92,7 +91,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-6 border-b border-[var(--color-border)]">
             <div className="flex items-center gap-4">
               {article.author.avatarUrl && (
-                <Image
+                <SafeImage
                   src={article.author.avatarUrl}
                   alt={article.author.name}
                   width={48}
@@ -117,7 +116,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           {/* Featured Image */}
           <figure className="mb-8">
             <div className="relative aspect-video rounded-lg overflow-hidden">
-              <Image
+              <SafeImage
                 src={article.imageUrl}
                 alt={article.imageAlt}
                 fill

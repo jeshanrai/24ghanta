@@ -1,6 +1,6 @@
 'use client';
 
-import Image from 'next/image';
+import { SafeImage as Image } from '@/components/ui';
 import { useState } from 'react';
 import type { LocalMedia } from '@/lib/data/upliftLocalMedia';
 

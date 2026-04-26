@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
+import { SafeImage as Image } from '@/components/ui';
 import { ReactionBar } from './ReactionBar';
 import { formatDate } from '@/lib/utils';
 

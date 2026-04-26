@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { isValidImageSrc } from '@/lib/safeImage';
 
 interface OptimizedImageProps {
   src: string;
@@ -30,7 +31,9 @@ export function OptimizedImage({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
-  if (hasError) {
+  const srcInvalid = !isValidImageSrc(src);
+
+  if (hasError || srcInvalid) {
     return (
       <div
         className={cn(
