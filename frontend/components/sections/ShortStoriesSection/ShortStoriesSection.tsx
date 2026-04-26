@@ -30,7 +30,7 @@ export function ShortStoriesSection({
 
   return (
     <>
-      <section className="relative bg-[#1a1a1a] -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-10 overflow-hidden">
+      <section className="relative bg-[#1a1a1a] px-4 sm:px-6 lg:px-8 py-10 overflow-hidden">
         <div
           className="pointer-events-none absolute -top-24 -left-24 h-64 w-64 rounded-full opacity-20 blur-3xl"
           style={{ background: 'var(--color-primary)' }}
