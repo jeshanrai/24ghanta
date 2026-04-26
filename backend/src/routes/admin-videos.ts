@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import pool from '../db';
 import { requireAuth, AuthRequest } from '../middleware/auth';
+import { loadAuthorPerms } from '../utils/authorPerms';
 
 const router = Router();
 router.use(requireAuth);
@@ -85,7 +86,12 @@ router.post('/', async (req: AuthRequest, res: Response) => {
   const { title, slug, description, thumbnail_url, video_url, embed_url, duration_seconds, category_id, author_id, type, is_published, meta_title, meta_description, meta_keywords, tag_ids, published_at } = req.body;
   if (!title || !slug || !thumbnail_url) return res.status(400).json({ error: 'Title, slug, and thumbnail_url are required' });
 
+  const perms = req.role === 'author' ? await loadAuthorPerms(req.authorId!) : null;
+  if (req.role === 'author' && !perms?.can_create_videos) {
+    return res.status(403).json({ error: 'You do not have permission to create videos' });
+  }
   const effectiveAuthorId = req.role === 'author' ? req.authorId : (author_id || null);
+  const effectivePublished = req.role === 'author' ? (perms?.can_publish ? !!is_published : false) : !!is_published;
 
   const client = await pool.connect();
   try {
@@ -100,7 +106,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
       [
         title, slug, description, thumbnail_url, video_url || null, embed_url || null,
         duration_seconds || 0, category_id || null, effectiveAuthorId,
-        published_at || new Date().toISOString(), type || 'video', is_published || false,
+        published_at || new Date().toISOString(), type || 'video', effectivePublished,
         meta_title || null, meta_description || null, meta_keywords || null,
       ]
     );
@@ -129,7 +135,9 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     return res.status(403).json({ error: 'You can only edit your own videos' });
   }
 
+  const perms = req.role === 'author' ? await loadAuthorPerms(req.authorId!) : null;
   const effectiveAuthorId = req.role === 'author' ? req.authorId : (author_id || null);
+  const effectivePublished = req.role === 'author' ? (perms?.can_publish ? !!is_published : false) : !!is_published;
 
   const client = await pool.connect();
   try {
@@ -144,7 +152,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
       [
         title, slug, description, thumbnail_url, video_url || null, embed_url || null,
         duration_seconds || 0, category_id || null, effectiveAuthorId,
-        published_at || null, type || 'video', is_published || false,
+        published_at || null, type || 'video', effectivePublished,
         meta_title || null, meta_description || null, meta_keywords || null, req.params.id,
       ]
     );
@@ -173,6 +181,10 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
 router.delete('/:id', async (req: AuthRequest, res: Response) => {
   if (!(await ensureOwnership(req, req.params.id))) {
     return res.status(403).json({ error: 'You can only delete your own videos' });
+  }
+  if (req.role === 'author') {
+    const perms = await loadAuthorPerms(req.authorId!);
+    if (!perms?.can_delete_own) return res.status(403).json({ error: 'You do not have permission to delete content' });
   }
   try {
     const { rowCount } = await pool.query('DELETE FROM videos WHERE id = $1', [req.params.id]);

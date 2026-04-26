@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import pool from '../db';
 import { requireAuth, requireAdmin, AuthRequest } from '../middleware/auth';
+import { loadAuthorPerms } from '../utils/authorPerms';
 
 const router = Router();
 
@@ -17,6 +18,10 @@ router.get('/', requireAuth, async (_req: AuthRequest, res: Response) => {
 router.post('/', requireAuth, async (req: AuthRequest, res: Response) => {
   const { name, slug, meta_title, meta_description } = req.body;
   if (!name || !slug) return res.status(400).json({ error: 'Name and slug are required' });
+  if (req.role === 'author') {
+    const perms = await loadAuthorPerms(req.authorId!);
+    if (!perms?.can_create_tags) return res.status(403).json({ error: 'You do not have permission to create tags' });
+  }
   try {
     const { rows } = await pool.query('INSERT INTO tags (name, slug, meta_title, meta_description) VALUES ($1,$2,$3,$4) RETURNING *', [name, slug, meta_title || null, meta_description || null]);
     res.status(201).json(rows[0]);

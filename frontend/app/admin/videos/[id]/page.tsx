@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Save, Globe, Trash2, Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { confirmAction } from "@/components/ui/ConfirmDialog";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 function getToken() { return localStorage.getItem("24ghanta_admin_token") || ""; }
@@ -85,6 +86,18 @@ export default function EditVideoPage() {
   }
 
   async function handleSave(publish?: boolean) {
+    if (publish !== undefined && publish !== form.is_published) {
+      const goingLive = publish === true;
+      const ok = await confirmAction({
+        title: goingLive ? "Publish video?" : "Unpublish video?",
+        message: goingLive
+          ? "This video will become visible on the public site."
+          : "This video will be hidden from the public site.",
+        confirmLabel: goingLive ? "Publish" : "Unpublish",
+        variant: goingLive ? "info" : "warning",
+      });
+      if (!ok) return;
+    }
     setSaving(true); setError("");
     const body = { ...form, is_published: publish !== undefined ? publish : form.is_published };
     try {
@@ -95,7 +108,13 @@ export default function EditVideoPage() {
   }
 
   async function handleDelete() {
-    if (!confirm("Permanently delete this video?")) return;
+    const ok = await confirmAction({
+      title: "Delete video?",
+      message: <>This will permanently delete <span className="font-semibold">{form.title || "this video"}</span>. This action cannot be undone.</>,
+      confirmLabel: "Delete",
+      variant: "danger",
+    });
+    if (!ok) return;
     await fetch(`${API}/api/admin/videos/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${getToken()}` } });
     router.push("/admin/videos");
   }

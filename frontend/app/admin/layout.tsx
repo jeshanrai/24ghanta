@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { LogOut, LayoutDashboard, FileText, Settings, ExternalLink, Menu, BarChart3, Video, Tag, UserPen, Mail, Vote } from "lucide-react";
+import { ConfirmDialogProvider } from "@/components/ui/ConfirmDialog";
 
 type AdminRole = "admin" | "author";
 
@@ -73,7 +74,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push("/admin/login");
   }
 
-  if (isLoginRoute) return <>{children}</>;
+  if (isLoginRoute) return <><ConfirmDialogProvider />{children}</>;
 
   if (checking) {
     return (
@@ -209,6 +210,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {children}
         </main>
       </div>
+      <ConfirmDialogProvider />
     </div>
   );
 }

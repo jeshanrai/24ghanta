@@ -17,6 +17,13 @@ CREATE TABLE IF NOT EXISTS authors (
   email TEXT,
   password_hash TEXT,
   is_active BOOLEAN DEFAULT TRUE,
+  can_publish BOOLEAN DEFAULT TRUE,
+  can_create_articles BOOLEAN DEFAULT TRUE,
+  can_create_videos BOOLEAN DEFAULT TRUE,
+  can_delete_own BOOLEAN DEFAULT TRUE,
+  can_feature_articles BOOLEAN DEFAULT FALSE,
+  can_mark_breaking BOOLEAN DEFAULT FALSE,
+  can_create_tags BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -25,6 +32,13 @@ ALTER TABLE authors ADD COLUMN IF NOT EXISTS username TEXT;
 ALTER TABLE authors ADD COLUMN IF NOT EXISTS email TEXT;
 ALTER TABLE authors ADD COLUMN IF NOT EXISTS password_hash TEXT;
 ALTER TABLE authors ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE;
+ALTER TABLE authors ADD COLUMN IF NOT EXISTS can_publish BOOLEAN DEFAULT TRUE;
+ALTER TABLE authors ADD COLUMN IF NOT EXISTS can_create_articles BOOLEAN DEFAULT TRUE;
+ALTER TABLE authors ADD COLUMN IF NOT EXISTS can_create_videos BOOLEAN DEFAULT TRUE;
+ALTER TABLE authors ADD COLUMN IF NOT EXISTS can_delete_own BOOLEAN DEFAULT TRUE;
+ALTER TABLE authors ADD COLUMN IF NOT EXISTS can_feature_articles BOOLEAN DEFAULT FALSE;
+ALTER TABLE authors ADD COLUMN IF NOT EXISTS can_mark_breaking BOOLEAN DEFAULT FALSE;
+ALTER TABLE authors ADD COLUMN IF NOT EXISTS can_create_tags BOOLEAN DEFAULT TRUE;
 ALTER TABLE authors ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();
 
 -- Unique constraint on username only if it doesn't exist yet

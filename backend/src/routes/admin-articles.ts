@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import pool from '../db';
 import { requireAuth, AuthRequest } from '../middleware/auth';
+import { loadAuthorPerms } from '../utils/authorPerms';
 import { notifySubscribers } from '../mailer';
 
 const router = Router();
@@ -77,21 +78,27 @@ function parseDisplayOrder(v: unknown): number | null {
 router.post('/', async (req: AuthRequest, res: Response) => {
   const { title, slug, excerpt, content, category_id, author_id, image_url, image_alt, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords, tag_ids, published_at } = req.body;
   if (!title || !slug || !image_url) return res.status(400).json({ error: 'Title, slug, and image_url are required' });
+  // Author permission gates
+  const perms = req.role === 'author' ? await loadAuthorPerms(req.authorId!) : null;
+  if (req.role === 'author' && !perms?.can_create_articles) {
+    return res.status(403).json({ error: 'You do not have permission to create articles' });
+  }
   // Authors can only write as themselves; admins can pick any author
   const effectiveAuthorId = req.role === 'author' ? req.authorId : (author_id || null);
-  // Authors cannot self-feature, self-promote to breaking, or pin position
-  const effectiveFeatured = req.role === 'author' ? false : (is_featured || false);
-  const effectiveBreaking = req.role === 'author' ? false : (is_breaking || false);
+  // Authors gated by per-account toggles for feature / breaking / publish; pin position is admin-only
+  const effectiveFeatured = req.role === 'author' ? (perms?.can_feature_articles ? !!is_featured : false) : (is_featured || false);
+  const effectiveBreaking = req.role === 'author' ? (perms?.can_mark_breaking ? !!is_breaking : false) : (is_breaking || false);
   const effectiveDisplayOrder = req.role === 'author' ? null : parseDisplayOrder(display_order);
+  const effectivePublished = req.role === 'author' ? (perms?.can_publish ? !!is_published : false) : !!is_published;
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const readTime = Math.max(1, Math.ceil((content || '').split(/\s+/).length / 200));
-    const pubAt = is_published ? (published_at || new Date().toISOString()) : published_at || null;
+    const pubAt = effectivePublished ? (published_at || new Date().toISOString()) : published_at || null;
     const { rows } = await client.query(
       `INSERT INTO articles (title, slug, excerpt, content, category_id, author_id, image_url, image_alt, published_at, updated_at, read_time_minutes, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),$10,$11,$12,$13,$14,$15,$16,$17) RETURNING *`,
-      [title, slug, excerpt, content, category_id || null, effectiveAuthorId, image_url, image_alt || '', pubAt, readTime, effectiveFeatured, effectiveBreaking, is_published || false, effectiveDisplayOrder, meta_title || null, meta_description || null, meta_keywords || null]
+      [title, slug, excerpt, content, category_id || null, effectiveAuthorId, image_url, image_alt || '', pubAt, readTime, effectiveFeatured, effectiveBreaking, effectivePublished, effectiveDisplayOrder, meta_title || null, meta_description || null, meta_keywords || null]
     );
     if (tag_ids?.length) {
       const vals = tag_ids.map((_: number, i: number) => `($1, $${i + 2})`).join(',');
@@ -128,18 +135,20 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   if (!(await ensureOwnership(req, req.params.id))) {
     return res.status(403).json({ error: 'You can only edit your own articles' });
   }
-  // Authors cannot re-assign their articles or self-feature/break/pin
+  const perms = req.role === 'author' ? await loadAuthorPerms(req.authorId!) : null;
+  // Authors cannot re-assign their articles; feature/break/publish gated by per-account toggles
   const effectiveAuthorId = req.role === 'author' ? req.authorId : (author_id || null);
-  const effectiveFeatured = req.role === 'author' ? false : (is_featured || false);
-  const effectiveBreaking = req.role === 'author' ? false : (is_breaking || false);
+  const effectiveFeatured = req.role === 'author' ? (perms?.can_feature_articles ? !!is_featured : false) : (is_featured || false);
+  const effectiveBreaking = req.role === 'author' ? (perms?.can_mark_breaking ? !!is_breaking : false) : (is_breaking || false);
   const effectiveDisplayOrder = req.role === 'author' ? null : parseDisplayOrder(display_order);
+  const effectivePublished = req.role === 'author' ? (perms?.can_publish ? !!is_published : false) : !!is_published;
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     const readTime = Math.max(1, Math.ceil((content || '').split(/\s+/).length / 200));
     const { rows } = await client.query(
       `UPDATE articles SET title=$1, slug=$2, excerpt=$3, content=$4, category_id=$5, author_id=$6, image_url=$7, image_alt=$8, published_at=$9, updated_at=NOW(), read_time_minutes=$10, is_featured=$11, is_breaking=$12, is_published=$13, display_order=$14, meta_title=$15, meta_description=$16, meta_keywords=$17 WHERE id=$18 RETURNING *`,
-      [title, slug, excerpt, content, category_id || null, effectiveAuthorId, image_url, image_alt || '', published_at || null, readTime, effectiveFeatured, effectiveBreaking, is_published || false, effectiveDisplayOrder, meta_title || null, meta_description || null, meta_keywords || null, req.params.id]
+      [title, slug, excerpt, content, category_id || null, effectiveAuthorId, image_url, image_alt || '', published_at || null, readTime, effectiveFeatured, effectiveBreaking, effectivePublished, effectiveDisplayOrder, meta_title || null, meta_description || null, meta_keywords || null, req.params.id]
     );
     if (rows.length === 0) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Article not found' }); }
     await client.query('DELETE FROM article_tags WHERE article_id = $1', [req.params.id]);
@@ -161,6 +170,10 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
   if (!(await ensureOwnership(req, req.params.id))) {
     return res.status(403).json({ error: 'You can only delete your own articles' });
   }
+  if (req.role === 'author') {
+    const perms = await loadAuthorPerms(req.authorId!);
+    if (!perms?.can_delete_own) return res.status(403).json({ error: 'You do not have permission to delete content' });
+  }
   try {
     const { rowCount } = await pool.query('DELETE FROM articles WHERE id = $1', [req.params.id]);
     if (rowCount === 0) return res.status(404).json({ error: 'Article not found' });
@@ -172,6 +185,10 @@ router.delete('/:id', async (req: AuthRequest, res: Response) => {
 router.patch('/:id/toggle', async (req: AuthRequest, res: Response) => {
   if (!(await ensureOwnership(req, req.params.id))) {
     return res.status(403).json({ error: 'You can only toggle your own articles' });
+  }
+  if (req.role === 'author') {
+    const perms = await loadAuthorPerms(req.authorId!);
+    if (!perms?.can_publish) return res.status(403).json({ error: 'You do not have permission to publish content' });
   }
   try {
     const { rows } = await pool.query(

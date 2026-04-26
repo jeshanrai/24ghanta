@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, X, Check } from "lucide-react";
+import { confirmAction } from "@/components/ui/ConfirmDialog";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 function getToken() { return localStorage.getItem("24ghanta_admin_token") || ""; }
@@ -38,7 +39,15 @@ export default function TagsPage() {
   }
 
   async function remove(id: number) {
-    if (!confirm("Delete this tag?")) return;
+    const tag = items.find(t => t.id === id);
+    const count = tag?.article_count || 0;
+    const ok = await confirmAction({
+      title: "Delete tag?",
+      message: <>This will permanently delete the tag <span className="font-semibold">{tag?.name || ""}</span>{count > 0 ? <> and remove it from <span className="font-semibold">{count} article{count === 1 ? "" : "s"}</span></> : null}.</>,
+      confirmLabel: "Delete",
+      variant: "danger",
+    });
+    if (!ok) return;
     await fetch(`${API}/api/admin/tags/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${getToken()}` } });
     load();
   }

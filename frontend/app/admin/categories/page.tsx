@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, X, Check } from "lucide-react";
+import { confirmAction } from "@/components/ui/ConfirmDialog";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 function getToken() { return localStorage.getItem("24ghanta_admin_token") || ""; }
@@ -50,7 +51,14 @@ export default function CategoriesPage() {
   }
 
   async function remove(id: number) {
-    if (!confirm("Delete this category?")) return;
+    const cat = items.find(c => c.id === id);
+    const ok = await confirmAction({
+      title: "Delete category?",
+      message: <>This will permanently delete <span className="font-semibold">{cat?.name || "this category"}</span>. Articles in this category will lose their category assignment.</>,
+      confirmLabel: "Delete",
+      variant: "danger",
+    });
+    if (!ok) return;
     await fetch(`${API}/api/admin/categories/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${getToken()}` } });
     load();
   }

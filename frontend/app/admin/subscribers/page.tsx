@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
+import { confirmAction } from "@/components/ui/ConfirmDialog";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 

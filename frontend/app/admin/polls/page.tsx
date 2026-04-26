@@ -12,6 +12,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
+import { confirmAction } from "@/components/ui/ConfirmDialog";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -150,6 +151,17 @@ export default function AdminPolls() {
 
   async function handleToggle(id: number) {
     if (!token) return;
+    const poll = polls.find(p => p.id === id);
+    const goingActive = poll && !poll.is_active;
+    const ok = await confirmAction({
+      title: goingActive ? "Activate poll?" : "Deactivate poll?",
+      message: goingActive
+        ? <>Visitors will be able to vote on <span className="font-semibold">{poll?.question || "this poll"}</span>.</>
+        : <>Voting will be closed for <span className="font-semibold">{poll?.question || "this poll"}</span>.</>,
+      confirmLabel: goingActive ? "Activate" : "Deactivate",
+      variant: goingActive ? "info" : "warning",
+    });
+    if (!ok) return;
     try {
       const res = await fetch(`${API}/api/admin/polls/${id}/toggle`, {
         method: "PATCH",
@@ -163,7 +175,14 @@ export default function AdminPolls() {
   }
 
   async function handleReset(id: number) {
-    if (!confirm("Reset all votes to zero for this poll?")) return;
+    const poll = polls.find(p => p.id === id);
+    const ok = await confirmAction({
+      title: "Reset poll votes?",
+      message: <>All votes for <span className="font-semibold">{poll?.question || "this poll"}</span> will be reset to zero. This cannot be undone.</>,
+      confirmLabel: "Reset votes",
+      variant: "warning",
+    });
+    if (!ok) return;
     if (!token) return;
     try {
       const res = await fetch(`${API}/api/admin/polls/${id}/reset`, {
@@ -178,7 +197,14 @@ export default function AdminPolls() {
   }
 
   async function handleDelete(id: number) {
-    if (!confirm("Permanently delete this poll?")) return;
+    const poll = polls.find(p => p.id === id);
+    const ok = await confirmAction({
+      title: "Delete poll?",
+      message: <>This will permanently delete <span className="font-semibold">{poll?.question || "this poll"}</span> and all of its votes. This action cannot be undone.</>,
+      confirmLabel: "Delete",
+      variant: "danger",
+    });
+    if (!ok) return;
     if (!token) return;
     try {
       const res = await fetch(`${API}/api/admin/polls/${id}`, {

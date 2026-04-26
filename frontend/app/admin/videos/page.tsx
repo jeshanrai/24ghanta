@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Search, Trash2, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
+import { confirmAction } from "@/components/ui/ConfirmDialog";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 function getToken() { return localStorage.getItem("24ghanta_admin_token") || ""; }
@@ -26,7 +27,14 @@ export default function VideosPage() {
   useEffect(() => { load(1); }, [search]);
 
   async function deleteVideo(id: number) {
-    if (!confirm("Delete this video?")) return;
+    const video = videos.find(v => v.id === id);
+    const ok = await confirmAction({
+      title: "Delete video?",
+      message: <>This will permanently delete <span className="font-semibold">{video?.title || "this video"}</span>. This action cannot be undone.</>,
+      confirmLabel: "Delete",
+      variant: "danger",
+    });
+    if (!ok) return;
     await fetch(`${API}/api/admin/videos/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${getToken()}` } });
     load(pagination.page);
   }

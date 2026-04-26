@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Search, Trash2, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
 import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
+import { confirmAction } from "@/components/ui/ConfirmDialog";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 function getToken() { return localStorage.getItem("24ghanta_admin_token") || ""; }
@@ -37,12 +38,30 @@ export default function ArticlesPage() {
   useEffect(() => { load(1); }, [search, statusFilter, catFilter]);
 
   async function togglePublish(id: number) {
+    const article = articles.find(a => a.id === id);
+    const goingLive = article && !article.is_published;
+    const ok = await confirmAction({
+      title: goingLive ? "Publish article?" : "Unpublish article?",
+      message: goingLive
+        ? `"${article?.title}" will become visible on the public site and subscribers may be notified.`
+        : `"${article?.title}" will be hidden from the public site.`,
+      confirmLabel: goingLive ? "Publish" : "Unpublish",
+      variant: goingLive ? "info" : "warning",
+    });
+    if (!ok) return;
     await fetch(`${API}/api/admin/articles/${id}/toggle`, { method: "PATCH", headers: { Authorization: `Bearer ${getToken()}` } });
     load(pagination.page);
   }
 
   async function deleteArticle(id: number) {
-    if (!confirm("Delete this article?")) return;
+    const article = articles.find(a => a.id === id);
+    const ok = await confirmAction({
+      title: "Delete article?",
+      message: <>This will permanently delete <span className="font-semibold">{article?.title || "this article"}</span>. This action cannot be undone.</>,
+      confirmLabel: "Delete",
+      variant: "danger",
+    });
+    if (!ok) return;
     await fetch(`${API}/api/admin/articles/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${getToken()}` } });
     load(pagination.page);
   }
