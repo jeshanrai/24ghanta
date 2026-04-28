@@ -1,11 +1,13 @@
 import { HeroSection, CategorySection } from '@/components/sections';
 import { AdPopup } from '@/components/ui';
+import { AdSlot } from '@/components/ads';
 import {
   fetchHeroArticles,
   fetchLatestArticles,
   fetchArticlesByCategory,
   fetchCategoryBySlug,
   fetchActivePoll,
+  fetchAd,
 } from '@/lib/api';
 
 export const revalidate = 30;
@@ -21,6 +23,7 @@ export default async function HomePage() {
     entertainmentCategory,
     entertainmentArticles,
     activePoll,
+    popupAd,
   ] = await Promise.all([
     fetchHeroArticles(),
     fetchLatestArticles(10),
@@ -31,6 +34,7 @@ export default async function HomePage() {
     fetchCategoryBySlug('entertainment'),
     fetchArticlesByCategory('entertainment', 5),
     fetchActivePoll(),
+    fetchAd('popup_landing'),
   ]);
 
   // Exclude hero articles from the sidebar to avoid duplicates
@@ -41,7 +45,12 @@ export default async function HomePage() {
 
   return (
     <div>
-      <AdPopup />
+      <AdPopup ad={popupAd} />
+
+      <div className="container pt-4">
+        <AdSlot placement="header_banner" className="my-2" />
+      </div>
+
       <div className="container pt-6 pb-10">
         {heroArticles.length > 0 ? (
           <HeroSection
@@ -62,6 +71,8 @@ export default async function HomePage() {
           <CategorySection category={sportsCategory} articles={sportsArticles} />
         )}
 
+        <AdSlot placement="between_sections" className="my-2" />
+
         {businessCategory && businessArticles.length > 0 && (
           <CategorySection category={businessCategory} articles={businessArticles} />
         )}
@@ -69,6 +80,10 @@ export default async function HomePage() {
         {entertainmentCategory && entertainmentArticles.length > 0 && (
           <CategorySection category={entertainmentCategory} articles={entertainmentArticles} />
         )}
+      </div>
+
+      <div className="container pb-10">
+        <AdSlot placement="footer_banner" />
       </div>
     </div>
   );

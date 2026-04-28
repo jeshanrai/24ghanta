@@ -1,5 +1,6 @@
 import type { Article } from '@/lib/types';
 import { ArticleCardList, ArticleCardMedium } from '@/components/cards';
+import { AdSlot } from '@/components/ads';
 
 interface HeroSidebarProps {
   articles: Article[];
@@ -28,6 +29,9 @@ export function HeroSidebar({ articles }: HeroSidebarProps) {
           ))}
         </div>
       )}
+      <div className="mt-4 animate-fade-in-up stagger-4">
+        <AdSlot placement="hero_sidebar" />
+      </div>
     </div>
   );
 }

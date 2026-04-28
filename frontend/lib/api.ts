@@ -1,4 +1,4 @@
-import type { Article, Category, Video } from '@/lib/types';
+import type { Article, Category, Video, Ad } from '@/lib/types';
 import type { Poll } from '@/lib/data/polls';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -116,3 +116,10 @@ export interface TrendingItem {
 export async function fetchTrendingItems(): Promise<TrendingItem[]> {
   return (await api<TrendingItem[]>('/api/trending')) ?? [];
 }
+
+// ── Ads ────────────────────────────────────────────────
+export async function fetchAd(placement: string): Promise<Ad | null> {
+  return api<Ad>(`/api/ads/${encodeURIComponent(placement)}`);
+}
+
+export const AD_API_URL = API;

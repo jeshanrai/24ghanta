@@ -1,39 +1,46 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { X } from 'lucide-react';
 
-interface AdPopupProps {
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const STORAGE_KEY = '24ghanta_ad_popup_dismissed';
+
+interface AdPopupAd {
+  id: string;
+  adType: 'image' | 'html';
   imageUrl?: string;
-  title?: string;
-  description?: string;
-  ctaLabel?: string;
-  ctaHref?: string;
+  linkUrl?: string;
+  altText?: string;
+  htmlContent?: string;
+  name?: string;
+}
+
+interface AdPopupProps {
+  ad?: AdPopupAd | null;
   delayMs?: number;
 }
 
-const STORAGE_KEY = '24ghanta_ad_popup_dismissed';
-
-export function AdPopup({
-  imageUrl = 'https://picsum.photos/seed/24ghanta-ad/800/450',
-  title = 'Stay Updated with 24Ghanta',
-  description = 'Get breaking news, exclusive stories, and live updates from across Nepal — straight to your inbox.',
-  ctaLabel = 'Subscribe Now',
-  ctaHref = '/contact',
-  delayMs = 1500,
-}: AdPopupProps) {
+export function AdPopup({ ad, delayMs = 1500 }: AdPopupProps) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     if (typeof window === 'undefined') return;
+    if (!ad) return;
     if (sessionStorage.getItem(STORAGE_KEY) === '1') return;
 
-    const timer = setTimeout(() => setOpen(true), delayMs);
+    const timer = setTimeout(() => {
+      setOpen(true);
+      // Track impression
+      fetch(`${API}/api/ads/${ad.id}/impression`, {
+        method: 'POST',
+        keepalive: true,
+      }).catch(() => {});
+    }, delayMs);
     return () => clearTimeout(timer);
-  }, [delayMs]);
+  }, [delayMs, ad]);
 
   useEffect(() => {
     if (!open) return;
@@ -46,6 +53,7 @@ export function AdPopup({
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = '';
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   function handleClose() {
@@ -55,14 +63,16 @@ export function AdPopup({
     }
   }
 
-  if (!mounted || !open) return null;
+  if (!mounted || !open || !ad) return null;
+
+  const clickHref = ad.linkUrl ? `${API}/api/ads/${ad.id}/click` : undefined;
 
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="ad-popup-title"
+      aria-label={ad.name || 'Advertisement'}
     >
       <div
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
@@ -73,51 +83,45 @@ export function AdPopup({
         <button
           onClick={handleClose}
           aria-label="Close ad"
-          className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center transition-colors"
+          className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
 
-        <div className="relative aspect-video w-full bg-[var(--color-surface)]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={imageUrl}
-            alt={title}
-            className="absolute inset-0 w-full h-full object-cover"
+        <span className="absolute top-3 left-3 z-10 inline-block text-[10px] font-bold uppercase tracking-wider bg-white/90 text-[var(--color-text-primary)] px-2 py-1 rounded-sm">
+          Advertisement
+        </span>
+
+        {ad.adType === 'html' && ad.htmlContent ? (
+          <div
+            className="p-6"
+            dangerouslySetInnerHTML={{ __html: ad.htmlContent }}
           />
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent" />
-          <span className="absolute top-3 left-3 inline-block text-[10px] font-bold uppercase tracking-wider bg-white/90 text-[var(--color-text-primary)] px-2 py-1 rounded-sm">
-            Sponsored
-          </span>
-        </div>
-
-        <div className="p-6">
-          <h3
-            id="ad-popup-title"
-            className="font-headline text-h2 text-[var(--color-text-primary)] leading-snug"
-          >
-            {title}
-          </h3>
-          <p className="mt-2 text-sm text-[var(--color-text-secondary)] leading-relaxed">
-            {description}
-          </p>
-
-          <div className="mt-5 flex items-center gap-3">
-            <Link
-              href={ctaHref}
+        ) : ad.imageUrl ? (
+          clickHref ? (
+            <a
+              href={clickHref}
+              target="_blank"
+              rel="sponsored noopener noreferrer"
               onClick={handleClose}
-              className="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white text-sm font-semibold rounded-sm transition-colors"
+              className="block"
             >
-              {ctaLabel}
-            </Link>
-            <button
-              onClick={handleClose}
-              className="px-4 py-2.5 text-sm font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-            >
-              No thanks
-            </button>
-          </div>
-        </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={ad.imageUrl}
+                alt={ad.altText || ad.name || 'Advertisement'}
+                className="w-full h-auto block"
+              />
+            </a>
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={ad.imageUrl}
+              alt={ad.altText || ad.name || 'Advertisement'}
+              className="w-full h-auto block"
+            />
+          )
+        ) : null}
       </div>
     </div>
   );

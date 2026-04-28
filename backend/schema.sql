@@ -164,6 +164,28 @@ CREATE TABLE IF NOT EXISTS trending_items (
 
 CREATE INDEX IF NOT EXISTS idx_trending_active ON trending_items(is_active, priority);
 
+-- Advertisements (managed in admin panel, served per placement slot)
+CREATE TABLE IF NOT EXISTS ads (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  placement TEXT NOT NULL,
+  ad_type TEXT NOT NULL DEFAULT 'image',
+  image_url TEXT,
+  link_url TEXT,
+  alt_text TEXT,
+  html_content TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
+  priority INTEGER DEFAULT 0,
+  starts_at TIMESTAMP,
+  ends_at TIMESTAMP,
+  impressions INTEGER DEFAULT 0,
+  clicks INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ads_placement_active ON ads(placement, is_active, priority DESC);
+
 -- End-user accounts (site visitors, separate from admin_users)
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
