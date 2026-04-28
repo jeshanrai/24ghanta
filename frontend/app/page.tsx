@@ -1,10 +1,9 @@
-import { HeroSection, VideoSection, ShortStoriesSection, CategorySection } from '@/components/sections';
+import { HeroSection, CategorySection } from '@/components/sections';
+import { AdPopup } from '@/components/ui';
 import {
   fetchHeroArticles,
   fetchLatestArticles,
   fetchArticlesByCategory,
-  fetchLatestVideos,
-  fetchShortStories,
   fetchCategoryBySlug,
   fetchActivePoll,
 } from '@/lib/api';
@@ -15,8 +14,6 @@ export default async function HomePage() {
   const [
     heroArticles,
     latestArticles,
-    videos,
-    shortStories,
     sportsCategory,
     sportsArticles,
     businessCategory,
@@ -27,8 +24,6 @@ export default async function HomePage() {
   ] = await Promise.all([
     fetchHeroArticles(),
     fetchLatestArticles(10),
-    fetchLatestVideos(4),
-    fetchShortStories(10),
     fetchCategoryBySlug('sports'),
     fetchArticlesByCategory('sports', 5),
     fetchCategoryBySlug('business'),
@@ -46,6 +41,7 @@ export default async function HomePage() {
 
   return (
     <div>
+      <AdPopup />
       <div className="container pt-6 pb-10">
         {heroArticles.length > 0 ? (
           <HeroSection
@@ -60,16 +56,6 @@ export default async function HomePage() {
           />
         )}
       </div>
-
-      {videos.length > 0 && (
-        <div className="bg-[var(--color-surface)] border-y border-[var(--color-border)]">
-          <div className="container py-12">
-            <VideoSection videos={videos} />
-          </div>
-        </div>
-      )}
-
-      {shortStories.length > 0 && <ShortStoriesSection videos={shortStories} />}
 
       <div className="container py-12 space-y-12">
         {sportsCategory && sportsArticles.length > 0 && (

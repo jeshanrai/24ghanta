@@ -6,6 +6,7 @@ const router = Router();
 interface PollRow {
   id: number;
   question: string;
+  image_url: string | null;
   total_votes: number;
   ends_at: string | null;
   is_active: boolean;
@@ -22,6 +23,7 @@ function formatPoll(poll: PollRow, options: PollOptionRow[]) {
   return {
     id: String(poll.id),
     question: poll.question,
+    imageUrl: poll.image_url ?? undefined,
     totalVotes: poll.total_votes,
     endsAt: poll.ends_at ?? undefined,
     isActive: poll.is_active,

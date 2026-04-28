@@ -68,6 +68,18 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
         Quick Poll
       </span>
 
+      {poll.imageUrl && (
+        <div className={`relative w-full overflow-hidden rounded-md ${compact ? 'mt-2 aspect-[16/9]' : 'mt-3 aspect-video'}`}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={poll.imageUrl}
+            alt={poll.question}
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
+      )}
+
       <p className={`font-headline text-[var(--color-text-primary)] mt-2 ${compact ? 'text-sm mb-3' : 'text-base mb-4'}`}>
         {poll.question}
       </p>

@@ -1,5 +1,5 @@
 import type { Article } from '@/lib/types';
-import { ArticleCardList, ArticleCardMedium, GenZPromoCard, UpliftLocalPromoCard } from '@/components/cards';
+import { ArticleCardList, ArticleCardMedium } from '@/components/cards';
 
 interface HeroSidebarProps {
   articles: Article[];
@@ -21,15 +21,9 @@ export function HeroSidebar({ articles }: HeroSidebarProps) {
           />
         </div>
       )}
-      <div className="mt-4 animate-fade-in-up stagger-3">
-        <GenZPromoCard />
-      </div>
-      <div className="mt-4 animate-fade-in-up stagger-4">
-        <UpliftLocalPromoCard />
-      </div>
       {restArticles.length > 0 && (
-        <div className="mt-4 animate-fade-in-up stagger-5">
-          {restArticles.slice(0, 1).map((article) => (
+        <div className="mt-4 animate-fade-in-up stagger-3 space-y-2">
+          {restArticles.slice(0, 4).map((article) => (
             <ArticleCardList key={article.id} article={article} />
           ))}
         </div>

@@ -24,6 +24,7 @@ router.get('/', async (_req: AuthRequest, res: Response) => {
     const data = polls.map((p) => ({
       id: p.id,
       question: p.question,
+      image_url: p.image_url,
       total_votes: p.total_votes,
       ends_at: p.ends_at,
       is_active: p.is_active,
@@ -66,7 +67,7 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
 
 // POST / — create poll with options
 router.post('/', async (req: AuthRequest, res: Response) => {
-  const { question, options, ends_at, is_active } = req.body;
+  const { question, options, ends_at, is_active, image_url } = req.body;
   if (!question || !options || !Array.isArray(options) || options.length < 2) {
     return res
       .status(400)
@@ -83,9 +84,9 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     }
 
     const { rows } = await client.query(
-      `INSERT INTO polls (question, total_votes, ends_at, is_active)
-       VALUES ($1, 0, $2, $3) RETURNING *`,
-      [question, ends_at || null, is_active ?? true]
+      `INSERT INTO polls (question, image_url, total_votes, ends_at, is_active)
+       VALUES ($1, $2, 0, $3, $4) RETURNING *`,
+      [question, image_url || null, ends_at || null, is_active ?? true]
     );
     const pollId = rows[0].id;
 
@@ -121,7 +122,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
 
 // PUT /:id — update poll question/options/active status
 router.put('/:id', async (req: AuthRequest, res: Response) => {
-  const { question, options, ends_at, is_active } = req.body;
+  const { question, options, ends_at, is_active, image_url } = req.body;
   if (!question) {
     return res.status(400).json({ error: 'Question is required' });
   }
@@ -138,9 +139,9 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     }
 
     const { rows } = await client.query(
-      `UPDATE polls SET question = $1, ends_at = $2, is_active = $3
-       WHERE id = $4 RETURNING *`,
-      [question, ends_at || null, is_active ?? true, req.params.id]
+      `UPDATE polls SET question = $1, image_url = $2, ends_at = $3, is_active = $4
+       WHERE id = $5 RETURNING *`,
+      [question, image_url || null, ends_at || null, is_active ?? true, req.params.id]
     );
     if (rows.length === 0) {
       await client.query('ROLLBACK');

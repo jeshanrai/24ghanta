@@ -11,7 +11,6 @@ export const categories: Category[] = [
   { id: 'health', name: 'Health', slug: 'health', color: '#16a34a' },
   { id: 'lifestyle', name: 'Lifestyle', slug: 'lifestyle', color: '#be185d' },
   { id: 'science', name: 'Science', slug: 'science', color: '#4f46e5' },
-  { id: 'genz', name: 'Gen Z', slug: 'genz', color: '#FF6B6B' },
 ];
 
 export function getCategoryBySlug(slug: string): Category | undefined {
