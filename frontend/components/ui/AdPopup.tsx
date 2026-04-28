@@ -21,7 +21,7 @@ interface AdPopupProps {
   delayMs?: number;
 }
 
-export function AdPopup({ ad, delayMs = 1500 }: AdPopupProps) {
+export function AdPopup({ ad, delayMs = 5000 }: AdPopupProps) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 

@@ -75,6 +75,26 @@ router.get('/featured', async (_req: Request, res: Response) => {
   }
 });
 
+// GET /api/articles/breaking?limit=20 — articles flagged as breaking news
+router.get('/breaking', async (req: Request, res: Response) => {
+  const limit = Math.min(parseInt((req.query.limit as string) ?? '20', 10) || 20, 100);
+  try {
+    const { rows } = await pool.query(
+      `SELECT ${ARTICLE_SELECT}
+       FROM articles a
+       ${ARTICLE_JOIN}
+       WHERE a.is_published = TRUE AND a.is_breaking = TRUE
+       ${ORDER_BY}
+       LIMIT $1`,
+      [limit]
+    );
+    res.json({ data: rows.map(mapArticleRow), total: rows.length });
+  } catch (error) {
+    console.error('Breaking articles error:', error);
+    res.status(500).json({ error: 'Failed to load breaking articles' });
+  }
+});
+
 // GET /api/articles/hero — top 5 articles for the hero slider (breaking first, then newest)
 router.get('/hero', async (_req: Request, res: Response) => {
   try {

@@ -39,6 +39,10 @@ export async function fetchLatestArticles(limit = 10): Promise<Article[]> {
   return (await api<Article[]>(`/api/articles?limit=${limit}`)) ?? [];
 }
 
+export async function fetchBreakingArticles(limit = 20): Promise<Article[]> {
+  return (await api<Article[]>(`/api/articles/breaking?limit=${limit}`)) ?? [];
+}
+
 export async function fetchArticlesByCategory(
   slug: string,
   limit = 5

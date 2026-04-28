@@ -13,7 +13,7 @@ export const mainNavItems: NavItem[] = [
 ];
 
 export const trendingTopics: TrendingTopic[] = [
-  { id: '1', label: 'Breaking News', href: '/' },
+  { id: '1', label: 'Breaking News', href: '/breaking' },
   { id: '2', label: 'Politics', href: '/category/politics' },
   { id: '3', label: 'Cricket & Sports', href: '/category/sports' },
   { id: '4', label: 'Stock Market', href: '/category/business' },
