@@ -2,6 +2,7 @@ import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import path from 'path';
 import apiRoutes from './routes';
 import { applySchema } from './migrate';
 import { seedIfEmpty } from './seed';
@@ -52,6 +53,15 @@ const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+// ── Static uploads (admin-uploaded images, served as /uploads/<file>) ──
+app.use(
+  '/uploads',
+  express.static(path.resolve(process.cwd(), 'uploads'), {
+    maxAge: '7d',
+    fallthrough: false,
+  })
+);
 
 // ── API Routes ──
 app.use('/api', apiLimiter, apiRoutes);

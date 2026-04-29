@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { isValidImageSrc } from '@/lib/safeImage';
+import { isValidImageSrc, resolveImageSrc } from '@/lib/safeImage';
 
 interface OptimizedImageProps {
   src: string;
@@ -50,7 +50,7 @@ export function OptimizedImage({
   return (
     <div className={cn('relative overflow-hidden rounded-sm', containerClassName)}>
       <Image
-        src={src}
+        src={resolveImageSrc(src)}
         alt={alt}
         width={fill ? undefined : width}
         height={fill ? undefined : height}

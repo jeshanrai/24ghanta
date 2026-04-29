@@ -47,8 +47,14 @@ export default async function HomePage() {
     <div>
       <AdPopup ad={popupAd} />
 
-      <div className="container pt-4">
-        <AdSlot placement="header_banner" className="my-2" />
+      <div className="container pt-4 flex justify-center">
+        <div className="w-full max-w-[728px]">
+          <AdSlot
+            placement="header_banner"
+            className="my-2"
+            aspectClassName="aspect-[728/90]"
+          />
+        </div>
       </div>
 
       <div className="container pt-6 pb-10">
@@ -71,7 +77,15 @@ export default async function HomePage() {
           <CategorySection category={sportsCategory} articles={sportsArticles} />
         )}
 
-        <AdSlot placement="between_sections" className="my-2" />
+        <div className="flex justify-center">
+          <div className="w-full max-w-[728px]">
+            <AdSlot
+              placement="between_sections"
+              className="my-2"
+              aspectClassName="aspect-[728/90]"
+            />
+          </div>
+        </div>
 
         {businessCategory && businessArticles.length > 0 && (
           <CategorySection category={businessCategory} articles={businessArticles} />
@@ -82,8 +96,13 @@ export default async function HomePage() {
         )}
       </div>
 
-      <div className="container pb-10">
-        <AdSlot placement="footer_banner" />
+      <div className="container pb-10 flex justify-center">
+        <div className="w-full max-w-[728px]">
+          <AdSlot
+            placement="footer_banner"
+            aspectClassName="aspect-[728/90]"
+          />
+        </div>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
+import { resolveImageSrc } from '@/lib/safeImage';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 const STORAGE_KEY = '24ghanta_ad_popup_dismissed';
@@ -108,7 +109,7 @@ export function AdPopup({ ad, delayMs = 5000 }: AdPopupProps) {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={ad.imageUrl}
+                src={resolveImageSrc(ad.imageUrl)}
                 alt={ad.altText || ad.name || 'Advertisement'}
                 className="w-full h-auto block"
               />

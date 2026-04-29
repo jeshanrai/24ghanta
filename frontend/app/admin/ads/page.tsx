@@ -14,16 +14,18 @@ import {
 } from "lucide-react";
 import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 import { confirmAction } from "@/components/ui/ConfirmDialog";
+import { ImageUploadField } from "@/components/ui/ImageUploadField";
+import { resolveImageSrc } from "@/lib/safeImage";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 const PLACEMENTS: { value: string; label: string; recommended: string }[] = [
-  { value: "header_banner", label: "Header banner (above hero)", recommended: "970×90 / 728×90" },
+  { value: "header_banner", label: "Header banner (above hero)", recommended: "728×90 leaderboard" },
   { value: "hero_sidebar", label: "Hero sidebar", recommended: "300×250" },
-  { value: "between_sections", label: "Between category sections", recommended: "970×250" },
+  { value: "between_sections", label: "Between category sections", recommended: "728×90 leaderboard" },
   { value: "article_inline", label: "Article inline (mid-body)", recommended: "336×280" },
   { value: "article_sidebar", label: "Article sidebar", recommended: "300×600" },
-  { value: "footer_banner", label: "Footer banner", recommended: "728×90" },
+  { value: "footer_banner", label: "Footer banner", recommended: "728×90 leaderboard" },
   { value: "popup_landing", label: "Landing popup", recommended: "600×450" },
   { value: "mobile_sticky", label: "Mobile sticky bottom", recommended: "320×50" },
 ];
@@ -305,7 +307,7 @@ export default function AdminAds() {
                   <div className="w-24 h-16 shrink-0 rounded-lg overflow-hidden bg-gray-50 border border-gray-100">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={ad.image_url}
+                      src={resolveImageSrc(ad.image_url)}
                       alt={ad.name}
                       className="w-full h-full object-cover"
                     />
@@ -514,27 +516,11 @@ export default function AdminAds() {
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">
                       Image URL
                     </label>
-                    <input
-                      type="url"
+                    <ImageUploadField
                       value={imageUrl}
-                      onChange={(e) => setImageUrl(e.target.value)}
-                      placeholder="https://example.com/banner.jpg"
-                      className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all"
+                      onChange={setImageUrl}
+                      placeholder="https://example.com/banner.webp"
                     />
-                    {imageUrl.trim() && (
-                      <div className="mt-2 relative w-full overflow-hidden rounded-xl border border-gray-100 bg-gray-50">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={imageUrl}
-                          alt="Ad preview"
-                          className="w-full h-auto block max-h-48 object-contain bg-white"
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).style.display =
-                              "none";
-                          }}
-                        />
-                      </div>
-                    )}
                   </div>
 
                   <div>

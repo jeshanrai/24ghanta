@@ -4,6 +4,7 @@ import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Save, Globe, Trash2, Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { confirmAction } from "@/components/ui/ConfirmDialog";
+import { ImageUploadField } from "@/components/ui/ImageUploadField";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 function getToken() { return localStorage.getItem("24ghanta_admin_token") || ""; }
@@ -193,7 +194,7 @@ export default function EditArticlePage() {
               )}
             </div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Image URL *</label>
-              <input value={form.image_url} onChange={e => update("image_url", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20" /></div>
+              <ImageUploadField value={form.image_url} onChange={(v) => update("image_url", v)} placeholder="https://... or upload .webp" /></div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Image Alt</label>
               <input value={form.image_alt} onChange={e => update("image_alt", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20" /></div>
           </div>

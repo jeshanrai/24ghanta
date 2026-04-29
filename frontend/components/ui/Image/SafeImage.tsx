@@ -1,5 +1,5 @@
 import Image, { ImageProps } from 'next/image';
-import { isValidImageSrc } from '@/lib/safeImage';
+import { isValidImageSrc, resolveImageSrc } from '@/lib/safeImage';
 
 type SafeImageProps = ImageProps & {
   fallbackClassName?: string;
@@ -30,5 +30,6 @@ export function SafeImage({ src, alt, fallbackClassName, ...rest }: SafeImagePro
       </div>
     );
   }
-  return <Image src={src} alt={alt} {...rest} />;
+  const resolved = typeof src === 'string' ? resolveImageSrc(src) : src;
+  return <Image src={resolved} alt={alt} {...rest} />;
 }

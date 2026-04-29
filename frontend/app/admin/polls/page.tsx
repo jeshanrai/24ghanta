@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 import { confirmAction } from "@/components/ui/ConfirmDialog";
+import { ImageUploadField } from "@/components/ui/ImageUploadField";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -436,26 +437,11 @@ export default function AdminPolls() {
                   Image URL{" "}
                   <span className="text-gray-400 font-normal">(optional)</span>
                 </label>
-                <input
-                  type="url"
+                <ImageUploadField
                   value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://example.com/poll-image.jpg"
-                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all"
+                  onChange={setImageUrl}
+                  placeholder="https://example.com/poll-image.webp"
                 />
-                {imageUrl.trim() && (
-                  <div className="mt-2 relative aspect-video w-full overflow-hidden rounded-xl border border-gray-100 bg-gray-50">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={imageUrl}
-                      alt="Poll preview"
-                      className="absolute inset-0 w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).style.display = "none";
-                      }}
-                    />
-                  </div>
-                )}
               </div>
 
               {/* Options */}

@@ -43,7 +43,7 @@
   --header-height-desktop: 72px;
 
   /* Max Width */
-  --max-width: 1440px;
+  --max-width: 1280px;
   --content-max-width: 1200px;
 }
 
@@ -154,7 +154,7 @@ img {
   background: var(--color-text-muted);
 }
 
-/* Container */
+/* Container — WSJ-style gutters: ~16px mobile, ~24px tablet, ~40px desktop, capped at 1280px */
 .container {
   width: 100%;
   max-width: var(--max-width);
@@ -173,8 +173,15 @@ img {
 
 @media (min-width: 1024px) {
   .container {
-    padding-left: 2rem;
-    padding-right: 2rem;
+    padding-left: 1.875rem;
+    padding-right: 1.875rem;
+  }
+}
+
+@media (min-width: 1440px) {
+  .container {
+    padding-left: 2.375rem;
+    padding-right: 2.375rem;
   }
 }
 

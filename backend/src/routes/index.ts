@@ -17,6 +17,7 @@ import adminNewsletterRouter from './admin-newsletter';
 import adminPollsRouter from './admin-polls';
 import adsRouter from './ads';
 import adminAdsRouter from './admin-ads';
+import uploadsRouter from './uploads';
 
 const router = Router();
 
@@ -30,6 +31,7 @@ router.use('/newsletter', newsletterRouter);
 router.use('/contact', contactRouter);
 router.use('/auth', authRouter);
 router.use('/ads', adsRouter);
+router.use('/uploads', uploadsRouter);
 
 // Admin routes
 router.use('/admin', adminRouter);

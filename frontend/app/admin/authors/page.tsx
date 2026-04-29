@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, X, Check, KeyRound, ShieldCheck } from "lucide-react";
 import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 import { confirmAction } from "@/components/ui/ConfirmDialog";
+import { ImageUploadField } from "@/components/ui/ImageUploadField";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 function getToken() { return localStorage.getItem("24ghanta_admin_token") || ""; }
@@ -173,7 +174,7 @@ export default function AuthorsPage() {
           </div>
           <div>
             <label className={labelCls}>Avatar URL</label>
-            <input value={form.avatar_url} onChange={e => setForm(f => ({ ...f, avatar_url: e.target.value }))} className={`${fieldCls} w-full`} placeholder="https://..." />
+            <ImageUploadField value={form.avatar_url} onChange={(v) => setForm(f => ({ ...f, avatar_url: v }))} placeholder="https://... or upload .webp" previewMaxHeight="max-h-32" />
           </div>
         </div>
 
