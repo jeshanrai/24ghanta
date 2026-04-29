@@ -1,7 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-export const JWT_SECRET = process.env.JWT_SECRET || '24ghanta-super-secret-key-change-in-prod';
+const isProd = process.env.NODE_ENV === 'production';
+
+if (isProd && !process.env.JWT_SECRET) {
+  // Fail fast — never run prod with a known/default secret.
+  // eslint-disable-next-line no-console
+  console.error('FATAL: JWT_SECRET environment variable is required in production');
+  process.exit(1);
+}
+
+export const JWT_SECRET =
+  process.env.JWT_SECRET ||
+  (isProd
+    ? // unreachable due to exit above, kept for type-narrowing
+      ''
+    : 'dev-only-secret-do-not-use-in-prod');
 
 export type AdminRole = 'admin' | 'author';
 
