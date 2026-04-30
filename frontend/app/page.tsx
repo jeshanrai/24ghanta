@@ -72,9 +72,13 @@ export default async function HomePage() {
         )}
       </div>
 
-      <div className="container py-12 space-y-12">
+      <div className="container py-12 space-y-14">
         {sportsCategory && sportsArticles.length > 0 && (
-          <CategorySection category={sportsCategory} articles={sportsArticles} />
+          <CategorySection
+            category={sportsCategory}
+            articles={sportsArticles}
+            variant="hero-split"
+          />
         )}
 
         <div className="flex justify-center">
@@ -88,11 +92,19 @@ export default async function HomePage() {
         </div>
 
         {businessCategory && businessArticles.length > 0 && (
-          <CategorySection category={businessCategory} articles={businessArticles} />
+          <CategorySection
+            category={businessCategory}
+            articles={businessArticles}
+            variant="triple-grid"
+          />
         )}
 
         {entertainmentCategory && entertainmentArticles.length > 0 && (
-          <CategorySection category={entertainmentCategory} articles={entertainmentArticles} />
+          <CategorySection
+            category={entertainmentCategory}
+            articles={entertainmentArticles}
+            variant="magazine"
+          />
         )}
       </div>
 
