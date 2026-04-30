@@ -92,7 +92,13 @@ export default function AdminAds() {
 
   useEffect(() => {
     fetchAds();
-  }, [fetchAds]);
+    // Live counter refresh — pull updated impressions/clicks every 15s.
+    // Pauses while the create/edit modal is open so the form state isn't disturbed.
+    const id = setInterval(() => {
+      if (!showForm) fetchAds();
+    }, 15_000);
+    return () => clearInterval(id);
+  }, [fetchAds, showForm]);
 
   function resetForm() {
     setName("");

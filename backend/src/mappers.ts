@@ -1,4 +1,4 @@
-import type { Article, Video, Category, Author } from './types';
+import type { Article, Video, Category, Author, GalleryImage } from './types';
 
 interface ArticleRow {
   id: number;
@@ -16,6 +16,7 @@ interface ArticleRow {
   is_published: boolean;
   display_order: number | null;
   views: number | null;
+  gallery?: unknown;
   // Joined fields
   category_id: number | null;
   category_name?: string | null;
@@ -26,6 +27,23 @@ interface ArticleRow {
   author_avatar_url?: string | null;
   // Optional joined aggregate
   tag_names?: string[] | null;
+}
+
+function normalizeGallery(value: unknown): GalleryImage[] {
+  if (!Array.isArray(value)) return [];
+  const out: GalleryImage[] = [];
+  for (const item of value) {
+    if (!item || typeof item !== 'object') continue;
+    const url = (item as { url?: unknown }).url;
+    if (typeof url !== 'string' || !url.trim()) continue;
+    const caption = (item as { caption?: unknown }).caption;
+    const entry: GalleryImage = { url: url.trim() };
+    if (typeof caption === 'string' && caption.trim()) {
+      entry.caption = caption;
+    }
+    out.push(entry);
+  }
+  return out;
 }
 
 interface VideoRow {
@@ -76,6 +94,7 @@ export function mapArticleRow(row: ArticleRow): Article {
     isFeatured: row.is_featured,
     isBreaking: row.is_breaking,
     tags: row.tag_names ?? [],
+    gallery: normalizeGallery(row.gallery),
   };
 }
 
@@ -107,7 +126,7 @@ export const ARTICLE_SELECT = `
   a.id, a.slug, a.title, a.excerpt, a.content,
   a.image_url, a.image_alt, a.published_at, a.updated_at,
   a.read_time_minutes, a.is_featured, a.is_breaking, a.is_published,
-  a.display_order, a.views,
+  a.display_order, a.views, a.gallery,
   a.category_id,
   c.name AS category_name, c.slug AS category_slug, c.color AS category_color,
   a.author_id,

@@ -5,6 +5,7 @@ import { ArrowLeft, Save, Globe, Trash2, Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { confirmAction } from "@/components/ui/ConfirmDialog";
 import { ImageUploadField } from "@/components/ui/ImageUploadField";
+import { RichTextEditor, GalleryField, type GalleryItem } from "@/components/ui";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 function getToken() { return localStorage.getItem("24ghanta_admin_token") || ""; }
@@ -41,6 +42,7 @@ export default function EditArticlePage() {
     image_url: "", image_alt: "", is_featured: false, is_breaking: false, is_published: false,
     display_order: "" as string,
     meta_title: "", meta_description: "", meta_keywords: "", tag_ids: [] as number[], published_at: "",
+    gallery: [] as GalleryItem[],
   });
   const [newTagName, setNewTagName] = useState("");
   const [isCreatingTag, setIsCreatingTag] = useState(false);
@@ -65,6 +67,7 @@ export default function EditArticlePage() {
           display_order: article.display_order != null ? String(article.display_order) : "",
           meta_title: article.meta_title || "", meta_description: article.meta_description || "", meta_keywords: article.meta_keywords || "",
           tag_ids: (article.tags || []).map((t: any) => t.id), published_at: article.published_at || "",
+          gallery: Array.isArray(article.gallery) ? article.gallery : [],
         });
       }
       setLoading(false);
@@ -168,7 +171,14 @@ export default function EditArticlePage() {
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Excerpt</label>
               <textarea value={form.excerpt} onChange={e => update("excerpt", e.target.value)} rows={2} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 resize-none" /></div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Content</label>
-              <textarea value={form.content} onChange={e => update("content", e.target.value)} rows={16} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 resize-y font-mono" /></div>
+              <RichTextEditor value={form.content} onChange={(html) => update("content", html)} placeholder="Write your story…" /></div>
+          </div>
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-semibold text-gray-500 uppercase">Image Gallery</label>
+              <span className="text-[11px] text-gray-400">Optional — shown below the article</span>
+            </div>
+            <GalleryField value={form.gallery} onChange={(g) => update("gallery", g)} />
           </div>
           <div className="bg-white rounded-2xl border border-gray-100 p-5">
             <button onClick={() => setShowSeo(!showSeo)} className="flex items-center justify-between w-full text-sm font-semibold text-gray-700"><span>SEO Settings</span><span className="text-xs text-gray-400">{showSeo ? "▲" : "▼"}</span></button>

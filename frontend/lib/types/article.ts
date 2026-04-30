@@ -11,6 +11,11 @@ export interface Category {
   color?: string;
 }
 
+export interface GalleryImage {
+  url: string;
+  caption?: string;
+}
+
 export interface Article {
   id: string;
   slug: string;
@@ -27,4 +32,5 @@ export interface Article {
   isFeatured?: boolean;
   isBreaking?: boolean;
   tags?: string[];
+  gallery?: GalleryImage[];
 }

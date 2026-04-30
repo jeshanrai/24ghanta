@@ -3,11 +3,12 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import pool from '../db';
 import { JWT_SECRET, requireAuth, AuthRequest } from '../middleware/auth';
+import { loginLimiter } from '../middleware/loginLimiter';
 
 const router = Router();
 
 // POST /login — tries admin_users first, then authors
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', loginLimiter, async (req: Request, res: Response) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required' });
@@ -111,7 +112,7 @@ router.get('/dashboard', requireAuth, async (req: AuthRequest, res: Response) =>
     const artParams: unknown[] = isAuthor ? [authorId] : [];
     const artWhere = isAuthor ? 'WHERE author_id = $1' : '';
 
-    const [artRes, vidRes, catRes, tagRes, authRes] = await Promise.all([
+    const [artRes, vidRes, catRes, tagRes, authRes, adsRes, adsTopRes] = await Promise.all([
       pool.query(
         `SELECT COUNT(*) AS total,
                 COUNT(CASE WHEN is_published = true THEN 1 END) AS published,
@@ -125,6 +126,28 @@ router.get('/dashboard', requireAuth, async (req: AuthRequest, res: Response) =>
       isAuthor ? { rows: [{ total: 0 }] } : pool.query('SELECT COUNT(*) AS total FROM categories'),
       isAuthor ? { rows: [{ total: 0 }] } : pool.query('SELECT COUNT(*) AS total FROM tags'),
       isAuthor ? { rows: [{ total: 0 }] } : pool.query('SELECT COUNT(*) AS total FROM authors'),
+      // Ad metrics — admins only.
+      isAuthor
+        ? { rows: [{ total: 0, active: 0, impressions: 0, clicks: 0 }] }
+        : pool.query(
+            `SELECT COUNT(*)::int                                         AS total,
+                    COUNT(CASE WHEN is_active THEN 1 END)::int            AS active,
+                    COALESCE(SUM(impressions), 0)::bigint                 AS impressions,
+                    COALESCE(SUM(clicks), 0)::bigint                      AS clicks
+               FROM ads`
+          ),
+      isAuthor
+        ? { rows: [] }
+        : pool.query(
+            `SELECT id, name, placement, impressions, clicks,
+                    CASE WHEN impressions > 0
+                         THEN ROUND((clicks::numeric / impressions::numeric) * 100, 2)
+                         ELSE 0 END AS ctr
+               FROM ads
+               WHERE is_active = TRUE
+               ORDER BY clicks DESC, impressions DESC
+               LIMIT 5`
+          ),
     ]);
 
     const recentArticles = await pool.query(
@@ -146,6 +169,11 @@ router.get('/dashboard', requireAuth, async (req: AuthRequest, res: Response) =>
       isAuthor ? [authorId] : []
     );
 
+    const adsRow = adsRes.rows[0] || { total: 0, active: 0, impressions: 0, clicks: 0 };
+    const adImpressions = Number(adsRow.impressions) || 0;
+    const adClicks = Number(adsRow.clicks) || 0;
+    const adCtr = adImpressions > 0 ? Number(((adClicks / adImpressions) * 100).toFixed(2)) : 0;
+
     res.json({
       role: req.role,
       articles: {
@@ -158,6 +186,14 @@ router.get('/dashboard', requireAuth, async (req: AuthRequest, res: Response) =>
       categories: { total: parseInt(catRes.rows[0].total) },
       tags: { total: parseInt(tagRes.rows[0].total) },
       authors: { total: parseInt(authRes.rows[0].total) },
+      ads: {
+        total: Number(adsRow.total) || 0,
+        active: Number(adsRow.active) || 0,
+        impressions: adImpressions,
+        clicks: adClicks,
+        ctr: adCtr,
+        topPerformers: adsTopRes.rows,
+      },
       recentArticles: recentArticles.rows,
       topCategories: topCategories.rows,
     });

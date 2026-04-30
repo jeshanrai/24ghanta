@@ -10,10 +10,10 @@ import {
   formatDate,
   formatFullDate,
   formatReadTime,
-  buildArticleBody,
 } from '@/lib/utils';
 import { Badge, ShareButtons, SafeImage } from '@/components/ui';
 import { ArticleCardList } from '@/components/cards';
+import { ArticleContent, ArticleGallery } from '@/components/article';
 
 export const revalidate = 30;
 
@@ -52,7 +52,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     fetchArticlesByCategory(article.category.slug, 5),
   ]);
   const categoryArticles = categoryArticlesRaw.filter((a) => a.id !== article.id);
-  const blocks = buildArticleBody(article);
 
   return (
     <div className="container py-8 animate-fade-in-up">
@@ -131,49 +130,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             )}
           </figure>
 
-          {/* Article Content */}
-          <div className="space-y-5 text-[17px] leading-[1.75] text-[var(--color-text-primary)] max-w-none">
-            {blocks.map((block, idx) => {
-              if (block.type === 'paragraph') {
-                return (
-                  <p key={idx} className={idx === 0 ? 'text-lg first-letter:text-5xl first-letter:font-bold first-letter:font-serif first-letter:float-left first-letter:mr-2 first-letter:leading-[0.9] first-letter:text-[var(--color-primary)]' : ''}>
-                    {block.text}
-                  </p>
-                );
-              }
-              if (block.type === 'heading') {
-                return (
-                  <h2
-                    key={idx}
-                    className="font-headline text-2xl lg:text-3xl font-bold mt-8 mb-2 pb-2 border-b border-[var(--color-border-light)]"
-                  >
-                    {block.text}
-                  </h2>
-                );
-              }
-              if (block.type === 'list' && block.items) {
-                return (
-                  <ul key={idx} className="list-disc pl-6 space-y-2 marker:text-[var(--color-primary)]">
-                    {block.items.map((item, i) => (
-                      <li key={i}>{item}</li>
-                    ))}
-                  </ul>
-                );
-              }
-              if (block.type === 'quote') {
-                return (
-                  <blockquote
-                    key={idx}
-                    className="relative border-l-4 border-[var(--color-primary)] pl-5 py-2 my-6 italic text-xl text-[var(--color-text-primary)]"
-                  >
-                    <span aria-hidden="true" className="absolute -top-2 -left-1 text-5xl leading-none text-[var(--color-primary)] opacity-30 font-serif">&ldquo;</span>
-                    {block.text}
-                  </blockquote>
-                );
-              }
-              return null;
-            })}
-          </div>
+          {/* Article Content (rich HTML from Tiptap, sanitised server-side) */}
+          <ArticleContent html={article.content || ''} />
+
+          {/* Photo gallery */}
+          {article.gallery && article.gallery.length > 0 && (
+            <ArticleGallery images={article.gallery} />
+          )}
 
           {/* Tags */}
           {article.tags && article.tags.length > 0 && (

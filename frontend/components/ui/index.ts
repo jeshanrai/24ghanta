@@ -6,3 +6,6 @@ export { Poll } from './Poll';
 export { ShareButtons } from './ShareButtons';
 export { AdPopup } from './AdPopup';
 export { ImageUploadField } from './ImageUploadField';
+export { RichTextEditor } from './RichTextEditor';
+export { GalleryField } from './GalleryField';
+export type { GalleryItem } from './GalleryField';

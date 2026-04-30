@@ -692,3 +692,127 @@ img {
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+/* ─────────────────────────────────────────────────────────
+   Tiptap rich text editor (admin form) + rendered article body
+   The same classes are used in the editor and on the public page,
+   so the writer sees ~exactly what the reader will see.
+   ───────────────────────────────────────────────────────── */
+.tiptap-content,
+.article-rich-content {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--color-text-primary);
+}
+.tiptap-content p,
+.article-rich-content p {
+  margin: 0 0 1.1em;
+}
+.tiptap-content h2,
+.article-rich-content h2 {
+  font-family: var(--font-headline, inherit);
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 1.8em 0 0.6em;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+.tiptap-content h3,
+.article-rich-content h3 {
+  font-family: var(--font-headline, inherit);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 1.4em 0 0.5em;
+  line-height: 1.3;
+}
+.tiptap-content ul,
+.article-rich-content ul,
+.tiptap-content ol,
+.article-rich-content ol {
+  margin: 0 0 1.1em;
+  padding-left: 1.5rem;
+}
+.tiptap-content ul,
+.article-rich-content ul { list-style: disc; }
+.tiptap-content ol,
+.article-rich-content ol { list-style: decimal; }
+.tiptap-content li,
+.article-rich-content li { margin: 0.3em 0; }
+.tiptap-content a,
+.article-rich-content a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+.tiptap-content a:hover,
+.article-rich-content a:hover { text-decoration-thickness: 2px; }
+.tiptap-content code,
+.article-rich-content code {
+  background: var(--color-surface);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+.tiptap-content blockquote,
+.tiptap-blockquote,
+.article-rich-content blockquote {
+  border-left: 4px solid var(--color-primary);
+  padding: 0.4em 0 0.4em 1.2em;
+  margin: 1.5em 0;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  font-size: 1.05em;
+}
+.tiptap-content blockquote.pull-quote,
+.article-rich-content blockquote.pull-quote {
+  border: none;
+  text-align: center;
+  font-style: normal;
+  font-family: var(--font-headline, serif);
+  font-size: 1.65rem;
+  line-height: 1.3;
+  color: var(--color-text-primary);
+  padding: 1.5em 0.5em;
+  margin: 2em 0;
+  position: relative;
+}
+.tiptap-content blockquote.pull-quote::before,
+.article-rich-content blockquote.pull-quote::before {
+  content: "“";
+  display: block;
+  font-size: 3.5rem;
+  color: var(--color-primary);
+  line-height: 0.8;
+  margin-bottom: 0.2em;
+  font-family: serif;
+}
+.tiptap-content img,
+.tiptap-image,
+.article-rich-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin: 1.5em auto;
+  display: block;
+}
+.tiptap-youtube,
+.article-rich-content iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  margin: 1.5em 0;
+  border-radius: 6px;
+}
+/* Twitter embeds — hide the ugly fallback link until widget hydrates */
+.article-rich-content .twitter-tweet {
+  margin: 1.5em auto;
+}
+.tiptap-content .is-editor-empty:first-child::before,
+.tiptap-content p.is-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--color-text-muted);
+  pointer-events: none;
+  height: 0;
+}

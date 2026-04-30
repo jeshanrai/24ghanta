@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import pool from '../db';
 import { JWT_SECRET } from '../middleware/auth';
 import { requireUser, UserAuthRequest } from '../middleware/userAuth';
+import { loginLimiter } from '../middleware/loginLimiter';
 
 const router = Router();
 
@@ -15,7 +16,7 @@ function signToken(userId: number): string {
 }
 
 // POST /api/auth/signup
-router.post('/signup', async (req: Request, res: Response) => {
+router.post('/signup', loginLimiter, async (req: Request, res: Response) => {
   const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
   const name = typeof req.body?.name === 'string' ? req.body.name.trim().slice(0, 120) : '';
@@ -50,7 +51,7 @@ router.post('/signup', async (req: Request, res: Response) => {
 });
 
 // POST /api/auth/signin
-router.post('/signin', async (req: Request, res: Response) => {
+router.post('/signin', loginLimiter, async (req: Request, res: Response) => {
   const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
   const password = typeof req.body?.password === 'string' ? req.body.password : '';
 
