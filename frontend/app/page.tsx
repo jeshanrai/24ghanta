@@ -1,4 +1,4 @@
-import { HeroSection, CategorySection } from '@/components/sections';
+import { HeroSection, CategorySection, LatestStrip } from '@/components/sections';
 import { AdPopup } from '@/components/ui';
 import { AdSlot } from '@/components/ads';
 import {
@@ -25,7 +25,7 @@ export default async function HomePage() {
     activePoll,
   ] = await Promise.all([
     fetchHeroArticles(),
-    fetchLatestArticles(10),
+    fetchLatestArticles(14),
     fetchCategoryBySlug('sports'),
     fetchArticlesByCategory('sports', 5),
     fetchCategoryBySlug('business'),
@@ -35,11 +35,11 @@ export default async function HomePage() {
     fetchActivePoll(),
   ]);
 
-  // Exclude hero articles from the sidebar to avoid duplicates
+  // Exclude hero articles from sidebar and strip to avoid duplicates
   const heroIds = new Set(heroArticles.map((a) => a.id));
-  const sidebarArticles = latestArticles
-    .filter((a) => !heroIds.has(a.id))
-    .slice(0, 5);
+  const nonHeroLatest = latestArticles.filter((a) => !heroIds.has(a.id));
+  const justInArticles = nonHeroLatest.slice(0, 4);
+  const sidebarArticles = nonHeroLatest.slice(4, 9);
 
   return (
     <div>
@@ -68,6 +68,12 @@ export default async function HomePage() {
           />
         )}
       </div>
+
+      {justInArticles.length > 0 && (
+        <div className="container pb-2">
+          <LatestStrip articles={justInArticles} />
+        </div>
+      )}
 
       <div className="container py-12 space-y-14">
         {sportsCategory && sportsArticles.length > 0 && (
