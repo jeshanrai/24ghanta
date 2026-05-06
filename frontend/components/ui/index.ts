@@ -9,3 +9,4 @@ export { ImageUploadField } from './ImageUploadField';
 export { RichTextEditor } from './RichTextEditor';
 export { GalleryField } from './GalleryField';
 export type { GalleryItem } from './GalleryField';
+export { Timestamp } from './Timestamp';

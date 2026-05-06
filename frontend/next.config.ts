@@ -31,6 +31,9 @@ const nextConfig: NextConfig = {
       ...(apiPattern ? [apiPattern] : []),
     ],
   },
+  turbopack: {
+    root: __dirname,
+  },
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
   compress: true,

@@ -25,7 +25,7 @@ export function HeroSidebar({ articles }: HeroSidebarProps) {
       {restArticles.length > 0 && (
         <div className="mt-4 animate-fade-in-up stagger-3 space-y-2">
           {restArticles.slice(0, 4).map((article) => (
-            <ArticleCardList key={article.id} article={article} />
+            <ArticleCardList key={article.id} article={article} titleClassName="text-sidebar-title" />
           ))}
         </div>
       )}

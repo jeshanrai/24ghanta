@@ -1,19 +1,23 @@
 import Link from 'next/link';
 import type { Article } from '@/lib/types';
-import { formatDate } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { OptimizedImage } from '@/components/ui';
 
 interface ArticleCardListProps {
   article: Article;
   showImage?: boolean;
+  titleClassName?: string;
 }
 
-export function ArticleCardList({ article, showImage = true }: ArticleCardListProps) {
+export function ArticleCardList({ article, showImage = true, titleClassName }: ArticleCardListProps) {
   return (
     <article className="py-4 border-b border-[var(--color-border-light)] last:border-b-0">
       <Link href={`/article/${article.slug}`} className="group flex gap-4 transition-transform duration-300 ease-out hover:translate-x-0.5">
         <div className="flex-1 min-w-0">
-          <h3 className="font-headline text-h3 text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors duration-300 line-clamp-2 leading-snug">
+          <h3 className={cn(
+            "font-headline text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors duration-300 line-clamp-2 leading-snug",
+            titleClassName || "text-h3"
+          )}>
             {article.title}
           </h3>
           {article.excerpt && (

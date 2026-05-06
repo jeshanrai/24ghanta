@@ -19,7 +19,7 @@ export function MainNav() {
               <Link
                 href={item.href}
                 className={cn(
-                  'nav-item relative inline-flex items-center px-3 py-2 text-sm font-medium transition-all duration-300 ease-out',
+                  'nav-item relative inline-flex items-center px-3 py-2 text-nav transition-all duration-300 ease-out',
                   isActive
                     ? 'text-[var(--color-primary)] nav-item--active'
                     : 'text-[var(--color-text-primary)] hover:text-[var(--color-primary)] hover:-translate-y-0.5'

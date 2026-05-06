@@ -48,7 +48,7 @@ export function TrendingBar() {
     <div className="bg-[var(--color-surface)] border-b border-[var(--color-border)] animate-fade-in-down">
       <div className="container">
         <div className="flex items-center gap-4 py-2 overflow-x-auto scrollbar-hide">
-          <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)] whitespace-nowrap">
+          <span className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-wide text-[var(--color-text-muted)] whitespace-nowrap">
             <span className="relative inline-flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--color-primary)] opacity-75 animate-pulse-dot" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--color-primary)]" />
