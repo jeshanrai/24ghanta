@@ -113,32 +113,13 @@ function TripleGridLayout({
           style={{ borderColor: `color-mix(in srgb, ${accent} 18%, transparent)` }}
         >
           {rest.map((a, idx) => (
-            <Link
+            <div
               key={a.id}
-              href={`/article/${a.slug}`}
-              className="group flex gap-4 items-start animate-fade-in-up"
+              className="animate-fade-in-up"
               style={{ animationDelay: `${(idx + 3) * 80}ms` }}
             >
-              <div className="w-32 h-24 sm:w-40 sm:h-28 shrink-0 overflow-hidden rounded-md">
-                <OptimizedImage
-                  src={a.imageUrl}
-                  alt={a.imageAlt}
-                  fill
-                  containerClassName="w-full h-full relative"
-                  className="group-hover:scale-110 transition-transform duration-500 ease-out"
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-headline text-h3 leading-snug text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors line-clamp-2">
-                  {a.title}
-                </h3>
-                <div className="mt-2 flex items-center gap-2 text-xs text-[var(--color-text-muted)] font-medium">
-                  <span>{formatDate(a.publishedAt)}</span>
-                  <span className="w-1 h-1 rounded-full bg-[var(--color-text-muted)]" />
-                  <span>{formatReadTimeShort(a.readTimeMinutes)}</span>
-                </div>
-              </div>
-            </Link>
+              <ArticleCardList article={a} />
+            </div>
           ))}
         </div>
       )}
@@ -173,7 +154,7 @@ function MagazineLayout({
           >
             <Link
               href={`/article/${a.slug}`}
-              className="group flex gap-4 items-start py-3 border-b border-[var(--color-border-light)] last:border-b-0"
+              className="group flex gap-4 items-start py-3 border-b border-(--color-border-light) last:border-b-0"
             >
               <span
                 className="font-headline text-3xl font-bold leading-none shrink-0 tabular-nums w-8"
@@ -182,12 +163,12 @@ function MagazineLayout({
                 {String(idx + 1).padStart(2, '0')}
               </span>
               <div className="flex-1 min-w-0">
-                <h3 className="font-headline text-h3 leading-snug text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors line-clamp-2">
+                <h3 className="font-headline text-h3 leading-snug text-foreground group-hover:text-primary transition-colors line-clamp-2">
                   {a.title}
                 </h3>
-                <div className="mt-1.5 flex items-center gap-2 text-xs text-[var(--color-text-muted)] font-medium">
+                <div className="mt-1.5 flex items-center gap-2 text-xs text-(--color-text-muted) font-medium">
                   <span>{formatDate(a.publishedAt)}</span>
-                  <span className="w-1 h-1 rounded-full bg-[var(--color-text-muted)]" />
+                  <span className="w-1 h-1 rounded-full bg-(--color-text-muted)" />
                   <span>{formatReadTimeShort(a.readTimeMinutes)}</span>
                 </div>
               </div>
@@ -203,15 +184,15 @@ function MagazineLayout({
             href={`/article/${feature.slug}`}
             className="group block relative overflow-hidden rounded-md shadow-sm hover:shadow-lg transition-shadow duration-500"
           >
-            <div className="aspect-[16/10] relative">
+            <div className="aspect-16/10 relative">
               <OptimizedImage
                 src={feature.imageUrl}
                 alt={feature.imageAlt}
                 fill
                 containerClassName="w-full h-full relative"
-                className="group-hover:scale-[1.04] transition-transform duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+                className="group-hover:scale-[1.04] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-5 lg:p-7">
                 <Badge color={accent}>Featured</Badge>
                 <h3 className="mt-3 font-headline text-h1 lg:text-hero/[1.1] text-white line-clamp-3 leading-tight">
@@ -235,7 +216,7 @@ function MagazineLayout({
         <div className="mt-3 flex justify-end">
           <Link
             href={href}
-            className="text-xs uppercase tracking-wider font-bold text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors"
+            className="text-xs uppercase tracking-wider font-bold text-muted hover:text-primary transition-colors"
             style={{ ['--accent' as string]: accent }}
           >
             More from this section →
