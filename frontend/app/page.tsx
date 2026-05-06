@@ -22,6 +22,8 @@ export default async function HomePage() {
     businessArticles,
     entertainmentCategory,
     entertainmentArticles,
+    technologyCategory,
+    technologyArticles,
     activePoll,
   ] = await Promise.all([
     fetchHeroArticles(),
@@ -32,6 +34,8 @@ export default async function HomePage() {
     fetchArticlesByCategory('business', 5),
     fetchCategoryBySlug('entertainment'),
     fetchArticlesByCategory('entertainment', 5),
+    fetchCategoryBySlug('technology'),
+    fetchArticlesByCategory('technology', 5),
     fetchActivePoll(),
   ]);
 
@@ -109,6 +113,14 @@ export default async function HomePage() {
             variant="magazine"
           />
         )}
+
+        {technologyCategory && technologyArticles.length > 0 && (
+          <CategorySection
+            category={technologyCategory}
+            articles={technologyArticles}
+            variant="triple-grid"
+          />
+        )}
       </div>
 
       {/* Footer Ad */}
@@ -128,7 +140,7 @@ function EmptyState({ title, message }: { title: string; message: string }) {
   return (
     <div className="py-16 text-center animate-fade-in-up">
       <h2 className="text-h1 font-bold mb-2">{title}</h2>
-      <p className="text-[var(--color-text-secondary)]">{message}</p>
+      <p className="text-muted">{message}</p>
     </div>
   );
 }
