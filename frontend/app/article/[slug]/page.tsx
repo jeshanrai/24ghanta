@@ -14,6 +14,7 @@ import {
 import { Badge, ShareButtons, SafeImage } from '@/components/ui';
 import { ArticleContent, ArticleGallery } from '@/components/article';
 import { AdSlot } from '@/components/ads';
+import { ArticleCardList } from '@/components/cards';
 
 export const revalidate = 30;
 

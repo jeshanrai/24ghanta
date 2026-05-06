@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { resolveImageSrc } from '@/lib/safeImage';
 
 interface AdImageProps {
@@ -14,11 +14,19 @@ export function AdImage({ imageUrl, altText, name, aspectClassName }: AdImagePro
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const [visible, setVisible] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   // Slight delay before starting to show the ad to catch the eye
   useEffect(() => {
     const timer = setTimeout(() => setVisible(true), 400);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Handle cached images that load before React attaches the onLoad event
+  useEffect(() => {
+    if (imgRef.current?.complete) {
+      setLoaded(true);
+    }
   }, []);
 
   if (error) {
@@ -38,6 +46,7 @@ export function AdImage({ imageUrl, altText, name, aspectClassName }: AdImagePro
       )}
       
       <img
+        ref={imgRef}
         src={resolveImageSrc(imageUrl)}
         alt={altText || name}
         className={`transition-all duration-1000 ease-out transform ${

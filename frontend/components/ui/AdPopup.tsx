@@ -45,10 +45,10 @@ export function AdPopup({ ad, delayMs = 5000 }: AdPopupProps) {
   useEffect(() => {
     if (!open) return;
     
-    // Auto-dismiss after 5 seconds
+    // Auto-dismiss after 3 seconds
     const autoCloseTimer = setTimeout(() => {
       handleClose();
-    }, 5000);
+    }, 3000);
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') handleClose();
