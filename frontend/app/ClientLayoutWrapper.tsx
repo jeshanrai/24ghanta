@@ -22,7 +22,7 @@ export default function ClientLayoutWrapper({
 
   return (
     <>
-      <AdPopup ad={popupAd} />
+      {pathname === "/" && <AdPopup ad={popupAd} />}
       <Header />
       <TrendingBar />
       <main className="min-h-screen">

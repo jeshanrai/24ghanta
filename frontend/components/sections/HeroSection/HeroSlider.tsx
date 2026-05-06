@@ -101,7 +101,7 @@ export function HeroSlider({ articles }: HeroSliderProps) {
         <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/40 to-transparent z-20 pointer-events-none" />
 
         {/* Content overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-5 lg:p-8 z-30">
+        <div className="absolute bottom-0 left-0 right-0 p-5 px-14 md:px-16 lg:p-8 lg:px-20 z-30">
           <div className="flex flex-wrap items-center gap-2 mb-3">
             {article.isBreaking && (
               <div className="inline-flex items-center gap-2 animate-fade-in-up">
@@ -194,7 +194,7 @@ export function HeroSlider({ articles }: HeroSliderProps) {
         <>
           <button
             onClick={prev}
-            className="absolute left-3 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[var(--color-primary)] hover:scale-110 shadow-md"
+            className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[var(--color-primary)] hover:scale-110 shadow-md"
             aria-label="Previous slide"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -203,7 +203,7 @@ export function HeroSlider({ articles }: HeroSliderProps) {
           </button>
           <button
             onClick={next}
-            className="absolute right-3 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[var(--color-primary)] hover:scale-110 shadow-md"
+            className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[var(--color-primary)] hover:scale-110 shadow-md"
             aria-label="Next slide"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

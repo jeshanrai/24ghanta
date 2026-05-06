@@ -43,6 +43,17 @@ export default async function HomePage() {
 
   return (
     <div>
+      {/* Header Ad */}
+      <div className="container pt-4 flex justify-center">
+        <div className="w-full max-w-[728px]">
+          <AdSlot
+            placement="header_banner"
+            className="my-2"
+            aspectClassName="aspect-[728/90]"
+          />
+        </div>
+      </div>
+
       <div className="container pt-6 pb-10">
         {heroArticles.length > 0 ? (
           <HeroSection
@@ -92,6 +103,16 @@ export default async function HomePage() {
             variant="magazine"
           />
         )}
+      </div>
+
+      {/* Footer Ad */}
+      <div className="container pb-10 flex justify-center mt-auto">
+        <div className="w-full max-w-[728px]">
+          <AdSlot
+            placement="footer_banner"
+            aspectClassName="aspect-[728/90]"
+          />
+        </div>
       </div>
     </div>
   );

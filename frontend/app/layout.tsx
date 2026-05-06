@@ -13,7 +13,6 @@ const martianMono = Martian_Mono({
   subsets: ["latin"],
 });
 
-import { AdSlot } from "@/components/ads";
 import { fetchAd } from "@/lib/api";
 
 export const metadata: Metadata = {
@@ -36,29 +35,8 @@ export default async function RootLayout({
       >
         <ClientLayoutWrapper popupAd={popupAd}>
           <div className="flex flex-col min-h-screen">
-            {/* Header Ad */}
-            <div className="container pt-4 flex justify-center">
-              <div className="w-full max-w-[728px]">
-                <AdSlot
-                  placement="header_banner"
-                  className="my-2"
-                  aspectClassName="aspect-[728/90]"
-                />
-              </div>
-            </div>
-
             <div className="flex-1">
               {children}
-            </div>
-
-            {/* Footer Ad */}
-            <div className="container pb-10 flex justify-center mt-auto">
-              <div className="w-full max-w-[728px]">
-                <AdSlot
-                  placement="footer_banner"
-                  aspectClassName="aspect-[728/90]"
-                />
-              </div>
             </div>
           </div>
         </ClientLayoutWrapper>
