@@ -375,11 +375,15 @@ img {
 
 @keyframes shimmer {
   0% {
-    transform: translateX(-120%) skewX(-20deg);
+    background-position: -200% 0;
   }
   100% {
-    transform: translateX(220%) skewX(-20deg);
+    background-position: 200% 0;
   }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
 }
 
 @keyframes marquee-scroll {

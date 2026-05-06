@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
 import { resolveImageSrc } from '@/lib/safeImage';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -45,12 +44,19 @@ export function AdPopup({ ad, delayMs = 5000 }: AdPopupProps) {
 
   useEffect(() => {
     if (!open) return;
+    
+    // Auto-dismiss after 5 seconds
+    const autoCloseTimer = setTimeout(() => {
+      handleClose();
+    }, 5000);
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') handleClose();
     };
     document.addEventListener('keydown', onKey);
     document.body.style.overflow = 'hidden';
     return () => {
+      clearTimeout(autoCloseTimer);
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = '';
     };
@@ -81,13 +87,6 @@ export function AdPopup({ ad, delayMs = 5000 }: AdPopupProps) {
       />
 
       <div className="relative w-full max-w-lg bg-white rounded-lg shadow-2xl overflow-hidden animate-scale-in">
-        <button
-          onClick={handleClose}
-          aria-label="Close ad"
-          className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
 
         <span className="absolute top-3 left-3 z-10 inline-block text-[10px] font-bold uppercase tracking-wider bg-white/90 text-[var(--color-text-primary)] px-2 py-1 rounded-sm">
           Advertisement

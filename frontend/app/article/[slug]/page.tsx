@@ -12,8 +12,8 @@ import {
   formatReadTime,
 } from '@/lib/utils';
 import { Badge, ShareButtons, SafeImage } from '@/components/ui';
-import { ArticleCardList } from '@/components/cards';
 import { ArticleContent, ArticleGallery } from '@/components/article';
+import { AdSlot } from '@/components/ads';
 
 export const revalidate = 30;
 
@@ -133,6 +133,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           {/* Article Content (rich HTML from Tiptap, sanitised server-side) */}
           <ArticleContent html={article.content || ''} />
 
+          {/* Inline Ad */}
+          <AdSlot
+            placement="article_inline"
+            className="my-10"
+          />
+
           {/* Photo gallery */}
           {article.gallery && article.gallery.length > 0 && (
             <ArticleGallery images={article.gallery} />
@@ -202,6 +208,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               </div>
             </div>
           )}
+          {/* Sidebar Ad */}
+          <div className="sticky top-24">
+            <AdSlot
+              placement="article_sidebar"
+              aspectClassName="aspect-[300/600]"
+            />
+          </div>
         </aside>
       </div>
     </div>

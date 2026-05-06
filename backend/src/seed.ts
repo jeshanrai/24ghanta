@@ -238,6 +238,92 @@ async function seedTrending(): Promise<void> {
   }
 }
 
+async function seedAds(): Promise<void> {
+  const ads = [
+    {
+      name: 'Himalayan Java — header leaderboard',
+      placement: 'header_banner',
+      ad_type: 'image',
+      image_url: 'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=1456&h=180&fit=crop&q=80',
+      link_url: 'https://example.com/sponsor/himalayan-java',
+      alt_text: 'Himalayan Java — Premium Nepali coffee delivered nationwide',
+      priority: 10,
+      is_active: true
+    },
+    {
+      name: 'Daraz Nepal — between sections leaderboard',
+      placement: 'between_sections',
+      ad_type: 'image',
+      image_url: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1456&h=180&fit=crop&q=80',
+      link_url: 'https://example.com/sponsor/daraz',
+      alt_text: 'Daraz Nepal — Big Days mega-sale, free delivery on orders above Rs 1,000',
+      priority: 10,
+      is_active: true
+    },
+    {
+      name: 'NIC Asia Bank — hero sidebar',
+      placement: 'hero_sidebar',
+      ad_type: 'image',
+      image_url: 'https://images.unsplash.com/photo-1556742031-c6961e8560b0?w=600&h=500&fit=crop&q=80',
+      link_url: 'https://example.com/sponsor/nic-asia',
+      alt_text: 'NIC Asia Bank — Open a digital savings account in 5 minutes',
+      priority: 10,
+      is_active: true
+    },
+    {
+      name: 'eSewa — article inline rectangle',
+      placement: 'article_inline',
+      ad_type: 'image',
+      image_url: 'https://images.unsplash.com/photo-1556742044-3c52d6e88c62?w=672&h=560&fit=crop&q=80',
+      link_url: 'https://example.com/sponsor/esewa',
+      alt_text: 'eSewa — Pay bills, recharge and shop without ever opening your wallet',
+      priority: 10,
+      is_active: true
+    },
+    {
+      name: 'Buddha Air — article sidebar skyscraper',
+      placement: 'article_sidebar',
+      ad_type: 'image',
+      image_url: 'https://images.unsplash.com/photo-1542296332-2e4473faf563?w=600&h=1200&fit=crop&q=80',
+      link_url: 'https://example.com/sponsor/buddha-air',
+      alt_text: 'Buddha Air — Daily flights to Pokhara, Bharatpur, Janakpur and more',
+      priority: 10,
+      is_active: true
+    },
+    {
+      name: 'Ncell Postpaid — footer leaderboard',
+      placement: 'footer_banner',
+      ad_type: 'image',
+      image_url: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=1456&h=180&fit=crop&q=80',
+      link_url: 'https://example.com/sponsor/ncell',
+      alt_text: 'Ncell Postpaid — Unlimited 5G data, free roaming across SAARC',
+      priority: 10,
+      is_active: true
+    },
+    {
+      name: 'Visit Nepal 2026 — landing popup',
+      placement: 'popup_landing',
+      ad_type: 'image',
+      image_url: 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200&h=900&fit=crop&q=80',
+      link_url: 'https://example.com/sponsor/visit-nepal-2026',
+      alt_text: 'Visit Nepal 2026 — Plan your trip to the roof of the world',
+      priority: 10,
+      is_active: true
+    }
+  ];
+
+  for (const ad of ads) {
+    // Overwrite existing ads with the same placement to ensure they match seed-prod.sql
+    await pool.query('DELETE FROM ads WHERE placement = $1', [ad.placement]);
+    
+    await pool.query(
+      `INSERT INTO ads (name, placement, ad_type, image_url, link_url, alt_text, is_active, priority)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [ad.name, ad.placement, ad.ad_type, ad.image_url, ad.link_url, ad.alt_text, ad.is_active, ad.priority]
+    );
+  }
+}
+
 /**
  * Seeds the database only if it appears empty (no categories yet).
  * Safe to call on every server start.
@@ -245,6 +331,8 @@ async function seedTrending(): Promise<void> {
 export async function seedIfEmpty(): Promise<void> {
   const { rows } = await pool.query('SELECT COUNT(*)::int AS c FROM categories');
   if (rows[0].c > 0) {
+    // If categories exist, still check if ads are missing and seed them
+    await seedAds();
     return;
   }
 
@@ -256,5 +344,6 @@ export async function seedIfEmpty(): Promise<void> {
   await seedVideos(catIds);
   await seedPolls();
   await seedTrending();
+  await seedAds();
   console.log('✅ Seed complete');
 }

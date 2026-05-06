@@ -4,7 +4,7 @@ import type { Poll } from '@/lib/data/polls';
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 // Short revalidation so admin-published content shows up fast
-const REVALIDATE_SECONDS = 30;
+const REVALIDATE_SECONDS = 0;
 
 async function api<T>(path: string, init?: RequestInit): Promise<T | null> {
   try {

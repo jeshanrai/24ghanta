@@ -23,7 +23,6 @@ export default async function HomePage() {
     entertainmentCategory,
     entertainmentArticles,
     activePoll,
-    popupAd,
   ] = await Promise.all([
     fetchHeroArticles(),
     fetchLatestArticles(10),
@@ -34,7 +33,6 @@ export default async function HomePage() {
     fetchCategoryBySlug('entertainment'),
     fetchArticlesByCategory('entertainment', 5),
     fetchActivePoll(),
-    fetchAd('popup_landing'),
   ]);
 
   // Exclude hero articles from the sidebar to avoid duplicates
@@ -45,18 +43,6 @@ export default async function HomePage() {
 
   return (
     <div>
-      <AdPopup ad={popupAd} />
-
-      <div className="container pt-4 flex justify-center">
-        <div className="w-full max-w-[728px]">
-          <AdSlot
-            placement="header_banner"
-            className="my-2"
-            aspectClassName="aspect-[728/90]"
-          />
-        </div>
-      </div>
-
       <div className="container pt-6 pb-10">
         {heroArticles.length > 0 ? (
           <HeroSection
@@ -106,15 +92,6 @@ export default async function HomePage() {
             variant="magazine"
           />
         )}
-      </div>
-
-      <div className="container pb-10 flex justify-center">
-        <div className="w-full max-w-[728px]">
-          <AdSlot
-            placement="footer_banner"
-            aspectClassName="aspect-[728/90]"
-          />
-        </div>
       </div>
     </div>
   );

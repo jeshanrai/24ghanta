@@ -1,5 +1,6 @@
 import { fetchAd, AD_API_URL } from '@/lib/api';
 import { AdImpressionTracker } from './AdImpressionTracker';
+import { AdImage } from './AdImage';
 
 interface AdSlotProps {
   placement: string;
@@ -50,12 +51,11 @@ export async function AdSlot({
     >
       {sponsoredLabel}
       <AdImpressionTracker adId={ad.id} />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={ad.imageUrl}
-        alt={ad.altText || ad.name}
-        className={`${aspectClassName ? 'absolute inset-0 w-full h-full object-cover' : 'w-full h-auto block'}`}
-        loading="lazy"
+      <AdImage 
+        imageUrl={ad.imageUrl}
+        altText={ad.altText}
+        name={ad.name}
+        aspectClassName={aspectClassName}
       />
     </div>
   );
