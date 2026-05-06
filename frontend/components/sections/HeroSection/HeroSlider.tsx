@@ -101,7 +101,7 @@ export function HeroSlider({ articles }: HeroSliderProps) {
         <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/40 to-transparent z-20 pointer-events-none" />
 
         {/* Content overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-5 px-14 md:px-16 lg:p-8 lg:px-20 z-30">
+        <div className="absolute bottom-0 left-0 right-0 p-5 px-6 sm:px-14 md:px-16 lg:p-8 lg:px-20 z-30">
           <div className="flex flex-wrap items-center gap-2 mb-3">
             {article.isBreaking && (
               <div className="inline-flex items-center gap-2 animate-fade-in-up">

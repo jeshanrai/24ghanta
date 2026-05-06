@@ -43,7 +43,8 @@ export default async function HomePage() {
   const heroIds = new Set(heroArticles.map((a) => a.id));
   const nonHeroLatest = latestArticles.filter((a) => !heroIds.has(a.id));
   const justInArticles = nonHeroLatest.slice(0, 4);
-  const sidebarArticles = nonHeroLatest.slice(4, 9);
+  const featuredArticle = nonHeroLatest[4] ?? null;
+  const sidebarArticles = nonHeroLatest.slice(5, 9);
 
   return (
     <div>
@@ -53,17 +54,18 @@ export default async function HomePage() {
           <AdSlot
             placement="header_banner"
             className="my-2"
-            aspectClassName="aspect-[728/90]"
+            aspectClassName=""
           />
         </div>
       </div>
 
-      <div className="container pt-6 pb-10">
+      <div className="container pt-6 pb-0">
         {heroArticles.length > 0 ? (
           <HeroSection
             heroArticles={heroArticles}
             sidebarArticles={sidebarArticles}
             activePoll={activePoll}
+            featuredArticle={featuredArticle}
           />
         ) : (
           <EmptyState
@@ -101,7 +103,7 @@ export default async function HomePage() {
             <AdSlot
               placement="between_sections"
               className="my-2"
-              aspectClassName="aspect-[728/90]"
+              aspectClassName=""
             />
           </div>
         </div>
@@ -128,7 +130,7 @@ export default async function HomePage() {
         <div className="w-full max-w-[728px]">
           <AdSlot
             placement="footer_banner"
-            aspectClassName="aspect-[728/90]"
+            aspectClassName=""
           />
         </div>
       </div>

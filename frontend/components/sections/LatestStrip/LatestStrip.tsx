@@ -11,7 +11,7 @@ export function LatestStrip({ articles }: LatestStripProps) {
 
   return (
     <SectionBlock title="Just In" headerStyle="bar">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
         {articles.slice(0, 4).map((article, idx) => (
           <div
             key={article.id}

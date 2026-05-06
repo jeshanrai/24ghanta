@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 interface FooterLogoProps {
@@ -7,9 +8,14 @@ interface FooterLogoProps {
 export function FooterLogo({ centered = false }: FooterLogoProps) {
   return (
     <div className={`mb-5 md:mb-6 ${centered ? 'flex flex-col items-center' : ''}`}>
-      <Link href="/" className="inline-flex items-center gap-1">
-        <span className="text-3xl font-bold text-[var(--color-primary)]">24</span>
-        <span className="text-3xl font-bold text-white">Ghanta</span>
+      <Link href="/" className="inline-flex items-center">
+        <Image
+          src="/24 GHANTA WHITE.png"
+          alt="24 Ghanta"
+          width={160}
+          height={50}
+          className="object-contain"
+        />
       </Link>
       <p
         className={`mt-3 text-sm leading-relaxed text-gray-400 ${
