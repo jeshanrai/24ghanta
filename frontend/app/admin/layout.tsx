@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { LogOut, LayoutDashboard, FileText, Settings, ExternalLink, Menu, BarChart3, Video, Tag, UserPen, Mail, Vote, TrendingUp, Megaphone } from "lucide-react";
+import { LogOut, LayoutDashboard, FileText, Settings, ExternalLink, Menu, BarChart3, Video, Tag, UserPen, Mail, Vote, TrendingUp, Megaphone, Images } from "lucide-react";
 import { ConfirmDialogProvider } from "@/components/ui/ConfirmDialog";
 
 type AdminRole = "admin" | "author";
@@ -88,6 +88,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/articles", label: "Articles", icon: FileText },
     { href: "/admin/videos", label: "Videos", icon: Video },
+    { href: "/admin/gallery", label: "Gallery", icon: Images },
     { href: "/admin/tags", label: "Tags", icon: Tag },
     { href: "/admin/authors", label: "Authors", icon: UserPen },
     { href: "/admin/subscribers", label: "Subscribers", icon: Mail },

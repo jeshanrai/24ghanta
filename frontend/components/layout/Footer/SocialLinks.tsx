@@ -1,10 +1,13 @@
-import { FacebookIcon, TwitterIcon, InstagramIcon, YouTubeIcon } from '@/components/icons';
+import { FacebookIcon, TwitterIcon, InstagramIcon, YouTubeIcon, ThreadsIcon, LinkedinIcon, TiktokIcon } from '@/components/icons';
 
 const socialLinks = [
-  { id: 'facebook', icon: FacebookIcon, href: 'https://facebook.com', label: 'Facebook' },
+  { id: 'facebook', icon: FacebookIcon, href: 'https://www.facebook.com/24GhantaNepal/', label: 'Facebook' },
   { id: 'twitter', icon: TwitterIcon, href: 'https://twitter.com', label: 'Twitter' },
-  { id: 'instagram', icon: InstagramIcon, href: 'https://instagram.com', label: 'Instagram' },
-  { id: 'youtube', icon: YouTubeIcon, href: 'https://youtube.com', label: 'YouTube' },
+  { id: 'instagram', icon: InstagramIcon, href: 'https://www.instagram.com/24ghantanepal/', label: 'Instagram' },
+  { id: 'threads', icon: ThreadsIcon, href: 'https://www.threads.com/@24ghantanepal', label: 'Threads' },
+  { id: 'tiktok', icon: TiktokIcon, href: 'https://www.tiktok.com/@24ghanta_nepal', label: 'TikTok' },
+  { id: 'linkedin', icon: LinkedinIcon, href: 'https://www.linkedin.com/company/24-ghanta-nepal/', label: 'LinkedIn' },
+  { id: 'youtube', icon: YouTubeIcon, href: 'https://www.youtube.com/@24GhantaNepal', label: 'YouTube' },
 ];
 
 interface SocialLinksProps {

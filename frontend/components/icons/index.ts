@@ -11,3 +11,6 @@ export { TwitterIcon } from './TwitterIcon';
 export { InstagramIcon } from './InstagramIcon';
 export { InstagramReelIcon } from './InstagramReelIcon';
 export { YouTubeIcon } from './YouTubeIcon';
+export { ThreadsIcon } from './ThreadsIcon';
+export { LinkedinIcon } from './LinkedinIcon';
+export { TiktokIcon } from './TiktokIcon';

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FacebookIcon, TwitterIcon } from '@/components/icons';
 
 interface ShareButtonsProps {
@@ -10,11 +10,13 @@ interface ShareButtonsProps {
 
 export function ShareButtons({ title, slug }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
+  const [origin, setOrigin] = useState('');
 
-  const url =
-    typeof window !== 'undefined'
-      ? `${window.location.origin}/article/${slug}`
-      : `/article/${slug}`;
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+
+  const url = origin ? `${origin}/article/${slug}` : `/article/${slug}`;
 
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
