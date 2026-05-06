@@ -84,6 +84,14 @@ export default async function HomePage() {
           />
         )}
 
+        {businessCategory && businessArticles.length > 0 && (
+          <CategorySection
+            category={businessCategory}
+            articles={businessArticles}
+            variant="triple-grid"
+          />
+        )}
+
         <div className="flex justify-center">
           <div className="w-full max-w-[728px]">
             <AdSlot
@@ -93,14 +101,6 @@ export default async function HomePage() {
             />
           </div>
         </div>
-
-        {businessCategory && businessArticles.length > 0 && (
-          <CategorySection
-            category={businessCategory}
-            articles={businessArticles}
-            variant="triple-grid"
-          />
-        )}
 
         {entertainmentCategory && entertainmentArticles.length > 0 && (
           <CategorySection
