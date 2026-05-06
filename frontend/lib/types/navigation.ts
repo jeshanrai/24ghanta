@@ -9,6 +9,7 @@ export interface TrendingTopic {
   id: string;
   label: string;
   href: string;
+  badge?: string | null;
 }
 
 export interface FooterLink {

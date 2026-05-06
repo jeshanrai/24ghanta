@@ -217,23 +217,26 @@ async function seedPolls(): Promise<void> {
 
 async function seedTrending(): Promise<void> {
   const items = [
-    { label: 'Breaking News', href: '/', priority: 1 },
-    { label: 'Politics', href: '/category/politics', priority: 2 },
-    { label: 'Cricket & Sports', href: '/category/sports', priority: 3 },
-    { label: 'Stock Market', href: '/category/business', priority: 4 },
-    { label: 'Tech Today', href: '/category/technology', priority: 5 },
+    { label: 'Breaking News', href: '/breaking', priority: 1, badge: 'LIVE' },
+    { label: 'Breaking News', href: '/breaking', priority: 2, badge: 'LIVE' },
+    { label: 'Politics', href: '/category/politics', priority: 3, badge: null },
+    { label: 'Budget 2082/83', href: '/category/business', priority: 4, badge: null },
+    { label: 'Cricket & Sports', href: '/category/sports', priority: 5, badge: null },
+    { label: 'ACC Premier Cup', href: '/category/sports', priority: 6, badge: null },
+    { label: 'Stock Market', href: '/category/business', priority: 7, badge: null },
+    { label: 'Visit Nepal 2026', href: '/category/business', priority: 8, badge: null },
   ];
   for (const item of items) {
-    const existing = await pool.query(
-      'SELECT id FROM trending_items WHERE label = $1 LIMIT 1',
-      [item.label]
+    // Delete existing with same label and priority to allow re-seeding with badges
+    await pool.query(
+      'DELETE FROM trending_items WHERE label = $1 AND priority = $2',
+      [item.label, item.priority]
     );
-    if (existing.rows.length > 0) continue;
 
     await pool.query(
-      `INSERT INTO trending_items (label, href, priority, is_active)
-       VALUES ($1,$2,$3,TRUE)`,
-      [item.label, item.href, item.priority]
+      `INSERT INTO trending_items (label, href, priority, is_active, badge)
+       VALUES ($1,$2,$3,TRUE,$4)`,
+      [item.label, item.href, item.priority, item.badge]
     );
   }
 }

@@ -13,11 +13,14 @@ export const mainNavItems: NavItem[] = [
 ];
 
 export const trendingTopics: TrendingTopic[] = [
-  { id: '1', label: 'Breaking News', href: '/breaking' },
-  { id: '2', label: 'Politics', href: '/category/politics' },
-  { id: '3', label: 'Cricket & Sports', href: '/category/sports' },
-  { id: '4', label: 'Stock Market', href: '/category/business' },
-  { id: '5', label: 'Tech Today', href: '/category/technology' },
+  { id: '1', label: 'Breaking News', href: '/breaking', badge: 'LIVE' },
+  { id: '2', label: 'Breaking News', href: '/breaking', badge: 'LIVE' },
+  { id: '3', label: 'Politics', href: '/category/politics', badge: null },
+  { id: '4', label: 'Budget 2082/83', href: '/category/business', badge: null },
+  { id: '5', label: 'Cricket & Sports', href: '/category/sports', badge: null },
+  { id: '6', label: 'ACC Premier Cup', href: '/category/sports', badge: null },
+  { id: '7', label: 'Stock Market', href: '/category/business', badge: null },
+  { id: '8', label: 'Visit Nepal 2026', href: '/category/business', badge: null },
 ];
 
 export const footerColumns: FooterColumn[] = [
