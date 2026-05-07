@@ -192,7 +192,7 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
       <div className="relative bg-white shadow-2xl border-b border-[var(--color-border)] animate-fade-in-down">
         <div className="container py-5 lg:py-6">
           <form onSubmit={submit} className="flex items-center gap-3">
-            <div className="group/searchbar flex items-center gap-3 flex-1 px-5 py-3.5 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-border-dark)] focus-within:bg-white focus-within:border-[var(--color-primary)] focus-within:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] focus-within:ring-4 focus-within:ring-[var(--color-primary)]/10 transition-all duration-200">
+            <div className="flex items-center gap-3 flex-1 px-5 py-3 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] focus-within:border-[var(--color-text-muted)] transition-colors duration-150">
               <SearchIcon
                 size={22}
                 className={`shrink-0 transition-colors ${
@@ -209,7 +209,8 @@ export function SearchOverlay({ open, onClose }: SearchOverlayProps) {
                 aria-autocomplete="list"
                 aria-controls="search-results"
                 aria-activedescendant={activeIdx >= 0 ? `search-result-${activeIdx}` : undefined}
-                className="flex-1 text-base lg:text-lg bg-transparent outline-none placeholder:text-[var(--color-text-muted)]"
+                style={{ outline: 'none', boxShadow: 'none' }}
+                className="flex-1 text-base lg:text-lg bg-transparent placeholder:text-[var(--color-text-muted)] focus:outline-none focus-visible:outline-none"
               />
               {loading && (
                 <span
