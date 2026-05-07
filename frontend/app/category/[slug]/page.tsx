@@ -71,47 +71,55 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         ))}
       </div>
 
-      {remainingArticles.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <h2 className="text-xl font-bold mb-6 pb-2 border-b-2 border-[var(--color-primary)]">
-              More {category.name} Stories
-            </h2>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          <h2 className="text-xl font-bold mb-6 pb-2 border-b-2 border-[var(--color-primary)]">
+            More {category.name} Stories
+          </h2>
+          {remainingArticles.length > 0 ? (
             <div>
               {remainingArticles.map((article) => (
                 <ArticleCardList key={article.id} article={article} />
               ))}
             </div>
-          </div>
-
-          <aside className="lg:col-span-1">
-            <div className="sticky top-24">
-              <h3 className="text-lg font-bold mb-4 pb-2 border-b-2 border-[var(--color-primary)]">
-                Explore Categories
-              </h3>
-              <nav className="space-y-2">
-                {allCategories
-                  .filter((c) => c.slug !== slug)
-                  .map((c) => (
-                    <Link
-                      key={c.id}
-                      href={`/category/${c.slug}`}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--color-surface)] transition-colors group"
-                    >
-                      <span
-                        className="w-3 h-3 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: c.color || 'var(--color-primary)' }}
-                      />
-                      <span className="text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors">
-                        {c.name}
-                      </span>
-                    </Link>
-                  ))}
-              </nav>
-            </div>
-          </aside>
+          ) : (
+            <p className="text-[var(--color-text-secondary)] italic mb-8">
+              No more stories in this category at the moment.
+            </p>
+          )}
         </div>
-      )}
+
+        <aside className="lg:col-span-1">
+          <div className="sticky top-24">
+            <h3 className="text-lg font-bold mb-4 pb-2 border-b-2 border-[var(--color-primary)]">
+              Explore Categories
+            </h3>
+            <nav className="space-y-2">
+              {allCategories.map((c) => (
+                <Link
+                  key={c.id}
+                  href={`/category/${c.slug}`}
+                  className={`flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--color-surface)] transition-colors group ${
+                    c.slug === slug ? 'bg-[var(--color-surface)] font-bold' : ''
+                  }`}
+                >
+                  <span
+                    className="w-3 h-3 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: c.color || 'var(--color-primary)' }}
+                  />
+                  <span className={`transition-colors ${
+                    c.slug === slug 
+                      ? 'text-[var(--color-primary)]' 
+                      : 'text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)]'
+                  }`}>
+                    {c.name}
+                  </span>
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
