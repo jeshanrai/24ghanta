@@ -1,25 +1,9 @@
-'use client';
-
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
 
 export function Logo() {
-  const pathname = usePathname();
-  const isHomePage = pathname === '/';
-
   return (
-    <Link href="/" className="group flex items-center gap-2.5 transition-transform duration-300 ease-out hover:-translate-y-0.5">
-      {!isHomePage && (
-        <Image
-          src="/24ghantalogo.jpg"
-          alt="24 Ghanta icon"
-          width={48}
-          height={48}
-          className="h-10 w-10 rounded-md object-contain"
-          priority
-        />
-      )}
+    <Link href="/" className="transition-transform duration-300 ease-out hover:-translate-y-0.5">
       <Image
         src="/24 GHANTA BLACK.png"
         alt="24 Ghanta"
