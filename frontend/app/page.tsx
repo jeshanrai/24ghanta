@@ -44,14 +44,12 @@ export default async function HomePage() {
   return (
     <div>
       {/* Header Ad */}
-      <div className="container pt-4 flex justify-center">
-        <div className="w-full max-w-[728px]">
-          <AdSlot
-            placement="header_banner"
-            className="my-2"
-            aspectClassName="aspect-[728/90]"
-          />
-        </div>
+      <div className="container pt-4">
+        <AdSlot
+          placement="header_banner"
+          className="my-2"
+          aspectClassName="aspect-[1200/90]"
+        />
       </div>
 
       <div className="container pt-6 pb-10">
