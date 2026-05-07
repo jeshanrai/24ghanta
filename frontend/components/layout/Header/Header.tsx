@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Logo } from './Logo';
 import { MainNav } from './MainNav';
 import { SearchButton } from './SearchButton';
-import { HeaderSearch } from './HeaderSearch';
 import { UserActions } from './UserActions';
 import { MobileMenuButton } from './MobileMenuButton';
 import { MobileMenu } from './MobileMenu';
@@ -33,12 +32,7 @@ export function Header() {
           <MainNav />
 
           <div className="flex items-center gap-2">
-            <div className="hidden lg:block w-56 xl:w-72">
-              <HeaderSearch />
-            </div>
-            <div className="lg:hidden">
-              <SearchButton onClick={() => setIsSearchOpen(true)} />
-            </div>
+            <SearchButton onClick={() => setIsSearchOpen(true)} />
             <UserActions />
             <MobileMenuButton isOpen={isMobileMenuOpen} onClick={toggleMobileMenu} />
           </div>
