@@ -72,7 +72,7 @@ function HeroSplitLayout({ articles }: { articles: Article[] }) {
             className="animate-fade-in-up"
             style={{ animationDelay: `${120 + idx * 70}ms` }}
           >
-            <ArticleCardList article={article} />
+            <ArticleCardList article={article} titleClassName="text-sidebar-title" />
           </div>
         ))}
       </div>

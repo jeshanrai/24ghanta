@@ -1,18 +1,20 @@
 import Link from 'next/link';
 import type { Article } from '@/lib/types';
-import { formatDate, formatReadTimeShort } from '@/lib/utils';
+import { cn, formatDate, formatReadTimeShort } from '@/lib/utils';
 import { OptimizedImage, Badge } from '@/components/ui';
 
 interface ArticleCardMediumProps {
   article: Article;
   showExcerpt?: boolean;
   showCategory?: boolean;
+  titleClassName?: string;
 }
 
 export function ArticleCardMedium({
   article,
   showExcerpt = true,
   showCategory = true,
+  titleClassName,
 }: ArticleCardMediumProps) {
   return (
     <article className="group">
@@ -32,7 +34,10 @@ export function ArticleCardMedium({
           )}
         </div>
         <div className="mt-4">
-          <h3 className="font-headline text-card-title text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors duration-300 line-clamp-3 leading-snug">
+          <h3 className={cn(
+            "font-headline text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors duration-300 line-clamp-3 leading-snug",
+            titleClassName || "text-card-title"
+          )}>
             {article.title}
           </h3>
           {showExcerpt && article.excerpt && (

@@ -19,6 +19,7 @@ export function HeroSidebar({ articles }: HeroSidebarProps) {
             article={topArticle}
             showExcerpt={false}
             showCategory={false}
+            titleClassName="text-sidebar-title"
           />
         </div>
       )}
