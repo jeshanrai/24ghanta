@@ -17,7 +17,10 @@ export function ArticleCardMedium({
   titleClassName,
 }: ArticleCardMediumProps) {
   return (
-    <article className="group">
+    <article
+      className="group"
+      style={{ ['--hover-accent' as string]: article.category.color || 'var(--color-primary)' }}
+    >
       <Link href={`/article/${article.slug}`} className="block">
         <div className="shine-hover aspect-video relative overflow-hidden rounded-md shadow-sm group-hover:shadow-md transition-shadow duration-500">
           <OptimizedImage
@@ -35,7 +38,7 @@ export function ArticleCardMedium({
         </div>
         <div className="mt-4">
           <h3 className={cn(
-            "font-headline text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors duration-300 line-clamp-3 leading-snug",
+            "font-headline text-[var(--color-text-primary)] group-hover:text-[var(--hover-accent)] transition-colors duration-300 line-clamp-3 leading-snug",
             titleClassName || "text-card-title"
           )}>
             {article.title}

@@ -127,7 +127,10 @@ function TripleGridLayout({
               key={a.id}
               href={`/article/${a.slug}`}
               className="group flex gap-4 items-start animate-fade-in-up"
-              style={{ animationDelay: `${(idx + 3) * 80}ms` }}
+              style={{
+                animationDelay: `${(idx + 3) * 80}ms`,
+                ['--hover-accent' as string]: accent,
+              }}
             >
               <div className="w-32 h-24 sm:w-40 sm:h-28 shrink-0 overflow-hidden rounded-md">
                 <OptimizedImage
@@ -139,7 +142,7 @@ function TripleGridLayout({
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-headline text-base lg:text-lg leading-snug text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors line-clamp-2">
+                <h3 className="font-headline text-base lg:text-lg leading-snug text-[var(--color-text-primary)] group-hover:text-[var(--hover-accent)] transition-colors line-clamp-2">
                   {a.title}
                 </h3>
                 <div className="mt-2 flex items-center gap-2 text-xs text-[var(--color-text-muted)] font-medium">
@@ -184,6 +187,7 @@ function MagazineLayout({
             <Link
               href={`/article/${a.slug}`}
               className="group flex gap-4 items-start py-3 border-b border-[var(--color-border-light)] last:border-b-0"
+              style={{ ['--hover-accent' as string]: accent }}
             >
               <span
                 className="font-headline text-3xl font-bold leading-none shrink-0 tabular-nums w-8"
@@ -192,7 +196,7 @@ function MagazineLayout({
                 {String(idx + 1).padStart(2, '0')}
               </span>
               <div className="flex-1 min-w-0">
-                <h3 className="font-headline text-base lg:text-lg leading-snug text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors line-clamp-2">
+                <h3 className="font-headline text-base lg:text-lg leading-snug text-[var(--color-text-primary)] group-hover:text-[var(--hover-accent)] transition-colors line-clamp-2">
                   {a.title}
                 </h3>
                 <div className="mt-1.5 flex items-center gap-2 text-xs text-[var(--color-text-muted)] font-medium">
