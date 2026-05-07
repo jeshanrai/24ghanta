@@ -1,4 +1,4 @@
-export function formatDate(dateString: string): string {
+export function formatDate(dateString: string | Date): string {
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -38,7 +38,7 @@ export function formatDate(dateString: string): string {
   return date.toLocaleDateString('en-US', options);
 }
 
-export function formatFullDate(dateString: string): string {
+export function formatFullDate(dateString: string | Date): string {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', {
     weekday: 'long',

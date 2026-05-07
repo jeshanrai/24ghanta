@@ -21,6 +21,18 @@ async function api<T>(path: string, init?: RequestInit): Promise<T | null> {
     const payload = (await res.json()) as { data?: T };
     return payload.data ?? null;
   } catch (err) {
+    // Re-throw Next.js framework signals (dynamic rendering, redirects, notFound)
+    // so the framework can handle them. Only swallow real network/runtime errors.
+    if (
+      err &&
+      typeof err === 'object' &&
+      'digest' in err &&
+      typeof (err as { digest: unknown }).digest === 'string' &&
+      ((err as { digest: string }).digest === 'DYNAMIC_SERVER_USAGE' ||
+        (err as { digest: string }).digest.startsWith('NEXT_'))
+    ) {
+      throw err;
+    }
     console.error(`API ${path} fetch failed:`, err);
     return null;
   }
