@@ -79,7 +79,7 @@ export function PollCard() {
         </div>
 
         {/* Question */}
-        <h3 className="text-base font-bold text-[#1a1a1a] mb-3 leading-snug">
+        <h3 className="text-xl font-bold text-[#1a1a1a] mb-3 leading-snug">
           {poll.question}
         </h3>
 

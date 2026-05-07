@@ -76,7 +76,7 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
   return (
     <div className="relative overflow-hidden">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+        <span className="text-sm font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
           Quick Poll
         </span>
         {hasVoted && (
@@ -98,7 +98,7 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
         </div>
       )}
 
-      <p className={`font-headline text-[var(--color-text-primary)] mt-3 ${compact ? 'text-sm mb-3' : 'text-base mb-4'}`}>
+      <p className={`font-headline text-[var(--color-text-primary)] mt-3 ${compact ? 'text-lg mb-3' : 'text-xl mb-4'}`}>
         {poll.question}
       </p>
 
