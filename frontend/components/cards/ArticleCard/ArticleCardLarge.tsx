@@ -38,7 +38,7 @@ export function ArticleCardLarge({
                 <Badge variant="breaking">Breaking</Badge>
               </div>
             )}
-            <h2 className="font-headline text-h1 lg:text-hero text-white line-clamp-3 transition-transform duration-500 ease-out group-hover:translate-y-[-2px]">
+            <h2 className="font-headline text-h2 lg:text-h1 text-white line-clamp-3 transition-transform duration-500 ease-out group-hover:translate-y-[-2px]">
               {article.title}
             </h2>
             <div className="mt-2 text-xs text-white/80">

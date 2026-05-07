@@ -16,7 +16,7 @@ export function ArticleCardList({ article, showImage = true, titleClassName }: A
         <div className="flex-1 min-w-0">
           <h3 className={cn(
             "font-headline text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors duration-300 line-clamp-2 leading-snug",
-            titleClassName || "text-h3"
+            titleClassName || "text-card-title"
           )}>
             {article.title}
           </h3>

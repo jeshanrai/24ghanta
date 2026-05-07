@@ -32,7 +32,7 @@ export function ArticleCardMedium({
           )}
         </div>
         <div className="mt-4">
-          <h3 className="font-headline text-h2 text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors duration-300 line-clamp-3 leading-snug">
+          <h3 className="font-headline text-card-title text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors duration-300 line-clamp-3 leading-snug">
             {article.title}
           </h3>
           {showExcerpt && article.excerpt && (
