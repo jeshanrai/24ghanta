@@ -9,7 +9,7 @@ interface SearchButtonProps {
 
 export function SearchButton({ onClick }: SearchButtonProps) {
   return (
-    <IconButton label="Search" onClick={onClick}>
+    <IconButton label="Search" onClick={onClick} size="lg">
       <SearchIcon size={20} />
     </IconButton>
   );
