@@ -10,7 +10,6 @@ export const mainNavItems: NavItem[] = [
   { id: 'technology', label: 'Technology', href: '/category/technology' },
   { id: 'health', label: 'Health', href: '/category/health' },
   { id: 'lifestyle', label: 'Lifestyle', href: '/category/lifestyle' },
-  { id: 'genz', label: 'Gen Z', href: '/genz' },
 ];
 
 export const trendingTopics: TrendingTopic[] = [
@@ -62,8 +61,6 @@ export const footerColumns: FooterColumn[] = [
     links: [
       { id: 'health', label: 'Health', href: '/category/health' },
       { id: 'lifestyle', label: 'Lifestyle', href: '/category/lifestyle' },
-      { id: 'genz', label: 'Gen Z', href: '/genz' },
-      { id: 'uplift-local', label: 'Uplift Local', href: '/uplift-local' },
       { id: 'about', label: 'About Us', href: '/about' },
     ],
   },

@@ -11,7 +11,7 @@ interface ArticleCardListProps {
 
 export function ArticleCardList({ article, showImage = true, titleClassName }: ArticleCardListProps) {
   return (
-    <article className="py-4 border-b border-(--color-border-light) last:border-b-0">
+    <article className="py-4 border-b border-[var(--color-border-light)] last:border-b-0">
       <Link href={`/article/${article.slug}`} className="group flex gap-4 transition-transform duration-300 ease-out hover:translate-x-0.5">
         <div className="flex-1 min-w-0">
           <h3 className={cn(

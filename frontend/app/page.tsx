@@ -22,8 +22,6 @@ export default async function HomePage() {
     businessArticles,
     entertainmentCategory,
     entertainmentArticles,
-    technologyCategory,
-    technologyArticles,
     activePoll,
   ] = await Promise.all([
     fetchHeroArticles(),
@@ -34,8 +32,6 @@ export default async function HomePage() {
     fetchArticlesByCategory('business', 5),
     fetchCategoryBySlug('entertainment'),
     fetchArticlesByCategory('entertainment', 5),
-    fetchCategoryBySlug('technology'),
-    fetchArticlesByCategory('technology', 5),
     fetchActivePoll(),
   ]);
 
@@ -43,8 +39,7 @@ export default async function HomePage() {
   const heroIds = new Set(heroArticles.map((a) => a.id));
   const nonHeroLatest = latestArticles.filter((a) => !heroIds.has(a.id));
   const justInArticles = nonHeroLatest.slice(0, 4);
-  const featuredArticle = nonHeroLatest[4] ?? null;
-  const sidebarArticles = nonHeroLatest.slice(5, 9);
+  const sidebarArticles = nonHeroLatest.slice(4, 9);
 
   return (
     <div>
@@ -54,18 +49,17 @@ export default async function HomePage() {
           <AdSlot
             placement="header_banner"
             className="my-2"
-            aspectClassName=""
+            aspectClassName="aspect-[728/90]"
           />
         </div>
       </div>
 
-      <div className="container pt-6 pb-0">
+      <div className="container pt-6 pb-10">
         {heroArticles.length > 0 ? (
           <HeroSection
             heroArticles={heroArticles}
             sidebarArticles={sidebarArticles}
             activePoll={activePoll}
-            featuredArticle={featuredArticle}
           />
         ) : (
           <EmptyState
@@ -90,6 +84,16 @@ export default async function HomePage() {
           />
         )}
 
+        <div className="flex justify-center">
+          <div className="w-full max-w-[728px]">
+            <AdSlot
+              placement="between_sections"
+              className="my-2"
+              aspectClassName="aspect-[728/90]"
+            />
+          </div>
+        </div>
+
         {businessCategory && businessArticles.length > 0 && (
           <CategorySection
             category={businessCategory}
@@ -98,29 +102,11 @@ export default async function HomePage() {
           />
         )}
 
-        <div className="flex justify-center">
-          <div className="w-full max-w-[728px]">
-            <AdSlot
-              placement="between_sections"
-              className="my-2"
-              aspectClassName=""
-            />
-          </div>
-        </div>
-
         {entertainmentCategory && entertainmentArticles.length > 0 && (
           <CategorySection
             category={entertainmentCategory}
             articles={entertainmentArticles}
             variant="magazine"
-          />
-        )}
-
-        {technologyCategory && technologyArticles.length > 0 && (
-          <CategorySection
-            category={technologyCategory}
-            articles={technologyArticles}
-            variant="triple-grid"
           />
         )}
       </div>
@@ -130,7 +116,7 @@ export default async function HomePage() {
         <div className="w-full max-w-[728px]">
           <AdSlot
             placement="footer_banner"
-            aspectClassName=""
+            aspectClassName="aspect-[728/90]"
           />
         </div>
       </div>
@@ -142,7 +128,7 @@ function EmptyState({ title, message }: { title: string; message: string }) {
   return (
     <div className="py-16 text-center animate-fade-in-up">
       <h2 className="text-h1 font-bold mb-2">{title}</h2>
-      <p className="text-muted">{message}</p>
+      <p className="text-[var(--color-text-secondary)]">{message}</p>
     </div>
   );
 }

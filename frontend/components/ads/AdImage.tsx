@@ -49,9 +49,9 @@ export function AdImage({ imageUrl, altText, name, aspectClassName }: AdImagePro
         ref={imgRef}
         src={resolveImageSrc(imageUrl)}
         alt={altText || name}
-        className={`transition-opacity duration-700 ease-out ${
-          loaded ? 'opacity-100' : 'opacity-0'
-        } ${aspectClassName ? 'absolute inset-0 w-full h-full object-contain' : 'w-full h-auto block'}`}
+        className={`transition-all duration-1000 ease-out transform ${
+          loaded ? 'scale-100 opacity-100' : 'scale-110 opacity-0'
+        } ${aspectClassName ? 'absolute inset-0 w-full h-full object-cover' : 'w-full h-auto block'} group-hover:scale-105`}
         loading="lazy"
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
