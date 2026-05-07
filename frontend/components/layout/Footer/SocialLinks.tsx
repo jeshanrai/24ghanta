@@ -1,8 +1,7 @@
-import { FacebookIcon, TwitterIcon, InstagramIcon, YouTubeIcon, ThreadsIcon, LinkedinIcon, TiktokIcon } from '@/components/icons';
+import { FacebookIcon, InstagramIcon, YouTubeIcon, ThreadsIcon, LinkedinIcon, TiktokIcon } from '@/components/icons';
 
 const socialLinks = [
   { id: 'facebook', icon: FacebookIcon, href: 'https://www.facebook.com/24GhantaNepal/', label: 'Facebook' },
-  { id: 'twitter', icon: TwitterIcon, href: 'https://twitter.com', label: 'Twitter' },
   { id: 'instagram', icon: InstagramIcon, href: 'https://www.instagram.com/24ghantanepal/', label: 'Instagram' },
   { id: 'threads', icon: ThreadsIcon, href: 'https://www.threads.com/@24ghantanepal', label: 'Threads' },
   { id: 'tiktok', icon: TiktokIcon, href: 'https://www.tiktok.com/@24ghanta_nepal', label: 'TikTok' },
