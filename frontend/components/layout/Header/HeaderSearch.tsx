@@ -226,14 +226,7 @@ export function HeaderSearch() {
             >
               <CloseIcon size={12} />
             </button>
-          ) : (
-            <kbd
-              className="hidden xl:inline-block font-mono text-[10px] px-1.5 py-0.5 rounded border border-[var(--color-border)] bg-white text-[var(--color-text-muted)] shrink-0"
-              aria-hidden="true"
-            >
-              /
-            </kbd>
-          )}
+          ) : null}
         </div>
       </form>
 
