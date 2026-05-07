@@ -63,7 +63,13 @@ function HeroSplitLayout({ articles }: { articles: Article[] }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 animate-fade-in-up">
-        {main && <ArticleCardMedium article={main} showCategory={false} />}
+        {main && (
+          <ArticleCardMedium
+            article={main}
+            showCategory={false}
+            titleClassName="text-lg lg:text-xl"
+          />
+        )}
       </div>
       <div className="lg:col-span-1">
         {rest.slice(0, 4).map((article, idx) => (
@@ -102,7 +108,11 @@ function TripleGridLayout({
             className="animate-fade-in-up"
             style={{ animationDelay: `${idx * 80}ms` }}
           >
-            <ArticleCardMedium article={a} showCategory={false} />
+            <ArticleCardMedium
+              article={a}
+              showCategory={false}
+              titleClassName="text-lg lg:text-xl"
+            />
           </div>
         ))}
       </div>
@@ -129,7 +139,7 @@ function TripleGridLayout({
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-headline text-h3 leading-snug text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors line-clamp-2">
+                <h3 className="font-headline text-base lg:text-lg leading-snug text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors line-clamp-2">
                   {a.title}
                 </h3>
                 <div className="mt-2 flex items-center gap-2 text-xs text-[var(--color-text-muted)] font-medium">
@@ -182,7 +192,7 @@ function MagazineLayout({
                 {String(idx + 1).padStart(2, '0')}
               </span>
               <div className="flex-1 min-w-0">
-                <h3 className="font-headline text-h3 leading-snug text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors line-clamp-2">
+                <h3 className="font-headline text-base lg:text-lg leading-snug text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)] transition-colors line-clamp-2">
                   {a.title}
                 </h3>
                 <div className="mt-1.5 flex items-center gap-2 text-xs text-[var(--color-text-muted)] font-medium">

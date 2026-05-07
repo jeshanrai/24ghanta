@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { fetchArticlesByCategory, fetchCategoryBySlug, fetchCategories } from '@/lib/api';
 import { ArticleCardMedium, ArticleCardList } from '@/components/cards';
+import { CategoryDropdown } from '@/components/category/CategoryDropdown';
 
 export const revalidate = 30;
 
@@ -66,7 +66,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             className="animate-fade-in-up"
             style={{ animationDelay: `${idx * 60}ms` }}
           >
-            <ArticleCardMedium article={article} showCategory={false} showExcerpt />
+            <ArticleCardMedium
+              article={article}
+              showCategory={false}
+              showExcerpt
+              titleClassName="text-lg lg:text-xl"
+            />
           </div>
         ))}
       </div>
@@ -79,7 +84,11 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           {remainingArticles.length > 0 ? (
             <div>
               {remainingArticles.map((article) => (
-                <ArticleCardList key={article.id} article={article} />
+                <ArticleCardList
+                  key={article.id}
+                  article={article}
+                  titleClassName="text-base lg:text-lg"
+                />
               ))}
             </div>
           ) : (
@@ -94,29 +103,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             <h3 className="text-lg font-bold mb-4 pb-2 border-b-2 border-[var(--color-primary)]">
               Explore Categories
             </h3>
-            <nav className="space-y-2">
-              {allCategories.map((c) => (
-                <Link
-                  key={c.id}
-                  href={`/category/${c.slug}`}
-                  className={`flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--color-surface)] transition-colors group ${
-                    c.slug === slug ? 'bg-[var(--color-surface)] font-bold' : ''
-                  }`}
-                >
-                  <span
-                    className="w-3 h-3 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: c.color || 'var(--color-primary)' }}
-                  />
-                  <span className={`transition-colors ${
-                    c.slug === slug 
-                      ? 'text-[var(--color-primary)]' 
-                      : 'text-[var(--color-text-primary)] group-hover:text-[var(--color-primary)]'
-                  }`}>
-                    {c.name}
-                  </span>
-                </Link>
-              ))}
-            </nav>
+            <CategoryDropdown categories={allCategories} currentSlug={slug} />
           </div>
         </aside>
       </div>
