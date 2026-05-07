@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Check } from 'lucide-react';
 import type { Poll as PollType } from '@/lib/data/polls';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -15,6 +16,7 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
   const [loading, setLoading] = useState(!propPoll);
+  const [showResults, setShowResults] = useState(false);
 
   useEffect(() => {
     if (propPoll) {
@@ -33,8 +35,15 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
 
   const handleVote = async (optionId: string) => {
     if (hasVoted || !poll) return;
+    
     setSelectedOption(optionId);
     setHasVoted(true);
+    
+    // Smooth reveal of results
+    setTimeout(() => {
+      setShowResults(true);
+    }, 100);
+
     // Send vote to API
     try {
       await fetch(`${API}/api/polls/${poll.id}/vote`, {
@@ -52,7 +61,9 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
 
   const getPercentage = (votes: number): number => {
     if (poll.totalVotes === 0) return 0;
-    return Math.round((votes / poll.totalVotes) * 100);
+    const total = poll.totalVotes + (hasVoted ? 1 : 0);
+    const currentVotes = votes + (selectedOption === poll.options.find(o => o.votes === votes)?.id ? 1 : 0);
+    return Math.round((currentVotes / total) * 100);
   };
 
   const formatVotes = (votes: number): string => {
@@ -63,10 +74,17 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
   };
 
   return (
-    <div>
-      <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-        Quick Poll
-      </span>
+    <div className="relative overflow-hidden">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+          Quick Poll
+        </span>
+        {hasVoted && (
+          <span className="text-[10px] font-bold text-[#c41d2f] bg-[#c41d2f]/10 px-2 py-0.5 rounded-full animate-fade-in">
+            Voted
+          </span>
+        )}
+      </div>
 
       {poll.imageUrl && (
         <div className={`relative w-full overflow-hidden rounded-md ${compact ? 'mt-2 aspect-[16/9]' : 'mt-3 aspect-video'}`}>
@@ -74,53 +92,68 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
           <img
             src={poll.imageUrl}
             alt={poll.question}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-105"
             loading="lazy"
           />
         </div>
       )}
 
-      <p className={`font-headline text-[var(--color-text-primary)] mt-2 ${compact ? 'text-sm mb-3' : 'text-base mb-4'}`}>
+      <p className={`font-headline text-[var(--color-text-primary)] mt-3 ${compact ? 'text-sm mb-3' : 'text-base mb-4'}`}>
         {poll.question}
       </p>
 
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         {poll.options.map((option) => {
-          const percentage = getPercentage(option.votes + (selectedOption === option.id ? 1 : 0));
           const isSelected = selectedOption === option.id;
+          const percentage = getPercentage(option.votes);
 
           return (
             <button
               key={option.id}
               onClick={() => handleVote(option.id)}
               disabled={hasVoted}
-              className={`w-full text-left relative overflow-hidden rounded-sm transition-all ${
-                hasVoted ? 'cursor-default' : 'cursor-pointer'
-              } ${!hasVoted ? 'hover:border-[var(--color-primary)]' : ''}`}
+              className={`w-full text-left relative overflow-hidden rounded-md transition-all group ${
+                hasVoted ? 'cursor-default' : 'cursor-pointer hover:translate-x-1'
+              }`}
             >
               {/* Background bar */}
               <div
-                className={`absolute inset-y-0 left-0 transition-all duration-500 ease-out ${
-                  hasVoted
+                className={`absolute inset-y-0 left-0 transition-all duration-1000 ease-out ${
+                  showResults
                     ? isSelected
-                      ? 'bg-[#c41d2f]/15'
-                      : 'bg-[var(--color-surface)]'
-                    : ''
+                      ? 'bg-[#c41d2f]/20'
+                      : 'bg-[var(--color-surface-hover)]'
+                    : 'bg-transparent'
                 }`}
-                style={{ width: hasVoted ? `${percentage}%` : '0%' }}
+                style={{ width: showResults ? `${percentage}%` : '0%' }}
               />
 
+              {/* Progress indicator for selected option */}
+              {isSelected && showResults && (
+                <div className="absolute inset-0 bg-[#c41d2f]/5 animate-pulse" />
+              )}
+
               {/* Content */}
-              <div className={`relative flex items-center justify-between ${compact ? 'px-3 py-2' : 'px-4 py-2.5'} border rounded-sm ${
-                isSelected && hasVoted
-                  ? 'border-[#c41d2f]'
-                  : 'border-[var(--color-border)]'
+              <div className={`relative flex items-center justify-between ${compact ? 'px-3 py-2.5' : 'px-4 py-3'} border rounded-md transition-colors duration-300 ${
+                isSelected && showResults
+                  ? 'border-[#c41d2f] bg-[#c41d2f]/5'
+                  : 'border-[var(--color-border)] group-hover:border-[var(--color-text-muted)]'
               }`}>
-                <span className="text-sm text-[var(--color-text-primary)]">
-                  {option.text}
-                </span>
-                {hasVoted && (
-                  <span className={`text-sm font-semibold ${isSelected ? 'text-[#c41d2f]' : 'text-[var(--color-text-muted)]'}`}>
+                <div className="flex items-center gap-2">
+                  <span className={`text-sm font-medium transition-colors ${
+                    isSelected && showResults ? 'text-[#c41d2f]' : 'text-[var(--color-text-primary)]'
+                  }`}>
+                    {option.text}
+                  </span>
+                  {isSelected && showResults && (
+                    <Check className="w-3.5 h-3.5 text-[#c41d2f] animate-scale-in" />
+                  )}
+                </div>
+                
+                {showResults && (
+                  <span className={`text-sm font-bold animate-fade-in ${
+                    isSelected ? 'text-[#c41d2f]' : 'text-[var(--color-text-muted)]'
+                  }`}>
                     {percentage}%
                   </span>
                 )}
@@ -130,9 +163,16 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
         })}
       </div>
 
-      <p className="mt-3 text-xs text-[var(--color-text-muted)]">
-        {formatVotes(poll.totalVotes + (hasVoted ? 1 : 0))} votes
-      </p>
+      <div className="mt-4 flex items-center justify-between border-t border-[var(--color-border)] pt-3">
+        <p className="text-xs text-[var(--color-text-muted)]">
+          {formatVotes(poll.totalVotes + (hasVoted ? 1 : 0))} votes
+        </p>
+        {hasVoted && (
+          <p className="text-xs font-medium text-[#c41d2f] animate-fade-in-up">
+            Thanks for your opinion!
+          </p>
+        )}
+      </div>
     </div>
   );
 }
