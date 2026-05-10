@@ -92,6 +92,13 @@ export function AdPopup({ ad, delayMs = 5000 }: AdPopupProps) {
           Advertisement
         </span>
 
+        <button
+          onClick={handleClose}
+          className="absolute top-3 right-3 z-10 inline-flex items-center text-xs font-semibold bg-red-600 text-white hover:bg-red-700 px-3 py-1.5 rounded-sm shadow transition-colors border-none"
+        >
+          Skip Ad
+        </button>
+
         {ad.adType === 'html' && ad.htmlContent ? (
           <div
             className="p-6"
