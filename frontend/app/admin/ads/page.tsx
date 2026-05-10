@@ -28,7 +28,7 @@ const PLACEMENTS: { value: string; label: string; recommended: string }[] = [
   { value: "article_inline", label: "Article inline (mid-body)", recommended: "336×280" },
   { value: "article_sidebar", label: "Article sidebar", recommended: "300×600" },
   { value: "article_more_in_category", label: "Article — More in category (in-list)", recommended: "300×250 rectangle" },
-  { value: "article_related_stories", label: "Article — Related stories (in-list)", recommended: "300×250 rectangle" },
+  { value: "article_related_stories", label: "Article — Related stories (in-list)", recommended: "300×150 banner" },
   { value: "footer_banner", label: "Footer banner", recommended: "728×90 leaderboard" },
   { value: "popup_landing", label: "Landing popup", recommended: "600×450" },
   { value: "mobile_sticky", label: "Mobile sticky bottom", recommended: "320×50" },

@@ -226,7 +226,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                     {idx === 1 && (
                       <AdSlot
                         placement="article_related_stories"
-                        aspectClassName="aspect-[300/250]"
+                        aspectClassName="aspect-[300/150]"
                       />
                     )}
                   </Fragment>
