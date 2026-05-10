@@ -24,7 +24,6 @@ export default async function HomePage() {
     entertainmentArticles,
     activePoll,
     adSlot1,
-    adSlot2,
   ] = await Promise.all([
     fetchHeroArticles(),
     fetchLatestArticles(14),
@@ -36,7 +35,6 @@ export default async function HomePage() {
     fetchArticlesByCategory('entertainment', 5),
     fetchActivePoll(),
     fetchAd('between_sections'),
-    fetchAd('between_sections_2'),
   ]);
 
   // Exclude hero articles from sidebar and strip to avoid duplicates
@@ -51,7 +49,6 @@ export default async function HomePage() {
     ((ad.adType === 'html' && !!ad.htmlContent) ||
       (ad.adType !== 'html' && !!ad.imageUrl));
   const showAd1 = hasRenderableAd(adSlot1);
-  const showAd2 = hasRenderableAd(adSlot2);
 
   return (
     <div>
@@ -85,26 +82,15 @@ export default async function HomePage() {
           />
         )}
 
-        {(showAd1 || showAd2) && (
-          <div className="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-8 my-4 bg-muted/20 py-6 rounded-lg w-full">
-            {showAd1 && (
-              <div className="w-full flex justify-center max-w-[300px]">
-                <AdSlot
-                  placement="between_sections"
-                  className="shadow-sm rounded-md overflow-hidden bg-white"
-                  aspectClassName="aspect-[300/250]"
-                />
-              </div>
-            )}
-            {showAd2 && (
-              <div className="w-full flex justify-center max-w-[300px]">
-                <AdSlot
-                  placement="between_sections_2"
-                  className="shadow-sm rounded-md overflow-hidden bg-white"
-                  aspectClassName="aspect-[300/250]"
-                />
-              </div>
-            )}
+        {showAd1 && (
+          <div className="flex justify-center items-center my-4 bg-muted/20 py-6 rounded-lg w-full">
+            <div className="w-full flex justify-center max-w-[300px]">
+              <AdSlot
+                placement="between_sections"
+                className="shadow-sm rounded-md overflow-hidden bg-white"
+                aspectClassName="aspect-[300/250]"
+              />
+            </div>
           </div>
         )}
 
