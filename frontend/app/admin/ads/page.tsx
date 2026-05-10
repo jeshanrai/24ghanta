@@ -25,6 +25,8 @@ const PLACEMENTS: { value: string; label: string; recommended: string }[] = [
   { value: "hero_sidebar", label: "Hero sidebar", recommended: "300×250" },
   { value: "between_sections", label: "Between category sections 1", recommended: "300×250 rectangle" },
   { value: "between_sections_2", label: "Between category sections 2", recommended: "300×250 rectangle" },
+  { value: "just_in_sports_left", label: "Between Just In & Sports (Left)", recommended: "300×250 rectangle" },
+  { value: "just_in_sports_right", label: "Between Just In & Sports (Right)", recommended: "300×250 rectangle" },
   { value: "article_inline", label: "Article inline (mid-body)", recommended: "336×280" },
   { value: "article_sidebar", label: "Article sidebar", recommended: "300×600" },
   { value: "article_more_in_category", label: "Article — More in category (in-list)", recommended: "300×250 rectangle" },

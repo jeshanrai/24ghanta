@@ -129,7 +129,7 @@ export function HeroSlider({ articles }: HeroSliderProps) {
           >
             <h2
               key={article.id}
-              className="font-headline text-h2 lg:text-h1 text-white line-clamp-3 transition-all duration-500 ease-out animate-fade-in-up drop-shadow-md hover:text-white/90"
+              className="font-headline text-2xl sm:text-h2 lg:text-h1 text-white line-clamp-3 transition-all duration-500 ease-out animate-fade-in-up drop-shadow-md hover:text-white/90"
             >
               {article.title}
             </h2>
@@ -184,7 +184,7 @@ export function HeroSlider({ articles }: HeroSliderProps) {
 
             <Link
               href={`/article/${article.slug}`}
-              className="hidden sm:inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white! bg-primary hover:bg-primary/90 px-4 py-2 rounded-full leading-none transition-colors shadow-md"
+              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white! bg-primary hover:bg-primary/90 px-4 py-2 rounded-full leading-none transition-colors shadow-md"
               style={{ color: '#ffffff' }}
             >
               Read story
@@ -201,7 +201,7 @@ export function HeroSlider({ articles }: HeroSliderProps) {
         <>
           <button
             onClick={prev}
-            className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[var(--color-primary)] hover:scale-110 shadow-md"
+            className="hidden sm:flex absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white items-center justify-center opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300 hover:bg-[var(--color-primary)] hover:scale-110 shadow-md"
             aria-label="Previous slide"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -210,7 +210,7 @@ export function HeroSlider({ articles }: HeroSliderProps) {
           </button>
           <button
             onClick={next}
-            className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[var(--color-primary)] hover:scale-110 shadow-md"
+            className="hidden sm:flex absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white items-center justify-center opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300 hover:bg-[var(--color-primary)] hover:scale-110 shadow-md"
             aria-label="Next slide"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

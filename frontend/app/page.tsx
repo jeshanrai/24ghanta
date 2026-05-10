@@ -24,6 +24,8 @@ export default async function HomePage() {
     entertainmentArticles,
     activePoll,
     adSlot1,
+    adSlot2,
+    adSlot3,
   ] = await Promise.all([
     fetchHeroArticles(),
     fetchLatestArticles(14),
@@ -35,6 +37,8 @@ export default async function HomePage() {
     fetchArticlesByCategory('entertainment', 5),
     fetchActivePoll(),
     fetchAd('between_sections'),
+    fetchAd('just_in_sports_left'),
+    fetchAd('just_in_sports_right'),
   ]);
 
   // Exclude hero articles from sidebar and strip to avoid duplicates
@@ -49,6 +53,8 @@ export default async function HomePage() {
     ((ad.adType === 'html' && !!ad.htmlContent) ||
       (ad.adType !== 'html' && !!ad.imageUrl));
   const showAd1 = hasRenderableAd(adSlot1);
+  const leftAdRenderable = hasRenderableAd(adSlot2);
+  const rightAdRenderable = hasRenderableAd(adSlot3);
 
   return (
     <div>
@@ -70,6 +76,31 @@ export default async function HomePage() {
       {justInArticles.length > 0 && (
         <div className="container pb-2">
           <LatestStrip articles={justInArticles} />
+        </div>
+      )}
+
+      {(leftAdRenderable || rightAdRenderable) && (
+        <div className="container py-6">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center w-full bg-muted/20 py-6 rounded-lg">
+            {leftAdRenderable && (
+              <div className="w-full sm:w-1/2 flex justify-center max-w-[300px]">
+                <AdSlot
+                  placement="just_in_sports_left"
+                  className="shadow-sm rounded-md overflow-hidden bg-white"
+                  aspectClassName="aspect-[300/250]"
+                />
+              </div>
+            )}
+            {rightAdRenderable && (
+              <div className="w-full sm:w-1/2 flex justify-center max-w-[300px]">
+                <AdSlot
+                  placement="just_in_sports_right"
+                  className="shadow-sm rounded-md overflow-hidden bg-white"
+                  aspectClassName="aspect-[300/250]"
+                />
+              </div>
+             )}
+          </div>
         </div>
       )}
 
