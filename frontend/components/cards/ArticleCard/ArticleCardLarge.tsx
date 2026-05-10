@@ -29,15 +29,22 @@ export function ArticleCardLarge({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent transition-opacity duration-300 group-hover:from-black/90" />
           <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6">
-            {article.isBreaking && (
-              <div className="mb-3 inline-flex items-center gap-2 animate-fade-in-up">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--color-breaking)] opacity-75 animate-pulse-dot" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-breaking)]" />
-                </span>
-                <Badge variant="breaking">Breaking</Badge>
-              </div>
-            )}
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              {article.isBreaking && (
+                <div className="inline-flex items-center gap-2 animate-fade-in-up">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--color-breaking)] opacity-75 animate-pulse-dot" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-breaking)]" />
+                  </span>
+                  <Badge variant="breaking">Breaking</Badge>
+                </div>
+              )}
+              {article.category && (
+                <Badge color={article.category.color || 'var(--color-primary)'} className="animate-fade-in-up">
+                  {article.category.name}
+                </Badge>
+              )}
+            </div>
             <h2 className="font-headline text-h2 lg:text-h1 text-white line-clamp-3 transition-transform duration-500 ease-out group-hover:translate-y-[-2px]">
               {article.title}
             </h2>

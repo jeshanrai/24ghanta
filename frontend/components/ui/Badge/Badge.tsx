@@ -21,8 +21,7 @@ export function Badge({ variant = 'default', children, className, color }: Badge
   return (
     <span
       className={cn(
-        'inline-block px-2 py-0.5 text-xs font-semibold uppercase tracking-wide',
-        (variant === 'live' || variant === 'breaking') && 'font-mono tracking-normal',
+        'inline-block px-2 py-0.5 text-xs font-semibold uppercase tracking-wide rounded-sm',
         variantStyles[variant],
         className
       )}

@@ -114,14 +114,12 @@ export function HeroSlider({ articles }: HeroSliderProps) {
             )}
 
             {article.category && (
-              <span
-                className="inline-block text-[10px] font-bold uppercase tracking-[0.12em] text-white px-3 py-1.5 rounded-sm shadow-sm"
-                style={{
-                  background: article.category.color || 'var(--color-primary)',
-                }}
+              <Badge
+                color={article.category.color || 'var(--color-primary)'}
+                className="animate-fade-in-up"
               >
                 {article.category.name}
-              </span>
+              </Badge>
             )}
           </div>
 
