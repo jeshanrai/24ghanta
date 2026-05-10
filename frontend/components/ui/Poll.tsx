@@ -86,92 +86,96 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
         )}
       </div>
 
-      {poll.imageUrl && (
-        <div className={`relative w-full overflow-hidden rounded-md ${compact ? 'mt-2 aspect-[16/9]' : 'mt-3 aspect-video'}`}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={poll.imageUrl}
-            alt={poll.question}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-            loading="lazy"
-          />
-        </div>
-      )}
-
-      <p className={`font-headline text-[var(--color-text-primary)] mt-3 ${compact ? 'text-lg mb-3' : 'text-xl mb-4'}`}>
-        {poll.question}
-      </p>
-
-      <div className="space-y-2.5">
-        {poll.options.map((option) => {
-          const isSelected = selectedOption === option.id;
-          const percentage = getPercentage(option.votes);
-
-          return (
-            <button
-              key={option.id}
-              onClick={() => handleVote(option.id)}
-              disabled={hasVoted}
-              className={`w-full text-left relative overflow-hidden rounded-md transition-all group ${
-                hasVoted ? 'cursor-default' : 'cursor-pointer hover:translate-x-1'
-              }`}
-            >
-              {/* Background bar */}
-              <div
-                className={`absolute inset-y-0 left-0 transition-all duration-1000 ease-out ${
-                  showResults
-                    ? isSelected
-                      ? 'bg-[#c41d2f]/20'
-                      : 'bg-[var(--color-surface-hover)]'
-                    : 'bg-transparent'
-                }`}
-                style={{ width: showResults ? `${percentage}%` : '0%' }}
-              />
-
-              {/* Progress indicator for selected option */}
-              {isSelected && showResults && (
-                <div className="absolute inset-0 bg-[#c41d2f]/5 animate-pulse" />
-              )}
-
-              {/* Content */}
-              <div className={`relative flex items-center justify-between ${compact ? 'px-3 py-2.5' : 'px-4 py-3'} border rounded-md transition-colors duration-300 ${
-                isSelected && showResults
-                  ? 'border-[#c41d2f] bg-[#c41d2f]/5'
-                  : 'border-[var(--color-border)] group-hover:border-[var(--color-text-muted)]'
-              }`}>
-                <div className="flex items-center gap-2">
-                  <span className={`text-sm font-medium transition-colors ${
-                    isSelected && showResults ? 'text-[#c41d2f]' : 'text-[var(--color-text-primary)]'
-                  }`}>
-                    {option.text}
-                  </span>
-                  {isSelected && showResults && (
-                    <Check className="w-3.5 h-3.5 text-[#c41d2f] animate-scale-in" />
-                  )}
-                </div>
-                
-                {showResults && (
-                  <span className={`text-sm font-bold animate-fade-in ${
-                    isSelected ? 'text-[#c41d2f]' : 'text-[var(--color-text-muted)]'
-                  }`}>
-                    {percentage}%
-                  </span>
-                )}
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="mt-4 flex items-center justify-between border-t border-[var(--color-border)] pt-3">
-        <p className="text-xs text-[var(--color-text-muted)]">
-          {formatVotes(poll.totalVotes + (hasVoted ? 1 : 0))} votes
-        </p>
-        {hasVoted && (
-          <p className="text-xs font-medium text-[#c41d2f] animate-fade-in-up">
-            Thanks for your opinion!
-          </p>
+      <div className={`mt-3 ${poll.imageUrl ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : ''}`}>
+        {poll.imageUrl && (
+          <div className="relative overflow-hidden rounded-md w-full min-h-[300px] md:min-h-0 md:h-full">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={poll.imageUrl}
+              alt={poll.question}
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+              loading="lazy"
+            />
+          </div>
         )}
+
+        <div className={`flex flex-col justify-center ${poll.imageUrl ? '' : ''}`}>
+          <p className={`font-headline text-[var(--color-text-primary)] ${compact ? 'text-lg mb-3' : 'text-xl mb-4'}`}>
+            {poll.question}
+          </p>
+
+          <div className="space-y-4">
+            {poll.options.map((option) => {
+              const isSelected = selectedOption === option.id;
+              const percentage = getPercentage(option.votes);
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleVote(option.id)}
+                  disabled={hasVoted}
+                  className={`w-full text-left relative overflow-hidden rounded-md transition-all group ${
+                    hasVoted ? 'cursor-default' : 'cursor-pointer hover:translate-x-1'
+                  }`}
+                >
+                  {/* Background bar */}
+                  <div
+                    className={`absolute inset-y-0 left-0 transition-all duration-1000 ease-out ${
+                      showResults
+                        ? isSelected
+                          ? 'bg-[#c41d2f]/20'
+                          : 'bg-[var(--color-surface-hover)]'
+                        : 'bg-transparent'
+                    }`}
+                    style={{ width: showResults ? `${percentage}%` : '0%' }}
+                  />
+
+                  {/* Progress indicator for selected option */}
+                  {isSelected && showResults && (
+                    <div className="absolute inset-0 bg-[#c41d2f]/5 animate-pulse" />
+                  )}
+
+                  {/* Content */}
+                  <div className={`relative flex items-center justify-between ${compact ? 'px-4 py-3' : 'px-5 py-4'} border rounded-md transition-colors duration-300 ${
+                    isSelected && showResults
+                      ? 'border-[#c41d2f] bg-[#c41d2f]/5'
+                      : 'border-[var(--color-border)] group-hover:border-[var(--color-text-muted)]'
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm sm:text-base font-medium transition-colors ${
+                        isSelected && showResults ? 'text-[#c41d2f]' : 'text-[var(--color-text-primary)]'
+                      }`}>
+                        {option.text}
+                      </span>
+                      {isSelected && showResults && (
+                        <Check className="w-3.5 h-3.5 text-[#c41d2f] animate-scale-in" />
+                      )}
+                    </div>
+
+                    {showResults && (
+                      <span className={`text-sm font-bold animate-fade-in ${
+                        isSelected ? 'text-[#c41d2f]' : 'text-[var(--color-text-muted)]'
+                      }`}>
+                        {percentage}%
+                      </span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-4 flex items-center justify-between border-t border-[var(--color-border)] pt-3">
+            <p className="text-xs text-[var(--color-text-muted)]">
+              {formatVotes(poll.totalVotes + (hasVoted ? 1 : 0))} votes
+            </p>
+            {hasVoted && (
+              <p className="text-xs font-medium text-[#c41d2f] animate-fade-in-up">
+                Thanks for your opinion!
+              </p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
