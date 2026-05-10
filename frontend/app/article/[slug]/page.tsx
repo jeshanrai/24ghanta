@@ -182,6 +182,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
         {/* Sidebar */}
         <aside className="lg:col-span-1">
+          {/* Sidebar Ad */}
+          <div className="mb-8 w-full">
+            <AdSlot
+              placement="article_sidebar"
+              aspectClassName="aspect-[300/250]"
+            />
+          </div>
+
           {/* More from Category */}
           {categoryArticles.length > 0 && (
             <div className="mb-8">
@@ -209,13 +217,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               </div>
             </div>
           )}
-          {/* Sidebar Ad */}
-          <div className="sticky top-24">
-            <AdSlot
-              placement="article_sidebar"
-              aspectClassName="aspect-[300/600]"
-            />
-          </div>
         </aside>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { fetchArticlesByCategory, fetchCategoryBySlug, fetchCategories } from '@/lib/api';
 import { ArticleCardMedium, ArticleCardList } from '@/components/cards';
 import { CategoryDropdown } from '@/components/category/CategoryDropdown';
+import { AdSlot } from '@/components/ads';
 
 export const revalidate = 30;
 
@@ -32,6 +33,11 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   if (articles.length === 0) {
     return (
       <div className="container py-8 animate-fade-in-up">
+        <AdSlot
+          placement="category_header_banner"
+          className="my-2"
+          aspectClassName="aspect-[1200/90]"
+        />
         <div className="flex items-center mb-6">
           <div
             className="w-12 h-1 mr-4 animate-expand-x"
@@ -51,6 +57,11 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   return (
     <div className="container py-8 animate-fade-in-up">
+      <AdSlot
+        placement="category_header_banner"
+        className="my-2"
+        aspectClassName="aspect-[1200/90]"
+      />
       <div className="flex items-center mb-8 animate-fade-in-left">
         <span
           className="w-12 h-1 mr-4 animate-expand-x"

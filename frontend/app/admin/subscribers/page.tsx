@@ -56,6 +56,7 @@ export default function AdminSubscribers() {
   const [newEmail, setNewEmail] = useState("");
   const [addError, setAddError] = useState<string | null>(null);
   const [addLoading, setAddLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const token =
     typeof window !== "undefined"
@@ -64,8 +65,13 @@ export default function AdminSubscribers() {
 
   const fetchSubscribers = useCallback(
     async (page = 1) => {
-      if (!token) return;
+      if (!token) {
+        setLoadError("You are not signed in. Please log in again.");
+        setLoading(false);
+        return;
+      }
       setLoading(true);
+      setLoadError(null);
       try {
         const params = new URLSearchParams();
         params.set("page", String(page));
@@ -77,13 +83,20 @@ export default function AdminSubscribers() {
           `${API}/api/admin/newsletter?${params.toString()}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        if (!res.ok) throw new Error("Failed to fetch");
+        if (!res.ok) {
+          const body = await res.text();
+          throw new Error(
+            `${res.status} ${res.statusText}${body ? ` — ${body}` : ""}`
+          );
+        }
         const data = await res.json();
         setSubscribers(data.data);
         setStats(data.stats);
         setPagination(data.pagination);
-      } catch {
-        console.error("Failed to load subscribers");
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error("Failed to load subscribers:", err);
+        setLoadError(msg);
       } finally {
         setLoading(false);
       }
@@ -299,6 +312,14 @@ export default function AdminSubscribers() {
           </button>
         </div>
       </div>
+
+      {/* Error banner */}
+      {loadError && !loading && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">
+          <p className="font-semibold">Could not load subscribers</p>
+          <p className="mt-1 break-all">{loadError}</p>
+        </div>
+      )}
 
       {/* Table */}
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
