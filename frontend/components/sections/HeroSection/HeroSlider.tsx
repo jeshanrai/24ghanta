@@ -125,7 +125,7 @@ export function HeroSlider({ articles }: HeroSliderProps) {
 
           <h2
             key={article.id}
-            className="font-headline text-h1 lg:text-hero text-white line-clamp-3 transition-all duration-500 ease-out animate-fade-in-up drop-shadow-md max-w-4xl"
+            className="font-headline text-h2 lg:text-h1 text-white line-clamp-3 transition-all duration-500 ease-out animate-fade-in-up drop-shadow-md max-w-4xl"
           >
             {article.title}
           </h2>
