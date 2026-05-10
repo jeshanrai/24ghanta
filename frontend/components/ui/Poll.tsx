@@ -86,7 +86,7 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
         )}
       </div>
 
-      <div className={`mt-3 ${poll.imageUrl ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : ''}`}>
+      <div className={`mt-3 ${poll.imageUrl ? 'grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-6' : ''}`}>
         {poll.imageUrl && (
           <div className="relative overflow-hidden rounded-md w-full min-h-[300px] md:min-h-0 md:h-full">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -100,7 +100,7 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
         )}
 
         <div className={`flex flex-col justify-center ${poll.imageUrl ? '' : ''}`}>
-          <p className={`font-headline text-[var(--color-text-primary)] ${compact ? 'text-lg mb-3' : 'text-xl mb-4'}`}>
+          <p className={`font-headline text-[var(--color-text-primary)] ${compact ? 'text-base mb-3' : 'text-lg mb-4'}`}>
             {poll.question}
           </p>
 
@@ -142,7 +142,7 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
                       : 'border-[var(--color-border)] group-hover:border-[var(--color-text-muted)]'
                   }`}>
                     <div className="flex items-center gap-2">
-                      <span className={`text-sm sm:text-base font-medium transition-colors ${
+                      <span className={`text-sm font-medium transition-colors ${
                         isSelected && showResults ? 'text-[#c41d2f]' : 'text-[var(--color-text-primary)]'
                       }`}>
                         {option.text}
