@@ -138,7 +138,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           {/* Inline Ad */}
           <AdSlot
             placement="article_inline"
-            className="my-10"
+            className="my-10 max-w-md mx-auto"
           />
 
           {/* Photo gallery */}

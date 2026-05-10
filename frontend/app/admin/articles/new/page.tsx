@@ -139,6 +139,7 @@ export default function NewArticlePage() {
               <RichTextEditor value={form.content} onChange={(html) => update("content", html)} placeholder="Write your story… use the toolbar for headings, images, YouTube, tweets and pull-quotes." /></div>
           </div>
 
+         
           <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-semibold text-gray-500 uppercase">Image Gallery</label>
@@ -146,6 +147,7 @@ export default function NewArticlePage() {
             </div>
             <GalleryField value={form.gallery} onChange={(g) => update("gallery", g)} />
           </div>
+         
 
           <div className="bg-white rounded-2xl border border-gray-100 p-5">
             <button onClick={() => setShowSeo(!showSeo)} className="flex items-center justify-between w-full text-sm font-semibold text-gray-700">

@@ -173,6 +173,7 @@ export default function EditArticlePage() {
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Content</label>
               <RichTextEditor value={form.content} onChange={(html) => update("content", html)} placeholder="Write your story…" /></div>
           </div>
+         
           <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-semibold text-gray-500 uppercase">Image Gallery</label>
@@ -180,6 +181,7 @@ export default function EditArticlePage() {
             </div>
             <GalleryField value={form.gallery} onChange={(g) => update("gallery", g)} />
           </div>
+         
           <div className="bg-white rounded-2xl border border-gray-100 p-5">
             <button onClick={() => setShowSeo(!showSeo)} className="flex items-center justify-between w-full text-sm font-semibold text-gray-700"><span>SEO Settings</span><span className="text-xs text-gray-400">{showSeo ? "▲" : "▼"}</span></button>
             {showSeo && <div className="mt-4 space-y-4">
