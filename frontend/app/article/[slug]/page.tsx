@@ -187,7 +187,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <div className="mb-8 w-full">
             <AdSlot
               placement="article_sidebar"
-              aspectClassName="aspect-[300/250]"
+              aspectClassName="aspect-[300/200]"
             />
           </div>
 
