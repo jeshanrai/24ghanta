@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -197,8 +198,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 More in {article.category.name}
               </h3>
               <div className="space-y-4">
-                {categoryArticles.slice(0, 4).map((relatedArticle) => (
-                  <ArticleCardList key={relatedArticle.id} article={relatedArticle} />
+                {categoryArticles.slice(0, 4).map((relatedArticle, idx) => (
+                  <Fragment key={relatedArticle.id}>
+                    <ArticleCardList article={relatedArticle} />
+                    {idx === 1 && (
+                      <AdSlot
+                        placement="article_more_in_category"
+                        aspectClassName="aspect-[300/150]"
+                      />
+                    )}
+                  </Fragment>
                 ))}
               </div>
             </div>

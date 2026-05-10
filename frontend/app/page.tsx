@@ -23,6 +23,8 @@ export default async function HomePage() {
     entertainmentCategory,
     entertainmentArticles,
     activePoll,
+    adSlot1,
+    adSlot2,
   ] = await Promise.all([
     fetchHeroArticles(),
     fetchLatestArticles(14),
@@ -33,6 +35,8 @@ export default async function HomePage() {
     fetchCategoryBySlug('entertainment'),
     fetchArticlesByCategory('entertainment', 5),
     fetchActivePoll(),
+    fetchAd('between_sections'),
+    fetchAd('between_sections_2'),
   ]);
 
   // Exclude hero articles from sidebar and strip to avoid duplicates
@@ -40,6 +44,14 @@ export default async function HomePage() {
   const nonHeroLatest = latestArticles.filter((a) => !heroIds.has(a.id));
   const justInArticles = nonHeroLatest.slice(0, 4);
   const sidebarArticles = nonHeroLatest.slice(4, 9);
+
+  // An ad is renderable only if it has displayable content for its type.
+  const hasRenderableAd = (ad: typeof adSlot1) =>
+    !!ad &&
+    ((ad.adType === 'html' && !!ad.htmlContent) ||
+      (ad.adType !== 'html' && !!ad.imageUrl));
+  const showAd1 = hasRenderableAd(adSlot1);
+  const showAd2 = hasRenderableAd(adSlot2);
 
   return (
     <div>
@@ -73,15 +85,28 @@ export default async function HomePage() {
           />
         )}
 
-        <div className="flex justify-center">
-          <div className="w-full max-w-[728px]">
-            <AdSlot
-              placement="between_sections"
-              className="my-2"
-              aspectClassName="aspect-[728/90]"
-            />
+        {(showAd1 || showAd2) && (
+          <div className="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-8 my-4 bg-muted/20 py-6 rounded-lg w-full">
+            {showAd1 && (
+              <div className="w-full flex justify-center max-w-[300px]">
+                <AdSlot
+                  placement="between_sections"
+                  className="shadow-sm rounded-md overflow-hidden bg-white"
+                  aspectClassName="aspect-[300/250]"
+                />
+              </div>
+            )}
+            {showAd2 && (
+              <div className="w-full flex justify-center max-w-[300px]">
+                <AdSlot
+                  placement="between_sections_2"
+                  className="shadow-sm rounded-md overflow-hidden bg-white"
+                  aspectClassName="aspect-[300/250]"
+                />
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
         {businessCategory && businessArticles.length > 0 && (
           <CategorySection

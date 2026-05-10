@@ -5,7 +5,9 @@ export type AdPlacement =
   | 'hero_sidebar'
   | 'article_inline'
   | 'article_sidebar'
+  | 'article_more_in_category'
   | 'between_sections'
+  | 'between_sections_2'
   | 'footer_banner'
   | 'popup_landing'
   | 'mobile_sticky';
