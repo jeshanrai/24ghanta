@@ -6,6 +6,7 @@ export type AdPlacement =
   | 'article_inline'
   | 'article_sidebar'
   | 'article_more_in_category'
+  | 'article_related_stories'
   | 'between_sections'
   | 'between_sections_2'
   | 'footer_banner'

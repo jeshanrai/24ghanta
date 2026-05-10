@@ -220,8 +220,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 Related Stories
               </h3>
               <div className="space-y-4">
-                {relatedArticles.map((relatedArticle) => (
-                  <ArticleCardList key={relatedArticle.id} article={relatedArticle} />
+                {relatedArticles.map((relatedArticle, idx) => (
+                  <Fragment key={relatedArticle.id}>
+                    <ArticleCardList article={relatedArticle} />
+                    {idx === 1 && (
+                      <AdSlot
+                        placement="article_related_stories"
+                        aspectClassName="aspect-[300/250]"
+                      />
+                    )}
+                  </Fragment>
                 ))}
               </div>
             </div>
