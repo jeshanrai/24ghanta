@@ -100,7 +100,7 @@ export default function AdminDashboard() {
         </div>
         <Link
           href="/admin/articles/new"
-          className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-all"
+          className="flex items-center gap-2 px-4 py-2.5 bg-red-600 !text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-all"
         >
           <Plus className="w-4 h-4" /> New Article
         </Link>
