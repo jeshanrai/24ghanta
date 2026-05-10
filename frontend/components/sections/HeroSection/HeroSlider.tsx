@@ -123,12 +123,17 @@ export function HeroSlider({ articles }: HeroSliderProps) {
             )}
           </div>
 
-          <h2
-            key={article.id}
-            className="font-headline text-h2 lg:text-h1 text-white line-clamp-3 transition-all duration-500 ease-out animate-fade-in-up drop-shadow-md max-w-4xl"
+          <Link
+            href={`/article/${article.slug}`}
+            className="inline-block max-w-4xl"
           >
-            {article.title}
-          </h2>
+            <h2
+              key={article.id}
+              className="font-headline text-h2 lg:text-h1 text-white line-clamp-3 transition-all duration-500 ease-out animate-fade-in-up drop-shadow-md hover:text-white/90"
+            >
+              {article.title}
+            </h2>
+          </Link>
 
           <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-white/80 mb-5">
             {article.author && (
@@ -177,12 +182,16 @@ export function HeroSlider({ articles }: HeroSliderProps) {
               <span />
             )}
 
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-white/90 group-hover:text-white transition-colors">
+            <Link
+              href={`/article/${article.slug}`}
+              className="hidden sm:inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white! bg-primary hover:bg-primary/90 px-4 py-2 rounded-full leading-none transition-colors shadow-md"
+              style={{ color: '#ffffff' }}
+            >
               Read story
-              <svg className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <svg className="w-3.5 h-3.5 transition-transform duration-300 hover:translate-x-1 text-white" fill="none" viewBox="0 0 24 24" stroke="#ffffff" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
-            </span>
+            </Link>
           </div>
         </div>
       </div>
