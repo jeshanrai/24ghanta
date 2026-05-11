@@ -11,19 +11,7 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 function getToken() { return localStorage.getItem("24ghanta_admin_token") || ""; }
 function slugify(s: string) { return s.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").trim(); }
 
-const STATIC_CATEGORIES = [
-  { id: 1, name: "World" },
-  { id: 2, name: "India" },
-  { id: 3, name: "Politics" },
-  { id: 4, name: "Sports" },
-  { id: 5, name: "Entertainment" },
-  { id: 6, name: "Business" },
-  { id: 7, name: "Technology" },
-  { id: 8, name: "Health" },
-  { id: 9, name: "Lifestyle" },
-  { id: 10, name: "Science" },
-  { id: 11, name: "Gen Z" }
-];
+
 
 export default function EditArticlePage() {
   const router = useRouter();
@@ -31,6 +19,7 @@ export default function EditArticlePage() {
   const id = params.id as string;
   const [authors, setAuthors] = useState<any[]>([]);
   const [allTags, setAllTags] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -55,9 +44,10 @@ export default function EditArticlePage() {
     Promise.all([
       fetch(`${API}/api/admin/authors`, { headers: h }).then(r => r.ok ? r.json() : []),
       fetch(`${API}/api/admin/tags`, { headers: h }).then(r => r.ok ? r.json() : []),
+      fetch(`${API}/api/admin/categories`, { headers: h }).then(r => r.ok ? r.json() : []),
       fetch(`${API}/api/admin/articles/${id}`, { headers: h }).then(r => r.ok ? r.json() : null),
-    ]).then(([a, t, article]) => {
-      setAuthors(a); setAllTags(t);
+    ]).then(([a, t, c, article]) => {
+      setAuthors(a); setAllTags(t); setCategories(c);
       if (article) {
         setForm({
           title: article.title || "", slug: article.slug || "", excerpt: article.excerpt || "", content: article.content || "",
@@ -194,7 +184,7 @@ export default function EditArticlePage() {
         <div className="space-y-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Category</label>
-              <select value={form.category_id} onChange={e => update("category_id", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"><option value="">Select</option>{STATIC_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+              <select value={form.category_id} onChange={e => update("category_id", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"><option value="">Select</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Author</label>
               {role === "author" ? (
                 <div className="px-4 py-2.5 border border-gray-200 bg-gray-50 rounded-xl text-sm text-gray-700">

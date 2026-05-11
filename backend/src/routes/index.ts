@@ -17,6 +17,7 @@ import adminNewsletterRouter from './admin-newsletter';
 import adminPollsRouter from './admin-polls';
 import adsRouter from './ads';
 import adminAdsRouter from './admin-ads';
+import adminCategoriesRouter from './admin-categories';
 import uploadsRouter from './uploads';
 
 const router = Router();
@@ -43,5 +44,6 @@ router.use('/admin/trending', adminTrendingRouter);
 router.use('/admin/newsletter', adminNewsletterRouter);
 router.use('/admin/polls', adminPollsRouter);
 router.use('/admin/ads', adminAdsRouter);
+router.use('/admin/categories', adminCategoriesRouter);
 
 export default router;
