@@ -8,6 +8,8 @@ export interface Poll {
   id: string;
   question: string;
   imageUrl?: string;
+  adImageUrl?: string;
+  adLinkUrl?: string;
   options: PollOption[];
   totalVotes: number;
   endsAt?: string;

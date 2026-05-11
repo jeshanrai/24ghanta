@@ -34,6 +34,7 @@ const PLACEMENTS: { value: string; label: string; recommended: string }[] = [
   { value: "footer_banner", label: "Footer banner", recommended: "728×90 leaderboard" },
   { value: "popup_landing", label: "Landing popup", recommended: "600×450" },
   { value: "mobile_sticky", label: "Mobile sticky bottom", recommended: "320×50" },
+  { value: "poll_sidebar", label: "Poll sidebar (below options)", recommended: "300×150 banner" },
 ];
 
 interface Ad {
@@ -308,11 +309,10 @@ export default function AdminAds() {
           {ads.map((ad) => (
             <div
               key={ad.id}
-              className={`bg-white rounded-2xl border p-5 transition-all ${
-                ad.is_active
+              className={`bg-white rounded-2xl border p-5 transition-all ${ad.is_active
                   ? "border-green-200 shadow-sm shadow-green-100"
                   : "border-gray-100"
-              }`}
+                }`}
             >
               <div className="flex items-start gap-4">
                 {ad.ad_type === "image" && ad.image_url ? (
@@ -335,16 +335,14 @@ export default function AdminAds() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span
-                      className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${
-                        ad.is_active
+                      className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${ad.is_active
                           ? "bg-green-50 text-green-700"
                           : "bg-gray-100 text-gray-500"
-                      }`}
+                        }`}
                     >
                       <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          ad.is_active ? "bg-green-500" : "bg-gray-400"
-                        }`}
+                        className={`w-1.5 h-1.5 rounded-full ${ad.is_active ? "bg-green-500" : "bg-gray-400"
+                          }`}
                       />
                       {ad.is_active ? "Active" : "Inactive"}
                     </span>

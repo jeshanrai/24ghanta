@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Check } from 'lucide-react';
+import { ClientAdSlot } from '@/components/ads';
 import type { Poll as PollType } from '@/lib/data/polls';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -76,7 +77,7 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
   return (
     <div className="relative overflow-hidden">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
+        <span className="text-xs font-extrabold uppercase tracking-[0.15em] text-[var(--color-text-primary)]">
           Quick Poll
         </span>
         {hasVoted && (
@@ -86,9 +87,9 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
         )}
       </div>
 
-      <div className={`mt-3 ${poll.imageUrl ? 'grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-6' : ''}`}>
+      <div className={`mt-3 ${poll.imageUrl ? 'grid grid-cols-1 md:grid-cols-[1.1fr_1fr] gap-4' : ''}`}>
         {poll.imageUrl && (
-          <div className="relative overflow-hidden rounded-md w-full min-h-[300px] md:min-h-0 md:h-full">
+          <div className="relative overflow-hidden rounded-md w-full min-h-[200px] md:min-h-0 md:h-full">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={poll.imageUrl}
@@ -99,12 +100,12 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
           </div>
         )}
 
-        <div className={`flex flex-col justify-center ${poll.imageUrl ? '' : ''}`}>
-          <p className={`font-headline text-[var(--color-text-primary)] ${compact ? 'text-base mb-3' : 'text-lg mb-4'}`}>
+        <div className={`flex flex-col justify-center ${poll.imageUrl ? 'max-h-[400px]' : ''}`}>
+          <p className={`font-headline text-[var(--color-text-primary)] ${compact ? 'text-sm mb-2 leading-tight' : 'text-base mb-3'}`}>
             {poll.question}
           </p>
 
-          <div className="space-y-4">
+          <div className={`space-y-2 ${poll.imageUrl ? 'overflow-y-auto pr-1 custom-scrollbar' : ''}`}>
             {poll.options.map((option) => {
               const isSelected = selectedOption === option.id;
               const percentage = getPercentage(option.votes);
@@ -136,13 +137,13 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
                   )}
 
                   {/* Content */}
-                  <div className={`relative flex items-center justify-between ${compact ? 'px-4 py-3' : 'px-5 py-4'} border rounded-md transition-colors duration-300 ${
+                  <div className={`relative flex items-center justify-between ${compact ? 'px-3 py-2' : 'px-4 py-3'} border rounded-md transition-colors duration-300 ${
                     isSelected && showResults
                       ? 'border-[#c41d2f] bg-[#c41d2f]/5'
                       : 'border-[var(--color-border)] group-hover:border-[var(--color-text-muted)]'
                   }`}>
                     <div className="flex items-center gap-2">
-                      <span className={`text-sm font-medium transition-colors ${
+                      <span className={`text-xs font-medium transition-colors ${
                         isSelected && showResults ? 'text-[#c41d2f]' : 'text-[var(--color-text-primary)]'
                       }`}>
                         {option.text}
@@ -153,7 +154,7 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
                     </div>
 
                     {showResults && (
-                      <span className={`text-sm font-bold animate-fade-in ${
+                      <span className={`text-xs font-bold animate-fade-in ${
                         isSelected ? 'text-[#c41d2f]' : 'text-[var(--color-text-muted)]'
                       }`}>
                         {percentage}%
@@ -165,16 +166,22 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
             })}
           </div>
 
-          <div className="mt-4 flex items-center justify-between border-t border-[var(--color-border)] pt-3">
-            <p className="text-xs text-[var(--color-text-muted)]">
+          <div className="mt-3 flex items-center justify-between border-t border-[var(--color-border)] pt-2">
+            <p className="text-[10px] text-[var(--color-text-muted)]">
               {formatVotes(poll.totalVotes + (hasVoted ? 1 : 0))} votes
             </p>
             {hasVoted && (
-              <p className="text-xs font-medium text-[#c41d2f] animate-fade-in-up">
+              <p className="text-[10px] font-medium text-[#c41d2f] animate-fade-in-up">
                 Thanks for your opinion!
               </p>
             )}
           </div>
+        </div>
+      </div>
+
+      <div className="mt-6 flex justify-center">
+        <div className="w-full max-w-[320px]">
+          <ClientAdSlot placement="poll_sidebar" aspectClassName="aspect-[2/1]" />
         </div>
       </div>
     </div>
