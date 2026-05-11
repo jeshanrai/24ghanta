@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
-import { Plus, Pencil, Trash2, X, Check, Search, Hash, Folder, Globe, Info, AlertCircle, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Check, Search, Hash, Globe, Info, AlertCircle, Loader2 } from "lucide-react";
 import { confirmAction } from "@/components/ui/ConfirmDialog";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -103,7 +103,6 @@ export default function CategoriesPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Categories</h1>
           <p className="text-sm text-gray-500 mt-1 flex items-center gap-2">
-            <Folder className="w-4 h-4" />
             Manage article classification and navigation
           </p>
         </div>
