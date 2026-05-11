@@ -38,15 +38,12 @@ export function CategoryDropdown({ categories, currentSlug }: CategoryDropdownPr
     <div
       ref={containerRef}
       className="relative"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
     >
       <button
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        onFocus={() => setOpen(true)}
         className="w-full flex items-center justify-between gap-3 p-3 rounded-lg border border-[var(--color-border,rgba(0,0,0,0.1))] bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover,var(--color-surface))] transition-colors"
       >
         <span className="flex items-center gap-3 min-w-0">
