@@ -1,9 +1,11 @@
 import { fetchAd, AD_API_URL } from '@/lib/api';
 import { AdImpressionTracker } from './AdImpressionTracker';
 import { AdImage } from './AdImage';
+import { Ad } from '@/lib/types/ad';
 
 interface AdSlotProps {
   placement: string;
+  ad?: Ad | null;
   className?: string;
   /** Optional Tailwind aspect class to reserve space (e.g. "aspect-[728/90]"). */
   aspectClassName?: string;
@@ -13,11 +15,12 @@ interface AdSlotProps {
 
 export async function AdSlot({
   placement,
+  ad: initialAd,
   className = '',
   aspectClassName,
   hideLabel = false,
 }: AdSlotProps) {
-  const ad = await fetchAd(placement);
+  const ad = initialAd !== undefined ? initialAd : await fetchAd(placement);
   if (!ad) return null;
 
   const sponsoredLabel = !hideLabel && (
@@ -46,9 +49,7 @@ export async function AdSlot({
     : undefined;
 
   const inner = (
-    <div
-      className={`relative w-full overflow-hidden rounded-sm bg-[var(--color-surface)] ${aspectClassName || ''}`}
-    >
+    <div className={`relative w-full overflow-hidden ${aspectClassName || ''}`}>
       {sponsoredLabel}
       <AdImpressionTracker adId={ad.id} />
       <AdImage 
