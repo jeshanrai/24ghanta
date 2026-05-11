@@ -2,7 +2,6 @@ export type AdType = 'image' | 'html';
 
 export type AdPlacement =
   | 'header_banner'
-  | 'hero_sidebar'
   | 'article_inline'
   | 'article_sidebar'
   | 'article_more_in_category'

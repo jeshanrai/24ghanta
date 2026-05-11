@@ -22,7 +22,6 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const PLACEMENTS: { value: string; label: string; recommended: string }[] = [
   { value: "header_banner", label: "Header banner (above hero)", recommended: "728×90 leaderboard" },
   { value: "category_header_banner", label: "Category header banner (above title)", recommended: "1200×90 leaderboard" },
-  { value: "hero_sidebar", label: "Hero sidebar", recommended: "300×250" },
   { value: "between_sections", label: "Between category sections 1", recommended: "300×250 rectangle" },
   { value: "between_sections_2", label: "Between category sections 2", recommended: "300×250 rectangle" },
   { value: "just_in_sports_left", label: "Between Just In & Sports (Left)", recommended: "300×250 rectangle" },
