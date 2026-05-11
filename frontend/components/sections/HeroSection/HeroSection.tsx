@@ -20,11 +20,6 @@ export function HeroSection({
     <section className="py-2">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 animate-fade-in-up">
-          <AdSlot
-            placement="header_banner"
-            className="mb-4"
-            aspectClassName="aspect-[970/250]"
-          />
           <HeroSlider articles={heroArticles} />
           {activePoll && (
             <div className="mt-4 pt-4 border-t border-[var(--color-border)] animate-fade-in-up stagger-3">
