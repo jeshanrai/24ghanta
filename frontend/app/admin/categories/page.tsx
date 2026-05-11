@@ -229,7 +229,6 @@ export default function CategoriesPage() {
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
               <div>
                 <h2 className="text-lg font-bold text-gray-900">{editing ? "Edit Category" : "New Category"}</h2>
-                <p className="text-xs text-gray-500 mt-0.5">{editing ? `Updating category ID: ${editing.id}` : "Fill in the details to create a new category"}</p>
               </div>
               <button 
                 onClick={() => !saving && setShowModal(false)}
@@ -301,7 +300,6 @@ export default function CategoriesPage() {
                       />
                     </div>
                   </div>
-                  <p className="text-[10px] text-gray-400 italic">This color will be used for labels and accents on the frontend.</p>
                 </div>
               </div>
 
