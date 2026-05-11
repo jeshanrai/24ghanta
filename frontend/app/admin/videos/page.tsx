@@ -43,7 +43,7 @@ export default function VideosPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div><h1 className="text-xl sm:text-2xl font-bold text-gray-900">Videos</h1><p className="text-sm text-gray-500 mt-1">{pagination.total} total videos</p></div>
-        <Link href="/admin/videos/new" className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700"><Plus className="w-4 h-4" /> Add Video</Link>
+        <Link href="/admin/videos/new" className="flex items-center gap-2 px-4 py-2.5 bg-red-600 !text-white rounded-xl text-sm font-medium hover:bg-red-700"><Plus className="w-4 h-4" /> Add Video</Link>
       </div>
       <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-4">
         <div className="mb-4">
