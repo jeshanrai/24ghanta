@@ -225,7 +225,7 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect }: MediaLibraryMod
                   </div>
                 ))}
               </div>
-              {data?.hasMore && (
+              {data && data.page < data.totalPages && (
                 <div className="mt-8 flex justify-center">
                   <button
                     onClick={() => {

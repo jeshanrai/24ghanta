@@ -332,7 +332,7 @@ export default function MediaLibrary() {
             </div>
 
             {/* Load More Trigger */}
-            {data?.hasMore && (
+            {data && data.page < data.totalPages && (
               <div className="mt-8 flex justify-center">
                 <button
                   onClick={() => {
