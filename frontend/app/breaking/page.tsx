@@ -52,7 +52,11 @@ export default async function BreakingPage() {
             className="animate-fade-in-up"
             style={{ animationDelay: `${idx * 60}ms` }}
           >
-            <ArticleCardMedium article={article} showExcerpt />
+            <ArticleCardMedium 
+              article={article} 
+              showExcerpt 
+              titleClassName="text-lg lg:text-xl" 
+            />
           </div>
         ))}
       </div>
@@ -65,7 +69,11 @@ export default async function BreakingPage() {
             </h2>
             <div>
               {remainingArticles.map((article) => (
-                <ArticleCardList key={article.id} article={article} />
+                <ArticleCardList 
+                  key={article.id} 
+                  article={article} 
+                  titleClassName="text-base lg:text-lg" 
+                />
               ))}
             </div>
           </div>

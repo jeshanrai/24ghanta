@@ -31,8 +31,11 @@ export function TrendingBar() {
         if (cancelled) return;
         const items = payload?.data ?? [];
         if (items.length > 0) {
+          const uniqueItems = items.filter((item: any, index: number, self: any[]) =>
+            index === self.findIndex((t) => t.label === item.label)
+          );
           setTopics(
-            items.map((i: { id: number; label: string; href: string; badge: string | null }) => ({
+            uniqueItems.map((i: { id: number; label: string; href: string; badge: string | null }) => ({
               id: String(i.id),
               label: i.label,
               href: i.href,

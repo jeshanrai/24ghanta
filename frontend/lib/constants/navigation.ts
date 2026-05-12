@@ -14,7 +14,6 @@ export const mainNavItems: NavItem[] = [
 
 export const trendingTopics: TrendingTopic[] = [
   { id: '1', label: 'Breaking News', href: '/breaking', badge: 'LIVE' },
-  { id: '2', label: 'Breaking News', href: '/breaking', badge: 'LIVE' },
   { id: '3', label: 'Politics', href: '/category/politics', badge: null },
   { id: '4', label: 'Budget 2082/83', href: '/category/business', badge: null },
   { id: '5', label: 'Cricket & Sports', href: '/category/sports', badge: null },
