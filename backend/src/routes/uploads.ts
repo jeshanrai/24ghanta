@@ -18,10 +18,9 @@ if (!fs.existsSync(UPLOAD_DIR)) {
 const storage = multer.memoryStorage();
 
 function fileFilter(_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) {
-  const okMime = file.mimetype === 'image/webp';
-  const okExt = path.extname(file.originalname).toLowerCase() === '.webp';
-  if (okMime && okExt) return cb(null, true);
-  cb(new Error('Only .webp images are allowed'));
+  const allowedMime = ['image/webp', 'image/jpeg', 'image/png', 'image/gif'];
+  if (allowedMime.includes(file.mimetype)) return cb(null, true);
+  cb(new Error('Only JPEG, PNG, WebP, and GIF images are allowed'));
 }
 
 const upload = multer({
@@ -30,14 +29,7 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024, files: 1 },
 });
 
-/** WEBP magic: bytes 0-3 = "RIFF", 8-11 = "WEBP". */
-function isRealWebp(buf: Buffer): boolean {
-  if (buf.length < 12) return false;
-  return (
-    buf.toString('ascii', 0, 4) === 'RIFF' &&
-    buf.toString('ascii', 8, 12) === 'WEBP'
-  );
-}
+import { validateImage } from '../utils/imageValidation';
 
 // Tight per-IP limiter: prevents disk-fill / abuse even with valid auth.
 const uploadLimiter = rateLimit({
@@ -49,7 +41,7 @@ const uploadLimiter = rateLimit({
 });
 
 // POST /api/uploads/image — admin/author auth required.
-// Accepts only .webp, sniffs magic bytes, returns { url, filename, size }.
+// Accepts multiple image types, sniffs magic bytes, returns { url, filename, size }.
 router.post('/image', uploadLimiter, requireAuth, (req: Request, res: Response) => {
   upload.single('file')(req, res, (err) => {
     if (err) {
@@ -58,13 +50,16 @@ router.post('/image', uploadLimiter, requireAuth, (req: Request, res: Response) 
     }
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
-    if (!isRealWebp(req.file.buffer)) {
-      return res.status(400).json({ error: 'File is not a valid WEBP image' });
+    let validation;
+    try {
+      validation = validateImage(req.file.buffer);
+    } catch (validationErr: any) {
+      return res.status(400).json({ error: validationErr.message || 'Invalid image' });
     }
 
     const stamp = Date.now().toString(36);
     const rand = crypto.randomBytes(6).toString('hex');
-    const filename = `${stamp}-${rand}.webp`;
+    const filename = `${stamp}-${rand}.${validation.ext}`;
     const dest = path.join(UPLOAD_DIR, filename);
 
     try {

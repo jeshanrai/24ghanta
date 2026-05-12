@@ -12,6 +12,7 @@ import {
   Link as LinkIcon, Image as ImageIcon, Film as YoutubeIcon,
   MessageSquareQuote, AtSign as TweetIcon, Undo2, Redo2, Loader2, Code,
 } from "lucide-react";
+import { MediaLibraryModal } from "./MediaLibraryModal";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -28,8 +29,8 @@ export function RichTextEditor({
   placeholder = "Write the story…",
   minHeight = "min-h-[420px]",
 }: RichTextEditorProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -75,47 +76,6 @@ export function RichTextEditor({
       editor.commands.setContent(value, { emitUpdate: false });
     }
   }, [editor, value]);
-
-  const handleImageUpload = useCallback(
-    async (file: File) => {
-      if (!editor) return;
-      const isWebp =
-        file.type === "image/webp" || file.name.toLowerCase().endsWith(".webp");
-      if (!isWebp) {
-        alert("Only .webp images can be uploaded.");
-        return;
-      }
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("24ghanta_admin_token")
-          : null;
-      if (!token) {
-        alert("Sign in again to upload.");
-        return;
-      }
-      const fd = new FormData();
-      fd.append("file", file);
-      setUploading(true);
-      try {
-        const res = await fetch(`${API}/api/uploads/image`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: fd,
-        });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json?.error || "Upload failed");
-        const url = json.data.url.startsWith("/")
-          ? `${API}${json.data.url}`
-          : json.data.url;
-        editor.chain().focus().setImage({ src: url, alt: file.name }).run();
-      } catch (e) {
-        alert(e instanceof Error ? e.message : "Upload failed");
-      } finally {
-        setUploading(false);
-      }
-    },
-    [editor]
-  );
 
   const insertYoutube = useCallback(() => {
     if (!editor) return;
@@ -173,7 +133,7 @@ export function RichTextEditor({
       <Toolbar
         editor={editor}
         uploading={uploading}
-        onImage={() => fileInputRef.current?.click()}
+        onImage={() => setModalOpen(true)}
         onYoutube={insertYoutube}
         onTweet={insertTweet}
         onLink={insertLink}
@@ -182,16 +142,15 @@ export function RichTextEditor({
       <div className={minHeight}>
         <EditorContent editor={editor} />
       </div>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/webp,.webp"
-        className="hidden"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) handleImageUpload(f);
-          e.currentTarget.value = "";
-        }}
+
+      <MediaLibraryModal 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        onSelect={(url) => {
+          const fullUrl = url.startsWith("/") ? `${API}${url}` : url;
+          editor.chain().focus().setImage({ src: fullUrl }).run();
+          setModalOpen(false);
+        }} 
       />
     </div>
   );
@@ -271,7 +230,7 @@ function Toolbar({
       <Btn title="Insert link" onClick={onLink} active={editor.isActive("link")}>
         <LinkIcon className="w-4 h-4" />
       </Btn>
-      <Btn title="Upload image (.webp)" onClick={onImage} disabled={uploading}>
+      <Btn title="Select image from library" onClick={onImage} disabled={uploading}>
         {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
       </Btn>
       <Btn title="Embed YouTube" onClick={onYoutube}>

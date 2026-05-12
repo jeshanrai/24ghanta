@@ -254,6 +254,16 @@ async function seedAds(): Promise<void> {
       is_active: true
     },
     {
+      name: 'Himalayan Java — category header leaderboard',
+      placement: 'category_header_banner',
+      ad_type: 'image',
+      image_url: 'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=1456&h=180&fit=crop&q=80',
+      link_url: 'https://example.com/sponsor/himalayan-java',
+      alt_text: 'Himalayan Java — Premium Nepali coffee delivered nationwide',
+      priority: 10,
+      is_active: true
+    },
+    {
       name: 'Daraz Nepal — between sections leaderboard',
       placement: 'between_sections',
       ad_type: 'image',

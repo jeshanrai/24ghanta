@@ -372,6 +372,7 @@ async function seedAds(): Promise<void> {
   // real artwork from /admin/ads.
   const ads = [
     { name: 'Header leaderboard — placeholder',     placement: 'header_banner',     image_url: '/placeholder.svg', alt_text: 'Sponsored leaderboard banner', priority: 10 },
+    { name: 'Category header leaderboard — placeholder', placement: 'category_header_banner', image_url: '/placeholder.svg', alt_text: 'Sponsored category leaderboard banner', priority: 10 },
     { name: 'Between sections leaderboard — placeholder', placement: 'between_sections', image_url: '/placeholder.svg', alt_text: 'Sponsored leaderboard banner', priority: 10 },
     { name: 'Hero sidebar — placeholder',            placement: 'hero_sidebar',      image_url: '/placeholder.svg', alt_text: 'Sponsored sidebar banner', priority: 10 },
     { name: 'Article inline — placeholder',          placement: 'article_inline',    image_url: '/placeholder.svg', alt_text: 'Sponsored inline banner', priority: 10 },

@@ -196,7 +196,7 @@ export default function EditArticlePage() {
               )}
             </div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Image URL *</label>
-              <ImageUploadField value={form.image_url} onChange={(v) => update("image_url", v)} placeholder="https://... or upload .webp" /></div>
+              <ImageUploadField value={form.image_url} onChange={(v) => update("image_url", v)} placeholder="https://... or select an image" /></div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Image Alt</label>
               <input value={form.image_alt} onChange={e => update("image_alt", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20" /></div>
           </div>

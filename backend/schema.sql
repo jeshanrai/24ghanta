@@ -233,3 +233,20 @@ CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug);
 INSERT INTO admin_users (username, password_hash)
 VALUES ('admin', '$2b$10$LzBfvfBH1ZtXifxB.uTyS.8NzRcND8Oy1lekgsobRB/TDmPVf.Ch2')
 ON CONFLICT (username) DO NOTHING;
+
+-- Media Library
+CREATE TABLE IF NOT EXISTS media (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    storage_key VARCHAR(255) NOT NULL,
+    original_name VARCHAR(255) NOT NULL,
+    mime_type VARCHAR(50) NOT NULL,
+    size_bytes INTEGER NOT NULL,
+    width INTEGER,
+    height INTEGER,
+    checksum VARCHAR(64) UNIQUE NOT NULL,
+    alt_text VARCHAR(255) DEFAULT '',
+    caption TEXT DEFAULT '',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_media_original_name ON media(original_name);

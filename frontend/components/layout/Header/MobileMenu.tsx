@@ -32,7 +32,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   href={item.href}
                   onClick={onClose}
                   className={cn(
-                    'relative block px-4 py-3 text-base font-medium rounded overflow-hidden transition-all duration-300 ease-out',
+                    'relative block px-4 py-3 text-[16px] font-medium rounded overflow-hidden transition-all duration-300 ease-out',
                     'before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-[var(--color-primary)] before:scale-y-0 before:transition-transform before:duration-300 before:ease-out hover:before:scale-y-100',
                     isActive
                       ? 'text-[var(--color-primary)] bg-[var(--color-surface)] before:scale-y-100'

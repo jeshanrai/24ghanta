@@ -174,7 +174,7 @@ export default function AuthorsPage() {
           </div>
           <div>
             <label className={labelCls}>Avatar URL</label>
-            <ImageUploadField value={form.avatar_url} onChange={(v) => setForm(f => ({ ...f, avatar_url: v }))} placeholder="https://... or upload .webp" previewMaxHeight="max-h-32" />
+            <ImageUploadField value={form.avatar_url} onChange={(v) => setForm(f => ({ ...f, avatar_url: v }))} placeholder="https://... or select an image" previewMaxHeight="max-h-32" />
           </div>
         </div>
 

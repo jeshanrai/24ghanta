@@ -168,7 +168,7 @@ export default function EditVideoPage() {
         <div className="space-y-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Thumbnail URL *</label>
-              <ImageUploadField value={form.thumbnail_url} onChange={(v) => update("thumbnail_url", v)} placeholder="https://... or upload .webp" /></div>
+              <ImageUploadField value={form.thumbnail_url} onChange={(v) => update("thumbnail_url", v)} placeholder="https://... or select an image" /></div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Category</label>
               <select value={form.category_id} onChange={e => update("category_id", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"><option value="">Select</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Author</label>

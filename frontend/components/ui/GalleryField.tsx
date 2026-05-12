@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Plus, Trash2, GripVertical, Loader2, ImageIcon } from "lucide-react";
+import { useState } from "react";
+import { Plus, Trash2, GripVertical, Image as ImageIcon } from "lucide-react";
 import { resolveImageSrc } from "@/lib/safeImage";
+import { MediaLibraryModal } from "./MediaLibraryModal";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -18,47 +19,12 @@ interface GalleryFieldProps {
 }
 
 export function GalleryField({ value, onChange, max = 24 }: GalleryFieldProps) {
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
 
-  async function handleFiles(files: FileList) {
-    setError(null);
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("24ghanta_admin_token")
-        : null;
-    if (!token) return setError("Not signed in");
-
-    const next = [...value];
-    setUploading(true);
-    for (const file of Array.from(files)) {
-      if (next.length >= max) break;
-      const isWebp =
-        file.type === "image/webp" || file.name.toLowerCase().endsWith(".webp");
-      if (!isWebp) {
-        setError(`Skipped ${file.name} — only .webp allowed`);
-        continue;
-      }
-      const fd = new FormData();
-      fd.append("file", file);
-      try {
-        const res = await fetch(`${API}/api/uploads/image`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: fd,
-        });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json?.error || "Upload failed");
-        next.push({ url: json.data.url as string, caption: "" });
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Upload failed");
-      }
-    }
-    setUploading(false);
-    onChange(next);
-    if (fileRef.current) fileRef.current.value = "";
+  function handleSelectFromMedia(url: string) {
+    if (value.length >= max) return;
+    onChange([...value, { url, caption: "" }]);
   }
 
   function update(idx: number, patch: Partial<GalleryItem>) {
@@ -83,7 +49,7 @@ export function GalleryField({ value, onChange, max = 24 }: GalleryFieldProps) {
       {value.length === 0 && (
         <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center text-sm text-gray-500">
           <ImageIcon className="w-6 h-6 mx-auto mb-2 text-gray-400" />
-          No gallery images yet. Upload one or more <strong>.webp</strong> images
+          No gallery images yet. Select one or more images from the Media Library
           to display below the article body.
         </div>
       )}
@@ -141,33 +107,25 @@ export function GalleryField({ value, onChange, max = 24 }: GalleryFieldProps) {
       <div className="flex items-center gap-3">
         <button
           type="button"
-          onClick={() => fileRef.current?.click()}
-          disabled={uploading || value.length >= max}
+          onClick={() => setModalOpen(true)}
+          disabled={value.length >= max}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {uploading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Plus className="w-4 h-4" />
-          )}
-          Add images ({value.length}/{max})
+          <Plus className="w-4 h-4" />
+          Add image ({value.length}/{max})
         </button>
         <p className="text-[11px] text-gray-400">
-          Drag tiles to reorder. .webp only.
+          Drag tiles to reorder.
         </p>
       </div>
 
-      {error && <p className="text-xs text-red-600">{error}</p>}
-
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/webp,.webp"
-        multiple
-        className="hidden"
-        onChange={(e) => {
-          if (e.target.files) handleFiles(e.target.files);
-        }}
+      <MediaLibraryModal 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        onSelect={(url) => {
+          handleSelectFromMedia(url);
+          setModalOpen(false);
+        }} 
       />
     </div>
   );

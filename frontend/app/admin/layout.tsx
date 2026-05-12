@@ -86,6 +86,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const adminNav = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/admin/media", label: "Media Library", icon: Images },
     { href: "/admin/articles", label: "Articles", icon: FileText },
     { href: "/admin/videos", label: "Videos", icon: Video },
     // { href: "/admin/gallery", label: "Gallery", icon: Images },
@@ -100,6 +101,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
   const authorNav = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/admin/media", label: "Media Library", icon: Images },
     { href: "/admin/articles", label: "My Articles", icon: FileText },
     { href: "/admin/videos", label: "My Videos", icon: Video },
   ];
