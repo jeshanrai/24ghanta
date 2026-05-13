@@ -83,7 +83,7 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
   if (!poll) return null;
 
   const getPercentage = (option: any): number => {
-    const total = poll.totalVotes;
+    const total = poll.options.reduce((acc, curr) => acc + curr.votes, 0);
     if (total === 0) return 0;
     return Math.round((option.votes / total) * 100);
   };
@@ -189,7 +189,7 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
 
           <div className="mt-3 flex items-center justify-between border-t border-[var(--color-border)] pt-2">
             <p className="text-[10px] text-[var(--color-text-muted)]">
-              {formatVotes(poll.totalVotes)} votes
+              {formatVotes(poll.options.reduce((acc, curr) => acc + curr.votes, 0))} votes
             </p>
             {hasVoted && (
               <p className="text-[10px] font-medium text-[#c41d2f] animate-fade-in-up">

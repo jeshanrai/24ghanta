@@ -305,7 +305,7 @@ export default function AdminPolls() {
                       {poll.is_active ? "Active" : "Inactive"}
                     </span>
                     <span className="text-[10px] text-gray-400">
-                      {formatVotes(poll.total_votes)} votes
+                      {formatVotes(poll.options.reduce((acc, curr) => acc + curr.votes, 0))} votes
                     </span>
                   </div>
                   <h3 className="font-semibold text-gray-900 text-sm leading-snug">
@@ -317,9 +317,10 @@ export default function AdminPolls() {
               {/* Options with vote bars */}
               <div className="space-y-1.5 mb-4">
                 {poll.options.map((opt) => {
+                  const totalVotesByOptions = poll.options.reduce((acc, curr) => acc + curr.votes, 0);
                   const pct =
-                    poll.total_votes > 0
-                      ? Math.round((opt.votes / poll.total_votes) * 100)
+                    totalVotesByOptions > 0
+                      ? Math.round((opt.votes / totalVotesByOptions) * 100)
                       : 0;
                   return (
                     <div key={opt.id} className="relative overflow-hidden rounded-lg">

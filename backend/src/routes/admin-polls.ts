@@ -138,11 +138,19 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
       ]);
     }
 
-    const { rows } = await client.query(
-      `UPDATE polls SET question = $1, image_url = $2, ends_at = $3, is_active = $4
-       WHERE id = $5 RETURNING *`,
-      [question, image_url || null, ends_at || null, is_active ?? true, req.params.id]
-    );
+    const updateQuery = options && Array.isArray(options) && options.length >= 2
+      ? `UPDATE polls SET question = $1, image_url = $2, ends_at = $3, is_active = $4, total_votes = 0
+         WHERE id = $5 RETURNING *`
+      : `UPDATE polls SET question = $1, image_url = $2, ends_at = $3, is_active = $4
+         WHERE id = $5 RETURNING *`;
+
+    const { rows } = await client.query(updateQuery, [
+      question,
+      image_url || null,
+      ends_at || null,
+      is_active ?? true,
+      req.params.id,
+    ]);
     if (rows.length === 0) {
       await client.query('ROLLBACK');
       return res.status(404).json({ error: 'Poll not found' });
