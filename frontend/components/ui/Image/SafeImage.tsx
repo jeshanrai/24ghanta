@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import Image, { ImageProps } from 'next/image';
+import { FileImage } from 'lucide-react';
 import { isValidImageSrc, resolveImageSrc } from '@/lib/safeImage';
 
 type SafeImageProps = ImageProps & {
@@ -11,7 +13,9 @@ type SafeImageProps = ImageProps & {
  * Safe to use in both server and client components.
  */
 export function SafeImage({ src, alt, fallbackClassName, unoptimized, ...rest }: SafeImageProps) {
-  if (!isValidImageSrc(src)) {
+  const [error, setError] = useState(false);
+
+  if (!isValidImageSrc(src) || error) {
     const style =
       !rest.fill && (rest.width || rest.height)
         ? { width: rest.width as number | undefined, height: rest.height as number | undefined }
@@ -21,12 +25,12 @@ export function SafeImage({ src, alt, fallbackClassName, unoptimized, ...rest }:
         aria-label={alt}
         className={
           fallbackClassName ||
-          'flex items-center justify-center bg-[var(--color-surface)] text-[var(--color-text-muted)] text-xs ' +
+          'flex items-center justify-center bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] ' +
             (rest.fill ? 'absolute inset-0' : 'rounded-sm')
         }
         style={style}
       >
-        <span>Image not available</span>
+        <FileImage className="opacity-20" size={rest.fill ? 40 : 20} />
       </div>
     );
   }
@@ -38,5 +42,13 @@ export function SafeImage({ src, alt, fallbackClassName, unoptimized, ...rest }:
   const isBackendImage = typeof src === 'string' && src.startsWith('/uploads/');
   const shouldSkipOptimization = unoptimized || isBackendImage;
 
-  return <Image src={resolved} alt={alt} unoptimized={shouldSkipOptimization} {...rest} />;
+  return (
+    <Image 
+      src={resolved} 
+      alt={alt} 
+      unoptimized={shouldSkipOptimization} 
+      onError={() => setError(true)}
+      {...rest} 
+    />
+  );
 }

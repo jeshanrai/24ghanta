@@ -8,10 +8,14 @@ export function resolveImageSrc(src: string): string {
   return src;
 }
 
-export function isValidImageSrc(src: unknown): src is string {
+export function isValidImageSrc(src: unknown): src is string | object {
+  if (!src) return false;
+  if (typeof src === 'object') return true; // Support StaticImport
   if (typeof src !== 'string') return false;
+  
   const trimmed = src.trim();
   if (!trimmed) return false;
+  
   // Next.js-friendly schemes / relative paths pass through.
   if (
     trimmed.startsWith('/') ||
