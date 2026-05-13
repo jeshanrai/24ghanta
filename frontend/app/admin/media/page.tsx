@@ -46,6 +46,7 @@ export default function MediaLibrary() {
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [externalUrl, setExternalUrl] = useState("");
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -81,13 +82,14 @@ export default function MediaLibrary() {
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length || !token) return;
-    
+    setPendingFiles(Array.from(e.target.files));
+  };
+
+  const confirmUpload = async () => {
     setUploading(true);
-    const files = Array.from(e.target.files);
-    
-    for (const file of files) {
+    for (const file of pendingFiles) {
       const formData = new FormData();
       formData.append("file", file);
       
@@ -109,9 +111,15 @@ export default function MediaLibrary() {
     
     // Refresh after all uploads
     setUploading(false);
+    setPendingFiles([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
     setPage(1);
     fetchMedia(1, search);
+  };
+
+  const cancelUpload = () => {
+    setPendingFiles([]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleUrlSubmit = async (e: React.FormEvent) => {
@@ -359,6 +367,40 @@ export default function MediaLibrary() {
           onDelete={handleDelete}
           onSave={handleSaveDetails}
         />
+      )}
+
+      {/* Upload Confirmation Modal */}
+      {pendingFiles.length > 0 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <UploadCloud className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Confirm Upload</h3>
+              <p className="text-slate-600 mb-6">
+                Are you sure you want to upload <span className="font-semibold text-slate-800">{pendingFiles.length}</span> image{pendingFiles.length !== 1 ? 's' : ''} to the media library?
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={cancelUpload}
+                  disabled={uploading}
+                  className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmUpload}
+                  disabled={uploading}
+                  className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                  {uploading ? "Uploading..." : "Upload"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
