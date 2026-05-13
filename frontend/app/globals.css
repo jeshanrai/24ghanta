@@ -263,6 +263,29 @@ img {
   aspect-ratio: 3 / 4;
 }
 
+/* Fallback for older browsers that don't support aspect-ratio */
+@supports not (aspect-ratio: 1/1) {
+  .aspect-video {
+    position: relative;
+    padding-top: 56.25%; /* 16:9 */
+  }
+  .aspect-square {
+    position: relative;
+    padding-top: 100%;
+  }
+  .aspect-portrait {
+    position: relative;
+    padding-top: 133.33%;
+  }
+  .aspect-video > *, .aspect-square > *, .aspect-portrait > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
 /* Line Clamp Utilities */
 .line-clamp-1 {
   display: -webkit-box;

@@ -39,9 +39,12 @@ export function SafeImage({ src, alt, fallbackClassName, unoptimized, ...rest }:
 
   const resolved = typeof src === 'string' ? resolveImageSrc(src) : src;
   
-  // If the image is coming from our own backend API, we should skip Vercel optimization
-  // to avoid 502 Bad Gateway errors when the backend is slow or sleeping.
-  const isBackendImage = typeof src === 'string' && src.startsWith('/uploads/');
+  // Skip Vercel optimization for backend images to avoid 502 errors.
+  // We check if it starts with /uploads/ OR if it contains our API URL.
+  const isBackendImage = 
+    typeof src === 'string' && 
+    (src.startsWith('/uploads/') || (process.env.NEXT_PUBLIC_API_URL && src.includes(process.env.NEXT_PUBLIC_API_URL)));
+  
   const shouldSkipOptimization = unoptimized || isBackendImage;
 
   return (
@@ -49,7 +52,10 @@ export function SafeImage({ src, alt, fallbackClassName, unoptimized, ...rest }:
       src={resolved} 
       alt={alt} 
       unoptimized={shouldSkipOptimization} 
-      onError={() => setError(true)}
+      onError={() => {
+        console.error('SafeImage failed to load:', resolved);
+        setError(true);
+      }}
       {...rest} 
     />
   );
