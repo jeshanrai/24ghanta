@@ -43,9 +43,9 @@ export function SafeImage({ src, alt, fallbackClassName, unoptimized, ...rest }:
   // We check if it starts with /uploads/ OR if it contains our API URL.
   const isBackendImage = 
     typeof src === 'string' && 
-    (src.startsWith('/uploads/') || (process.env.NEXT_PUBLIC_API_URL && src.includes(process.env.NEXT_PUBLIC_API_URL)));
+    (src.startsWith('/uploads/') || !!(process.env.NEXT_PUBLIC_API_URL && src.includes(process.env.NEXT_PUBLIC_API_URL)));
   
-  const shouldSkipOptimization = unoptimized || isBackendImage;
+  const shouldSkipOptimization = !!(unoptimized || isBackendImage);
 
   return (
     <Image 
