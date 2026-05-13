@@ -4,8 +4,28 @@ const API_ORIGIN =
 /** Backend stores admin-uploaded images as `/uploads/<file>`; resolve those
  *  to absolute URLs against the API origin. Other paths pass through. */
 export function resolveImageSrc(src: string): string {
-  if (src.startsWith('/uploads/')) return `${API_ORIGIN}${src}`;
-  return src;
+  if (!src) return '';
+
+  // 1. If it's already a full URL
+  if (src.startsWith('http') || src.startsWith('data:')) {
+    // If the site is HTTPS, force the image to be HTTPS to avoid mobile blocking
+    if (typeof window !== 'undefined' && window.location.protocol === 'https:' && src.startsWith('http:')) {
+      return src.replace('http:', 'https:');
+    }
+    return src;
+  }
+
+  // 2. If it's a relative path starting with /
+  if (src.startsWith('/')) {
+    // If it's an upload path but missing the domain, add it
+    if (src.startsWith('/uploads/')) {
+      return `${API_ORIGIN}${src}`;
+    }
+    return src;
+  }
+
+  // 3. Fallback: treat as a raw storage key
+  return `${API_ORIGIN}/uploads/${src}`;
 }
 
 export function isValidImageSrc(src: unknown): src is string | object {

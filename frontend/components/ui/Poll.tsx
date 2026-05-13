@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Check } from 'lucide-react';
 import { ClientAdSlot } from '@/components/ads';
+import { SafeImage } from '@/components/ui/Image/SafeImage';
+import { resolveImageSrc } from '@/lib/safeImage';
 import type { Poll as PollType } from '@/lib/data/polls';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -111,12 +113,11 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
       <div className={`mt-3 ${poll.imageUrl ? 'grid grid-cols-1 md:grid-cols-[1.1fr_1fr] gap-4' : ''}`}>
         {poll.imageUrl && (
           <div className="relative overflow-hidden rounded-md w-full min-h-[200px] md:min-h-0 md:h-full">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <SafeImage
               src={poll.imageUrl}
               alt={poll.question}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-              loading="lazy"
+              fill
+              className="object-cover transition-transform duration-700 hover:scale-105"
             />
           </div>
         )}
