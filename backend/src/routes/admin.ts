@@ -103,6 +103,36 @@ router.patch('/change-password', requireAuth, async (req: AuthRequest, res: Resp
   }
 });
 
+// PATCH /profile -> updates author profile
+router.patch('/profile', requireAuth, async (req: AuthRequest, res: Response) => {
+  const { name, avatar_url } = req.body;
+  
+  if (req.role !== 'author') {
+    return res.status(403).json({ error: 'Only authors can update their profile this way' });
+  }
+
+  if (!name || typeof name !== 'string' || name.trim() === '') {
+    return res.status(400).json({ error: 'Name is required' });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `UPDATE authors 
+       SET name = $1, avatar_url = $2
+       WHERE id = $3 
+       RETURNING id, name, username, email, avatar_url`,
+      [name.trim(), avatar_url || null, req.authorId]
+    );
+
+    if (rows.length === 0) return res.status(404).json({ error: 'Author not found' });
+    
+    return res.json({ ...rows[0], role: 'author' });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // GET /dashboard — authors only see stats for their own articles
 router.get('/dashboard', requireAuth, async (req: AuthRequest, res: Response) => {
   try {

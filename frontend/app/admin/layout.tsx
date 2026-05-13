@@ -104,6 +104,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/media", label: "Media Library", icon: Images },
     { href: "/admin/articles", label: "My Articles", icon: FileText },
     { href: "/admin/videos", label: "My Videos", icon: Video },
+    { href: "/admin/profile", label: "My Profile", icon: UserPen },
   ];
   const navItems = role === "author" ? authorNav : adminNav;
 
