@@ -34,21 +34,16 @@ export function ImageUploadField({
   return (
     <div className={`space-y-2 ${className}`}>
       <div className="flex gap-2">
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"
-        />
         <button
           type="button"
           onClick={() => setModalOpen(true)}
-          className="flex items-center gap-2 px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap"
+          className="flex-1 flex items-center justify-start gap-3 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors text-left overflow-hidden"
           title="Select from Media Library"
         >
-          <ImageIcon className="w-4 h-4" />
-          <span className="hidden sm:inline">Media Library</span>
+          <ImageIcon className="w-5 h-5 flex-shrink-0 text-gray-400" />
+          <span className="truncate flex-1 text-gray-500 font-normal">
+            {value ? value : "Select image from Media Library..."}
+          </span>
         </button>
         {value && (
           <button
