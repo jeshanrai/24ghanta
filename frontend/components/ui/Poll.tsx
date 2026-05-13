@@ -20,6 +20,17 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
   const [showResults, setShowResults] = useState(false);
 
   useEffect(() => {
+    if (poll?.id) {
+      const votedOptionId = localStorage.getItem(`voted_poll_${poll.id}`);
+      if (votedOptionId) {
+        setHasVoted(true);
+        setSelectedOption(votedOptionId);
+        setShowResults(true);
+      }
+    }
+  }, [poll?.id]);
+
+  useEffect(() => {
     if (propPoll) {
       setPoll(propPoll);
       return;
@@ -39,7 +50,18 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
     
     setSelectedOption(optionId);
     setHasVoted(true);
+    localStorage.setItem(`voted_poll_${poll.id}`, optionId);
     
+    // Update local state for immediate feedback
+    setPoll(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        totalVotes: prev.totalVotes + 1,
+        options: prev.options.map(o => o.id === optionId ? { ...o, votes: o.votes + 1 } : o)
+      };
+    });
+
     // Smooth reveal of results
     setTimeout(() => {
       setShowResults(true);
@@ -53,18 +75,17 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
         body: JSON.stringify({ optionId: parseInt(optionId) }),
       });
     } catch {
-      // Vote recorded locally even if API fails
+      // Already updated locally
     }
   };
 
   if (loading) return null;
   if (!poll) return null;
 
-  const getPercentage = (votes: number): number => {
-    if (poll.totalVotes === 0) return 0;
-    const total = poll.totalVotes + (hasVoted ? 1 : 0);
-    const currentVotes = votes + (selectedOption === poll.options.find(o => o.votes === votes)?.id ? 1 : 0);
-    return Math.round((currentVotes / total) * 100);
+  const getPercentage = (option: any): number => {
+    const total = poll.totalVotes;
+    if (total === 0) return 0;
+    return Math.round((option.votes / total) * 100);
   };
 
   const formatVotes = (votes: number): string => {
@@ -108,7 +129,7 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
           <div className={`space-y-2 ${poll.imageUrl ? 'overflow-y-auto pr-1 custom-scrollbar' : ''}`}>
             {poll.options.map((option) => {
               const isSelected = selectedOption === option.id;
-              const percentage = getPercentage(option.votes);
+              const percentage = getPercentage(option);
 
               return (
                 <button
@@ -168,7 +189,7 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
 
           <div className="mt-3 flex items-center justify-between border-t border-[var(--color-border)] pt-2">
             <p className="text-[10px] text-[var(--color-text-muted)]">
-              {formatVotes(poll.totalVotes + (hasVoted ? 1 : 0))} votes
+              {formatVotes(poll.totalVotes)} votes
             </p>
             {hasVoted && (
               <p className="text-[10px] font-medium text-[#c41d2f] animate-fade-in-up">
