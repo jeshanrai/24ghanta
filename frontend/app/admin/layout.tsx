@@ -147,6 +147,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               width={32}
               height={32}
               className="h-8 w-8 rounded-lg shrink-0"
+              style={{ height: "auto" }}
               priority
             />
             <span className="font-bold text-gray-900 tracking-tight whitespace-nowrap">

@@ -28,6 +28,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "fastly.picsum.photos" },
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "images.pexels.com" },
+      { protocol: "https", hostname: "img.republicworld.com" },
       ...(apiPattern ? [apiPattern] : []),
     ],
   },

@@ -70,6 +70,7 @@ export default function AdminLoginPage() {
               width={64}
               height={64}
               className="h-16 w-16 rounded-xl shadow-[0_0_30px_rgba(220,38,38,0.4)]"
+              style={{ height: "auto" }}
               priority
             />
           </div>
