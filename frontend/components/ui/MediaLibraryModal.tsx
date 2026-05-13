@@ -218,6 +218,7 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect }: MediaLibraryMod
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
+                      unoptimized
                     />
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 pt-8 opacity-0 group-hover:opacity-100 transition-opacity">
                       <p className="text-white text-xs font-medium truncate">{item.original_name}</p>

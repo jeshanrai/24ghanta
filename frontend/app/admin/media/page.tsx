@@ -326,6 +326,7 @@ export default function MediaLibrary() {
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
                     loading="lazy"
+                    unoptimized
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-3">
                     <p className="text-white text-xs font-medium truncate drop-shadow-md">

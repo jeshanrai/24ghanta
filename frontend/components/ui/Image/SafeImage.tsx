@@ -10,7 +10,7 @@ type SafeImageProps = ImageProps & {
  * (instead of crashing) when the `src` is missing/empty/malformed.
  * Safe to use in both server and client components.
  */
-export function SafeImage({ src, alt, fallbackClassName, ...rest }: SafeImageProps) {
+export function SafeImage({ src, alt, fallbackClassName, unoptimized, ...rest }: SafeImageProps) {
   if (!isValidImageSrc(src)) {
     const style =
       !rest.fill && (rest.width || rest.height)
@@ -30,6 +30,13 @@ export function SafeImage({ src, alt, fallbackClassName, ...rest }: SafeImagePro
       </div>
     );
   }
+
   const resolved = typeof src === 'string' ? resolveImageSrc(src) : src;
-  return <Image src={resolved} alt={alt} {...rest} />;
+  
+  // If the image is coming from our own backend API, we should skip Vercel optimization
+  // to avoid 502 Bad Gateway errors when the backend is slow or sleeping.
+  const isBackendImage = typeof src === 'string' && src.startsWith('/uploads/');
+  const shouldSkipOptimization = unoptimized || isBackendImage;
+
+  return <Image src={resolved} alt={alt} unoptimized={shouldSkipOptimization} {...rest} />;
 }
