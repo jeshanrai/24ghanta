@@ -12,7 +12,7 @@ import {
   formatFullDate,
   formatReadTime,
 } from '@/lib/utils';
-import { Badge, ShareButtons, SafeImage } from '@/components/ui';
+import { Badge, ShareButtons, SafeImage, ArticleImage } from '@/components/ui';
 import { ArticleContent, ArticleGallery } from '@/components/article';
 import { AdSlot } from '@/components/ads';
 import { ArticleCardList } from '@/components/cards';
@@ -116,17 +116,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
           {/* Featured Image */}
           <figure className="mb-8">
-            <div className="relative aspect-video rounded-lg overflow-hidden">
-              <SafeImage
-                src={article.imageUrl}
-                alt={article.imageAlt}
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
+            <ArticleImage
+              src={article.imageUrl}
+              alt={article.imageAlt || article.title}
+              aspectRatio={{ mobile: '16/10', desktop: '16/9' }}
+              priority
+              containerClassName="rounded-lg shadow-sm"
+            />
             {article.imageAlt && (
-              <figcaption className="mt-2 text-xs text-[var(--color-text-muted)] italic">
+              <figcaption className="mt-3 text-sm text-[var(--color-text-secondary)] font-medium italic border-l-2 border-[var(--color-primary)] pl-3">
                 {article.imageAlt}
               </figcaption>
             )}

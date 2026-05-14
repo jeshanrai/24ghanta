@@ -46,7 +46,7 @@ export function ArticleImage({
   priority = false,
   className,
   containerClassName,
-  sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw',
+  sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px',
   objectFit = 'cover',
   preserveVisualArea = false,
 }: ArticleImageProps) {
@@ -61,9 +61,6 @@ export function ArticleImage({
     : {};
 
   // If preserveVisualArea is true, we might want to use contain instead of cover
-  // or add some padding. But usually for news, letterboxing is avoided.
-  // Instead, we'll use object-fit: contain if preserveVisualArea is requested
-  // and the image might be cut off. For simplicity, we'll just toggle objectFit.
   const resolvedObjectFit = preserveVisualArea ? 'contain' : objectFit;
 
   // Overlay classes (Scrims)
@@ -74,21 +71,25 @@ export function ArticleImage({
     overlay === 'strong' && "bg-gradient-to-t from-black/95 via-black/40 to-transparent",
   );
 
+  // Unique identifier for the instance to scope the style tag
+  const instanceId = `ar-${src.split('/').pop()?.split('.')[0] || Math.random().toString(36).substring(7)}`;
+
   return (
     <div 
       className={cn(
         "relative overflow-hidden group/article-image rounded-sm bg-[var(--color-surface-hover)]",
-        `aspect-responsive-${mobileAR.replace('/', '-')}-${desktopAR.replace('/', '-')}`,
+        instanceId,
         containerClassName
       )}
       style={{
         aspectRatio: mobileAR,
+        maxHeight: 'min(70vh, 800px)', // Prevent images from being too tall on large screens
       } as any}
     >
-      {/* Desktop Aspect Ratio Support */}
+      {/* Desktop Aspect Ratio Support - Scoped by instanceId */}
       <style>{`
         @media (min-width: 1024px) {
-          .aspect-responsive-${mobileAR.replace('/', '-')}-${desktopAR.replace('/', '-')} {
+          .${instanceId} {
             aspect-ratio: ${desktopAR} !important;
           }
         }
@@ -103,7 +104,7 @@ export function ArticleImage({
         objectFit={resolvedObjectFit}
         containerClassName="absolute inset-0"
         className={cn(
-          "transition-transform duration-[1000ms] cubic-bezier(0.16, 1, 0.3, 1) group-hover/article-image:scale-105",
+          "transition-transform duration-[1000ms] cubic-bezier(0.16, 1, 0.3, 1) group-hover/article-image:scale-[1.03]",
           className
         )}
         style={imageStyle}

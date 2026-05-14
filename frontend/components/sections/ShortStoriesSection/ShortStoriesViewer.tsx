@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { SafeImage as Image } from '@/components/ui';
+import { OptimizedImage as Image } from '@/components/ui';
 import type { Video } from '@/lib/types';
 import { CloseIcon, ChevronLeftIcon, ChevronRightIcon } from '@/components/icons';
 

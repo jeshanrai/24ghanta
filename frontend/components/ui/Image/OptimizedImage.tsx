@@ -59,7 +59,7 @@ export function OptimizedImage({
   return (
     <div 
       className={cn(
-        'relative overflow-hidden rounded-sm', 
+        'relative overflow-hidden rounded-sm bg-[var(--color-surface-hover)]', 
         fill && 'w-full h-full',
         containerClassName
       )} 
@@ -74,10 +74,10 @@ export function OptimizedImage({
         priority={priority}
         // Try Vercel optimization first. Fallback to unoptimized only if it fails.
         unoptimized={unoptimized || useUnoptimized}
-        sizes={sizes}
+        sizes={sizes || (fill ? '100vw' : undefined)}
         className={cn(
-          'transition-opacity duration-300',
-          isLoading ? 'opacity-0' : 'opacity-100',
+          'transition-all duration-700 ease-in-out',
+          isLoading ? 'opacity-0 scale-[1.02] blur-sm' : 'opacity-100 scale-100 blur-0',
           objectFit === 'cover' && 'object-cover',
           objectFit === 'contain' && 'object-contain',
           objectFit === 'fill' && 'object-fill',
@@ -86,17 +86,32 @@ export function OptimizedImage({
         onLoad={() => setIsLoading(false)}
         onError={() => {
           // If we haven't tried unoptimized yet, try it now.
-          // This handles cases where Vercel's proxy fails (502) due to file size.
+          // This handles cases where Vercel's proxy fails (502/504) due to file size (>4MB)
+          // or external origin issues.
           if (!useUnoptimized) {
-            console.warn(`OptimizedImage: Vercel optimization failed for ${resolved}, falling back to raw source.`);
+            console.warn(`OptimizedImage: Optimization failed for ${resolved}, falling back to raw source.`);
             setUseUnoptimized(true);
+            // We keep isLoading true to show placeholder until raw source loads
           } else {
             setHasError(true);
+            setIsLoading(false);
           }
         }}
+        decoding="async"
       />
+      
+      {/* Premium Shimmer Loading State */}
       {isLoading && (
-        <div className="absolute inset-0 bg-[var(--color-surface)] animate-pulse" />
+        <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
+          <div className="absolute inset-0 bg-[var(--color-surface-hover)]" />
+          <div 
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shimmer"
+            style={{ 
+              backgroundSize: '200% 100%',
+              animationDuration: '1.5s'
+            }}
+          />
+        </div>
       )}
     </div>
   );
