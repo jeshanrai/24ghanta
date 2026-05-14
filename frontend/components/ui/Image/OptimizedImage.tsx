@@ -17,6 +17,8 @@ interface OptimizedImageProps {
   className?: string;
   containerClassName?: string;
   objectFit?: 'cover' | 'contain' | 'fill' | 'none';
+  sizes?: string;
+  style?: React.CSSProperties;
 }
 
 export function OptimizedImage({
@@ -30,6 +32,8 @@ export function OptimizedImage({
   className,
   containerClassName,
   objectFit = 'cover',
+  sizes,
+  style,
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -43,7 +47,7 @@ export function OptimizedImage({
           'flex items-center justify-center bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] rounded-sm',
           containerClassName
         )}
-        style={!fill ? { width, height } : undefined}
+        style={!fill ? { width, height, ...style } : { ...style }}
       >
         <FileImage className="opacity-20" size={fill ? 40 : 20} />
       </div>
@@ -54,11 +58,20 @@ export function OptimizedImage({
   
   // NUCLEAR FIX: If the source contains /uploads/, it's a backend image.
   // We MUST skip Vercel optimization to avoid the 502/timeout errors.
-  const isBackendImage = typeof src === 'string' && src.includes('/uploads/');
+  // We check the 'resolved' URL because older articles might only store the 
+  // raw filename which resolveImageSrc then expands.
+  const isBackendImage = typeof resolved === 'string' && resolved.includes('/uploads/');
   const shouldSkipOptimization = !!(unoptimized || isBackendImage);
 
   return (
-    <div className={cn('relative overflow-hidden rounded-sm', containerClassName)}>
+    <div 
+      className={cn(
+        'relative overflow-hidden rounded-sm', 
+        fill && 'w-full h-full',
+        containerClassName
+      )} 
+      style={style}
+    >
       <Image
         src={resolved}
         alt={alt}
@@ -67,20 +80,16 @@ export function OptimizedImage({
         fill={fill}
         priority={priority}
         unoptimized={shouldSkipOptimization}
+        sizes={sizes}
         className={cn(
           'transition-opacity duration-300',
-          isLoading ? 'opacity-0' : 'opacity-100',
           objectFit === 'cover' && 'object-cover',
           objectFit === 'contain' && 'object-contain',
           objectFit === 'fill' && 'object-fill',
           className
         )}
-        onLoad={() => setIsLoading(false)}
         onError={() => setHasError(true)}
       />
-      {isLoading && (
-        <div className="absolute inset-0 bg-[var(--color-surface)] animate-pulse" />
-      )}
     </div>
   );
 }

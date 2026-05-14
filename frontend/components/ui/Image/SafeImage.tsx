@@ -41,7 +41,9 @@ export function SafeImage({ src, alt, fallbackClassName, unoptimized, ...rest }:
   
   // NUCLEAR FIX: If the source contains /uploads/, it's a backend image.
   // We MUST skip Vercel optimization to avoid the 502/timeout errors.
-  const isBackendImage = typeof src === 'string' && src.includes('/uploads/');
+  // We check the 'resolved' URL because older articles might only store the 
+  // raw filename which resolveImageSrc then expands.
+  const isBackendImage = typeof resolved === 'string' && resolved.includes('/uploads/');
   const shouldSkipOptimization = !!(unoptimized || isBackendImage);
 
   return (
