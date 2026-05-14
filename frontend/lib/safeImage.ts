@@ -6,26 +6,38 @@ const API_ORIGIN =
 export function resolveImageSrc(src: string): string {
   if (!src) return '';
 
+  // Clean the base API URL: remove trailing slash to avoid double slashes
+  const base = API_ORIGIN.endsWith('/') ? API_ORIGIN.slice(0, -1) : API_ORIGIN;
+  let resolved = src;
+
   // 1. If it's already a full URL
   if (src.startsWith('http') || src.startsWith('data:')) {
-    // If the site is HTTPS, force the image to be HTTPS to avoid mobile blocking
-    if (typeof window !== 'undefined' && window.location.protocol === 'https:' && src.startsWith('http:')) {
-      return src.replace('http:', 'https:');
-    }
-    return src;
-  }
-
+    resolved = src;
+  } 
   // 2. If it's a relative path starting with /
-  if (src.startsWith('/')) {
-    // If it's an upload path but missing the domain, add it
+  else if (src.startsWith('/')) {
     if (src.startsWith('/uploads/')) {
-      return `${API_ORIGIN}${src}`;
+      resolved = `${base}${src}`;
+    } else {
+      resolved = src;
     }
-    return src;
+  } 
+  // 3. Fallback: treat as a raw storage key (legacy/compact format)
+  else {
+    resolved = `${base}/uploads/${src}`;
   }
 
-  // 3. Fallback: treat as a raw storage key
-  return `${API_ORIGIN}/uploads/${src}`;
+  // 4. Mixed Content Fix: If the site is HTTPS, force the image to be HTTPS
+  // This is critical for Vercel production environments.
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:' && resolved.startsWith('http:')) {
+    // Only force HTTPS if the URL belongs to our backend API
+    const hostOnly = base.replace(/^https?:\/\//, '');
+    if (resolved.includes(hostOnly)) {
+      resolved = resolved.replace('http:', 'https:');
+    }
+  }
+
+  return resolved;
 }
 
 export function isValidImageSrc(src: unknown): src is string | object {

@@ -83,13 +83,18 @@ export function OptimizedImage({
         sizes={sizes}
         className={cn(
           'transition-opacity duration-300',
+          isLoading ? 'opacity-0' : 'opacity-100',
           objectFit === 'cover' && 'object-cover',
           objectFit === 'contain' && 'object-contain',
           objectFit === 'fill' && 'object-fill',
           className
         )}
+        onLoad={() => setIsLoading(false)}
         onError={() => setHasError(true)}
       />
+      {isLoading && (
+        <div className="absolute inset-0 bg-[var(--color-surface)] animate-pulse" />
+      )}
     </div>
   );
 }
