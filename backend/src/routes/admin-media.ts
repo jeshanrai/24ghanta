@@ -2,9 +2,10 @@ import { Router, Response } from 'express';
 import multer from 'multer';
 import crypto from 'crypto';
 import pool from '../db';
-import { requireAuth, AuthRequest } from '../middleware/auth';
+import { requireAuth, requireAdmin, AuthRequest } from '../middleware/auth';
 import { validateImage } from '../utils/imageValidation';
 import { storageService } from '../utils/storage';
+import { safeFetchImage } from '../utils/safeFetch';
 
 const router = Router();
 
@@ -146,7 +147,7 @@ router.post('/', upload.single('file'), async (req: AuthRequest, res: Response):
  * POST /api/admin/media/url
  * Fetches an image from a URL, validates it, and saves it to the media library.
  */
-router.post('/url', async (req: AuthRequest, res: Response): Promise<void> => {
+router.post('/url', requireAdmin, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { url } = req.body;
     if (!url || typeof url !== 'string') {
@@ -154,20 +155,16 @@ router.post('/url', async (req: AuthRequest, res: Response): Promise<void> => {
       return;
     }
 
-    // Fetch the image from URL
-    let fetchResponse;
+    // SSRF-safe fetch: https only, public addresses only, redirects refused,
+    // size + timeout capped. See utils/safeFetch.ts.
+    let fetched;
     try {
-      fetchResponse = await fetch(url);
-      if (!fetchResponse.ok) {
-        throw new Error(`Failed to fetch: ${fetchResponse.statusText}`);
-      }
+      fetched = await safeFetchImage(url);
     } catch (fetchErr: any) {
-      res.status(400).json({ error: fetchErr.message || 'Failed to download image from the provided URL' });
+      res.status(400).json({ error: fetchErr?.message || 'Failed to download image from the provided URL' });
       return;
     }
-
-    const arrayBuffer = await fetchResponse.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const buffer = fetched.buffer;
 
     // Extract a filename from the URL, or use a fallback
     let originalName = url.split('/').pop()?.split('?')[0] || 'url-upload.jpg';
@@ -238,7 +235,7 @@ router.post('/url', async (req: AuthRequest, res: Response): Promise<void> => {
  * PATCH /api/admin/media/:id
  * Updates exclusively alt_text and caption.
  */
-router.patch('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
+router.patch('/:id', requireAdmin, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     const { alt_text, caption } = req.body;
@@ -269,7 +266,7 @@ router.patch('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
  * DELETE /api/admin/media/:id
  * Removes database record and underlying storage file.
  */
-router.delete('/:id', async (req: AuthRequest, res: Response): Promise<void> => {
+router.delete('/:id', requireAdmin, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 

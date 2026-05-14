@@ -13,16 +13,29 @@
  *   • 5 trending bar items
  *   • 5 ads                    (one per common placement, all inactive by default)
  *
- * IMPORTANT — the default author password is "Welcome@2026". Rotate every
- * author's password from /admin/authors after first deploy.
+ * IMPORTANT — credentials must be supplied via environment variables. The
+ * script refuses to run without them, so no default/known passwords are ever
+ * written to production. Rotate every credential from /admin after first deploy.
  */
 
 import bcrypt from 'bcryptjs';
 import pool from './db';
 
-const DEFAULT_AUTHOR_PASSWORD = process.env.SEED_AUTHOR_PASSWORD || 'Welcome@2026';
+function requireEnv(name: string): string {
+  const v = process.env[name];
+  if (!v || v.length < 12) {
+    console.error(
+      `FATAL: environment variable ${name} is required and must be at least 12 characters. ` +
+      `Set it before running seed:prod (e.g. ADMIN_PASSWORD=$(openssl rand -base64 24)).`
+    );
+    process.exit(1);
+  }
+  return v;
+}
+
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Admin@2026';
+const ADMIN_PASSWORD = requireEnv('ADMIN_PASSWORD');
+const DEFAULT_AUTHOR_PASSWORD = requireEnv('SEED_AUTHOR_PASSWORD');
 
 const hoursAgo = (hours: number): string => {
   const d = new Date();
@@ -412,7 +425,7 @@ export async function runProductionSeed(): Promise<void> {
   console.log(`  ✅ ${Object.keys(tagIds).length} tags`);
 
   const authorIds = await seedAuthors();
-  console.log(`  ✅ ${Object.keys(authorIds).length} authors (default password: ${DEFAULT_AUTHOR_PASSWORD})`);
+  console.log(`  ✅ ${Object.keys(authorIds).length} authors (password supplied via SEED_AUTHOR_PASSWORD env)`);
 
   await seedArticles(catIds, tagIds, authorIds);
   console.log('  ✅ articles');
@@ -430,8 +443,8 @@ export async function runProductionSeed(): Promise<void> {
   console.log('  ✅ ad placeholders (all inactive — activate after upload)');
 
   console.log('\n🎉 Production seed complete.');
-  console.log(`   Admin login:  ${ADMIN_USERNAME} / ${ADMIN_PASSWORD}`);
-  console.log(`   Author login: <username>@24ghanta.com style usernames / ${DEFAULT_AUTHOR_PASSWORD}`);
+  console.log(`   Admin username: ${ADMIN_USERNAME}`);
+  console.log('   Admin/author passwords were taken from environment variables and are NOT echoed here.');
   console.log('   Rotate every credential from the admin panel before going live.');
 }
 

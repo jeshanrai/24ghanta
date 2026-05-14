@@ -47,3 +47,10 @@ next-env.d.ts
 
 # Misc
 *.pem
+
+# Ad-hoc DB scripts — must never be committed (would ship hardcoded credentials
+# or one-shot admin resets to production). Use migrations/seed-prod instead.
+backend/scratch.js
+backend/scratch.ts
+backend/fix-password.js
+backend/*.scratch.*

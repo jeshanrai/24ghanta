@@ -229,10 +229,8 @@ CREATE INDEX IF NOT EXISTS idx_videos_slug ON videos(slug);
 CREATE INDEX IF NOT EXISTS idx_tags_slug ON tags(slug);
 CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug);
 
--- Default admin (username: admin, password: admin123)
-INSERT INTO admin_users (username, password_hash)
-VALUES ('admin', '$2b$10$LzBfvfBH1ZtXifxB.uTyS.8NzRcND8Oy1lekgsobRB/TDmPVf.Ch2')
-ON CONFLICT (username) DO NOTHING;
+-- Admin bootstrap is performed by seed-prod.ts using ADMIN_USERNAME / ADMIN_PASSWORD
+-- environment variables. No default credentials are seeded by the schema itself.
 
 -- Media Library
 CREATE TABLE IF NOT EXISTS media (

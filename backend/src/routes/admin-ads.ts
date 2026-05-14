@@ -5,6 +5,31 @@ import { requireAdmin, AuthRequest } from '../middleware/auth';
 const router = Router();
 router.use(requireAdmin);
 
+/**
+ * Ad click destinations are served via a 302 from the brand domain, so anything
+ * we store here gets the trust of the brand domain. Reject non-http(s) schemes
+ * (javascript:, data:, file:, about:, vbscript:, etc.) and malformed URLs.
+ */
+function validateAdLinkUrl(value: unknown): string | null {
+  if (value === undefined || value === null || value === '') return null;
+  if (typeof value !== 'string') {
+    throw new Error('link_url must be a string');
+  }
+  let parsed: URL;
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new Error('link_url must be a valid absolute URL');
+  }
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new Error('link_url must use http:// or https://');
+  }
+  if (!parsed.hostname) {
+    throw new Error('link_url must include a hostname');
+  }
+  return parsed.toString();
+}
+
 // GET / — list all ads
 router.get('/', async (_req: AuthRequest, res: Response) => {
   try {
@@ -59,6 +84,13 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     return res.status(400).json({ error: 'HTML content required for html ads' });
   }
 
+  let safeLinkUrl: string | null;
+  try {
+    safeLinkUrl = validateAdLinkUrl(link_url);
+  } catch (err: any) {
+    return res.status(400).json({ error: err.message });
+  }
+
   try {
     const { rows } = await pool.query(
       `INSERT INTO ads (name, placement, ad_type, image_url, link_url, alt_text, html_content, is_active, priority, starts_at, ends_at)
@@ -68,7 +100,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
         placement,
         type,
         image_url || null,
-        link_url || null,
+        safeLinkUrl,
         alt_text || null,
         html_content || null,
         is_active ?? true,
@@ -105,6 +137,13 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   }
   const type = ad_type === 'html' ? 'html' : 'image';
 
+  let safeLinkUrl: string | null;
+  try {
+    safeLinkUrl = validateAdLinkUrl(link_url);
+  } catch (err: any) {
+    return res.status(400).json({ error: err.message });
+  }
+
   try {
     const { rows } = await pool.query(
       `UPDATE ads SET
@@ -117,7 +156,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
         placement,
         type,
         image_url || null,
-        link_url || null,
+        safeLinkUrl,
         alt_text || null,
         html_content || null,
         is_active ?? true,

@@ -75,7 +75,21 @@ router.get('/:id/click', async (req: Request, res: Response) => {
       [id]
     );
     if (rows.length === 0 || !rows[0].link_url) return res.redirect(302, '/');
-    return res.redirect(302, rows[0].link_url);
+
+    // Defense in depth: even though admin-ads.ts validates on write, refuse to
+    // emit a 302 from the brand domain to anything that isn't http(s). Blocks
+    // javascript:/data:/file: from any legacy row already in the database.
+    const raw = rows[0].link_url as string;
+    try {
+      const parsed = new URL(raw);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        return res.redirect(302, '/');
+      }
+      if (!parsed.hostname) return res.redirect(302, '/');
+      return res.redirect(302, parsed.toString());
+    } catch {
+      return res.redirect(302, '/');
+    }
   } catch (error) {
     console.error('Click error:', error);
     res.redirect(302, '/');
