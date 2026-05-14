@@ -37,6 +37,7 @@ export function OptimizedImage({
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [useUnoptimized, setUseUnoptimized] = useState(false);
 
   const srcInvalid = !isValidImageSrc(src);
   const resolved = resolveImageSrc(src);
@@ -51,25 +52,9 @@ export function OptimizedImage({
         style={!fill ? { width, height, ...style } : { ...style }}
       >
         <FileImage className="opacity-20 mb-2" size={fill ? 40 : 20} />
-        {/* Debug info to help the user identify origin mismatches on Vercel */}
-        <div className="absolute bottom-2 inset-x-2 flex flex-col items-center opacity-30 pointer-events-none">
-          <span className="text-[8px] truncate w-full text-center font-mono">
-            {typeof resolved === 'string' ? new URL(resolved).hostname : ''}
-          </span>
-          <span className="text-[7px] truncate w-full text-center font-mono uppercase mt-0.5">
-            {typeof resolved === 'string' ? resolved.split('/').pop() : 'Invalid'}
-          </span>
-        </div>
       </div>
     );
   }
-
-  // NUCLEAR FIX: If the source contains /uploads/, it's a backend image.
-  // We MUST skip Vercel optimization to avoid the 502/timeout errors.
-  // We check the 'resolved' URL because older articles might only store the 
-  // raw filename which resolveImageSrc then expands.
-  const isBackendImage = typeof resolved === 'string' && resolved.includes('/uploads/');
-  const shouldSkipOptimization = !!(unoptimized || isBackendImage);
 
   return (
     <div 
@@ -87,7 +72,8 @@ export function OptimizedImage({
         height={fill ? undefined : height}
         fill={fill}
         priority={priority}
-        unoptimized={shouldSkipOptimization}
+        // Try Vercel optimization first. Fallback to unoptimized only if it fails.
+        unoptimized={unoptimized || useUnoptimized}
         sizes={sizes}
         className={cn(
           'transition-opacity duration-300',
@@ -98,7 +84,16 @@ export function OptimizedImage({
           className
         )}
         onLoad={() => setIsLoading(false)}
-        onError={() => setHasError(true)}
+        onError={() => {
+          // If we haven't tried unoptimized yet, try it now.
+          // This handles cases where Vercel's proxy fails (502) due to file size.
+          if (!useUnoptimized) {
+            console.warn(`OptimizedImage: Vercel optimization failed for ${resolved}, falling back to raw source.`);
+            setUseUnoptimized(true);
+          } else {
+            setHasError(true);
+          }
+        }}
       />
       {isLoading && (
         <div className="absolute inset-0 bg-[var(--color-surface)] animate-pulse" />

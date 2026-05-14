@@ -16,6 +16,7 @@ type SafeImageProps = ImageProps & {
  */
 export function SafeImage({ src, alt, fallbackClassName, unoptimized, ...rest }: SafeImageProps) {
   const [error, setError] = useState(false);
+  const [useUnoptimized, setUseUnoptimized] = useState(false);
   const resolved = typeof src === 'string' ? resolveImageSrc(src) : src;
 
   if (!isValidImageSrc(src) || error) {
@@ -34,36 +35,22 @@ export function SafeImage({ src, alt, fallbackClassName, unoptimized, ...rest }:
         style={style}
       >
         <FileImage className="opacity-20 mb-1" size={rest.fill ? 40 : 20} />
-        {/* Debug info for Vercel troubleshooting */}
-        {typeof resolved === 'string' && (
-          <div className="flex flex-col items-center opacity-30 pointer-events-none w-full px-2">
-            <span className="text-[8px] truncate w-full text-center font-mono">
-              {new URL(resolved).hostname}
-            </span>
-            <span className="text-[7px] truncate w-full text-center font-mono uppercase mt-0.5">
-              {resolved.split('/').pop()}
-            </span>
-          </div>
-        )}
       </div>
     );
   }
-
-  // NUCLEAR FIX: If the source contains /uploads/, it's a backend image.
-  // We MUST skip Vercel optimization to avoid the 502/timeout errors.
-  // We check the 'resolved' URL because older articles might only store the 
-  // raw filename which resolveImageSrc then expands.
-  const isBackendImage = typeof resolved === 'string' && resolved.includes('/uploads/');
-  const shouldSkipOptimization = !!(unoptimized || isBackendImage);
 
   return (
     <Image 
       src={resolved} 
       alt={alt} 
-      unoptimized={shouldSkipOptimization} 
+      unoptimized={unoptimized || useUnoptimized} 
       onError={() => {
-        console.error('SafeImage failed to load:', resolved);
-        setError(true);
+        if (!useUnoptimized) {
+          setUseUnoptimized(true);
+        } else {
+          console.error('SafeImage failed to load:', resolved);
+          setError(true);
+        }
       }}
       {...rest} 
     />
