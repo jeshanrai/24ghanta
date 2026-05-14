@@ -44,6 +44,12 @@ export function isValidImageSrc(src: unknown): src is string | object {
   ) {
     return true;
   }
+
+  // Allow raw filenames/paths that don't have spaces (likely backend keys)
+  if (!trimmed.includes(' ')) {
+    return true;
+  }
+
   try {
     new URL(trimmed);
     return true;
