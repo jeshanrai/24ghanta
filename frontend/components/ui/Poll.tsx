@@ -98,36 +98,41 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
   };
 
   return (
-    <div className="relative overflow-hidden">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-extrabold uppercase tracking-[0.15em] text-[var(--color-text-primary)]">
-          Quick Poll
-        </span>
+    <div className="relative overflow-hidden group">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <span className="text-sm md:text-2xl font-headline font-extrabold uppercase tracking-tight text-[var(--color-text-primary)]">
+            Quick Poll
+          </span>
+        </div>
         {hasVoted && (
-          <span className="text-[10px] font-bold text-[#c41d2f] bg-[#c41d2f]/10 px-2 py-0.5 rounded-full animate-fade-in">
+          <span className="text-[10px] md:text-xs font-bold text-[#16a34a] bg-[#16a34a]/10 px-3 py-1 rounded-full animate-fade-in border border-[#16a34a]/20 flex items-center gap-1">
+            <Check className="w-3 h-3" />
             Voted
           </span>
         )}
       </div>
 
-      <div className={`mt-3 ${poll.imageUrl ? 'grid grid-cols-1 md:grid-cols-[1.1fr_1fr] gap-4' : ''}`}>
+      <div className={`mt-4 ${poll.imageUrl ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1.2fr_1fr] gap-6' : ''}`}>
         {poll.imageUrl && (
-          <div className="relative overflow-hidden rounded-md w-full min-h-[200px] md:min-h-0 md:h-full">
+          <div className="relative overflow-hidden rounded-xl w-full aspect-[16/10] sm:aspect-video md:aspect-auto md:h-full group/image shadow-md min-h-[200px] sm:min-h-[250px] md:min-h-0">
             <SafeImage
               src={poll.imageUrl}
               alt={poll.question}
               fill
-              className="object-cover transition-transform duration-700 hover:scale-105"
+              className="object-cover transition-all duration-1000 group-hover/image:scale-110"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
           </div>
         )}
 
-        <div className={`flex flex-col justify-center ${poll.imageUrl ? 'max-h-[400px]' : ''}`}>
-          <p className={`font-headline text-[var(--color-text-primary)] ${compact ? 'text-sm mb-2 leading-tight' : 'text-base mb-3'}`}>
+        <div className={`flex flex-col justify-start ${poll.imageUrl ? 'max-h-[500px]' : ''}`}>
+          <h3 className={`font-headline text-[var(--color-text-primary)] tracking-tight ${compact ? 'text-base md:text-lg mb-4 leading-snug' : 'text-lg md:text-2xl mb-5'}`}>
             {poll.question}
-          </p>
+          </h3>
 
-          <div className={`space-y-2 ${poll.imageUrl ? 'overflow-y-auto pr-1 custom-scrollbar' : ''}`}>
+          <div className={`space-y-3 ${poll.imageUrl ? 'overflow-y-auto pr-2 custom-scrollbar' : ''}`}>
             {poll.options.map((option) => {
               const isSelected = selectedOption === option.id;
               const percentage = getPercentage(option);
@@ -137,63 +142,71 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
                   key={option.id}
                   onClick={() => handleVote(option.id)}
                   disabled={hasVoted}
-                  className={`w-full text-left relative overflow-hidden rounded-md transition-all group ${
-                    hasVoted ? 'cursor-default' : 'cursor-pointer hover:translate-x-1'
+                  className={`w-full text-left relative overflow-hidden rounded-lg transition-all duration-300 ${
+                    hasVoted ? 'cursor-default' : 'cursor-pointer hover:shadow-md hover:-translate-y-0.5'
                   }`}
                 >
-                  {/* Background bar */}
-                  <div
-                    className={`absolute inset-y-0 left-0 transition-all duration-1000 ease-out ${
-                      showResults
-                        ? isSelected
-                          ? 'bg-[#c41d2f]/20'
-                          : 'bg-[var(--color-surface-hover)]'
-                        : 'bg-transparent'
-                    }`}
-                    style={{ width: showResults ? `${percentage}%` : '0%' }}
-                  />
-
-                  {/* Progress indicator for selected option */}
-                  {isSelected && showResults && (
-                    <div className="absolute inset-0 bg-[#c41d2f]/5 animate-pulse" />
-                  )}
-
-                  {/* Content */}
-                  <div className={`relative flex items-center justify-between ${compact ? 'px-3 py-2' : 'px-4 py-3'} border rounded-md transition-colors duration-300 ${
+                  <div className={`relative flex items-center justify-between ${compact ? 'px-4 py-3' : 'px-5 py-4'} border rounded-lg transition-all duration-500 ${
                     isSelected && showResults
-                      ? 'border-[#c41d2f] bg-[#c41d2f]/5'
-                      : 'border-[var(--color-border)] group-hover:border-[var(--color-text-muted)]'
+                      ? 'border-[#c41d2f] bg-[#c41d2f]/5 shadow-sm'
+                      : 'border-[var(--color-border)] hover:border-[var(--color-text-muted)] bg-[var(--color-surface)]'
                   }`}>
-                    <div className="flex items-center gap-2">
-                      <span className={`text-xs font-medium transition-colors ${
+                    {/* Animated Progress bar */}
+                    <div
+                      className={`absolute inset-y-0 left-0 transition-all duration-1000 cubic-bezier(0.16, 1, 0.3, 1) ${
+                        showResults
+                          ? isSelected
+                            ? 'bg-[#c41d2f]/10'
+                            : 'bg-[var(--color-border)]/40'
+                          : 'bg-transparent'
+                      }`}
+                      style={{ width: showResults ? `${percentage}%` : '0%' }}
+                    />
+
+                    {isSelected && showResults && (
+                      <div 
+                        className="absolute bottom-0 left-0 h-0.5 bg-[#c41d2f] animate-expand-x" 
+                        style={{ width: `${percentage}%` }}
+                      />
+                    )}
+
+                    <div className="relative flex items-center gap-3 z-10 w-full">
+                      <div className={`flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+                        isSelected && showResults 
+                          ? 'border-[#c41d2f] bg-[#c41d2f]' 
+                          : hasVoted 
+                            ? 'border-[var(--color-border)]' 
+                            : 'border-[var(--color-border)] group-hover:border-[var(--color-text-muted)]'
+                      }`}>
+                        {isSelected && showResults && <Check className="w-2.5 h-2.5 text-white" />}
+                      </div>
+                      
+                      <span className={`text-sm md:text-base font-semibold transition-colors flex-grow ${
                         isSelected && showResults ? 'text-[#c41d2f]' : 'text-[var(--color-text-primary)]'
                       }`}>
                         {option.text}
                       </span>
-                      {isSelected && showResults && (
-                        <Check className="w-3.5 h-3.5 text-[#c41d2f] animate-scale-in" />
+
+                      {showResults && (
+                        <span className={`text-sm font-bold tabular-nums animate-fade-in ${
+                          isSelected ? 'text-[#c41d2f]' : 'text-[var(--color-text-muted)]'
+                        }`}>
+                          {percentage}%
+                        </span>
                       )}
                     </div>
-
-                    {showResults && (
-                      <span className={`text-xs font-bold animate-fade-in ${
-                        isSelected ? 'text-[#c41d2f]' : 'text-[var(--color-text-muted)]'
-                      }`}>
-                        {percentage}%
-                      </span>
-                    )}
                   </div>
                 </button>
               );
             })}
           </div>
 
-          <div className="mt-3 flex items-center justify-between border-t border-[var(--color-border)] pt-2">
-            <p className="text-[10px] text-[var(--color-text-muted)]">
+          <div className="mt-6 flex items-center justify-between border-t border-[var(--color-border)] pt-4">
+            <p className="text-[10px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
               {formatVotes(poll.options.reduce((acc, curr) => acc + curr.votes, 0))} votes
             </p>
             {hasVoted && (
-              <p className="text-[10px] font-medium text-[#c41d2f] animate-fade-in-up">
+              <p className="text-[10px] font-bold text-[#c41d2f] uppercase tracking-wider animate-fade-in-up">
                 Thanks for your opinion!
               </p>
             )}
@@ -201,11 +214,13 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
         </div>
       </div>
 
-      <div className="mt-6 flex justify-center">
-        <div className="w-full max-w-[320px]">
-          <ClientAdSlot placement="poll_sidebar" aspectClassName="aspect-[2/1]" />
+      {!compact && (
+        <div className="mt-8 flex justify-center border-t border-[var(--color-border)] pt-6">
+          <div className="w-full max-w-[320px] opacity-80 hover:opacity-100 transition-opacity">
+            <ClientAdSlot placement="poll_sidebar" aspectClassName="aspect-[2/1]" />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
