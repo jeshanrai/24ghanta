@@ -39,23 +39,31 @@ export function OptimizedImage({
   const [hasError, setHasError] = useState(false);
 
   const srcInvalid = !isValidImageSrc(src);
+  const resolved = resolveImageSrc(src);
 
   if (hasError || srcInvalid) {
     return (
       <div
         className={cn(
-          'flex items-center justify-center bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] rounded-sm',
+          'flex flex-col items-center justify-center bg-[var(--color-surface-hover)] text-[var(--color-text-muted)] rounded-sm p-4 relative',
           containerClassName
         )}
         style={!fill ? { width, height, ...style } : { ...style }}
       >
-        <FileImage className="opacity-20" size={fill ? 40 : 20} />
+        <FileImage className="opacity-20 mb-2" size={fill ? 40 : 20} />
+        {/* Debug info to help the user identify origin mismatches on Vercel */}
+        <div className="absolute bottom-2 inset-x-2 flex flex-col items-center opacity-30 pointer-events-none">
+          <span className="text-[8px] truncate w-full text-center font-mono">
+            {typeof resolved === 'string' ? new URL(resolved).hostname : ''}
+          </span>
+          <span className="text-[7px] truncate w-full text-center font-mono uppercase mt-0.5">
+            {typeof resolved === 'string' ? resolved.split('/').pop() : 'Invalid'}
+          </span>
+        </div>
       </div>
     );
   }
 
-  const resolved = resolveImageSrc(src);
-  
   // NUCLEAR FIX: If the source contains /uploads/, it's a backend image.
   // We MUST skip Vercel optimization to avoid the 502/timeout errors.
   // We check the 'resolved' URL because older articles might only store the 

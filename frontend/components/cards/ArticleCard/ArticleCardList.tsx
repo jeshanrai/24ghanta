@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Article } from '@/lib/types';
 import { cn, formatDate } from '@/lib/utils';
-import { OptimizedImage } from '@/components/ui';
+import { ArticleImage } from '@/components/ui';
 
 interface ArticleCardListProps {
   article: Article;
@@ -34,13 +34,13 @@ export function ArticleCardList({ article, showImage = true, titleClassName }: A
           </div>
         </div>
         {showImage && (
-          <div className="flex-shrink-0 w-24 h-24 sm:w-28 sm:h-24 overflow-hidden rounded-md shadow-sm">
-            <OptimizedImage
+          <div className="flex-shrink-0 w-24 h-24 sm:w-28 sm:h-24">
+            <ArticleImage
               src={article.imageUrl}
               alt={article.imageAlt}
-              fill
-              containerClassName="w-full h-full relative"
-              className="group-hover:scale-110 transition-transform duration-500 ease-out"
+              aspectRatio="1/1"
+              containerClassName="rounded-md shadow-sm"
+              sizes="112px"
             />
           </div>
         )}

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { Article } from '@/lib/types';
 import { cn, formatDate, formatReadTimeShort } from '@/lib/utils';
-import { OptimizedImage, Badge } from '@/components/ui';
+import { ArticleImage, Badge } from '@/components/ui';
 
 interface ArticleCardMediumProps {
   article: Article;
@@ -22,16 +22,15 @@ export function ArticleCardMedium({
       style={{ ['--hover-accent' as string]: article.category.color || 'var(--color-primary)' }}
     >
       <Link href={`/article/${article.slug}`} className="block">
-        <div className="shine-hover aspect-video relative overflow-hidden rounded-md shadow-sm group-hover:shadow-md transition-shadow duration-500">
-          <OptimizedImage
+        <div className="relative">
+          <ArticleImage
             src={article.imageUrl}
             alt={article.imageAlt}
-            fill
-            containerClassName="w-full h-full relative"
-            className="group-hover:scale-[1.06] transition-transform duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+            aspectRatio="16/9"
+            containerClassName="rounded-md shadow-sm group-hover:shadow-md transition-shadow duration-500"
           />
           {showCategory && (
-            <div className="absolute top-3 left-3 z-10">
+            <div className="absolute top-3 left-3 z-20">
               <Badge color={article.category.color}>{article.category.name}</Badge>
             </div>
           )}

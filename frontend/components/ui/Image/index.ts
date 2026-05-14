@@ -1,2 +1,3 @@
-export { OptimizedImage } from './OptimizedImage';
-export { SafeImage } from './SafeImage';
+export * from './OptimizedImage';
+export * from './SafeImage';
+export * from './ArticleImage';
