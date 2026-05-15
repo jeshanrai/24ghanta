@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FileImage } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { isValidImageSrc, resolveImageSrc } from '@/lib/safeImage';
@@ -38,9 +38,21 @@ export function OptimizedImage({
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [useUnoptimized, setUseUnoptimized] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   const srcInvalid = !isValidImageSrc(src);
   const resolved = resolveImageSrc(src);
+
+  // If the image is already cached, the browser may not fire `onLoad` after
+  // mount. Check the underlying <img>'s complete flag and clear the loading
+  // state so a cached image isn't stuck behind the placeholder.
+  useEffect(() => {
+    if (!isLoading) return;
+    const img = wrapperRef.current?.querySelector('img');
+    if (img && img.complete && img.naturalWidth > 0) {
+      setIsLoading(false);
+    }
+  }, [resolved, isLoading]);
 
   if (hasError || srcInvalid) {
     return (
@@ -57,12 +69,13 @@ export function OptimizedImage({
   }
 
   return (
-    <div 
+    <div
+      ref={wrapperRef}
       className={cn(
-        'relative overflow-hidden rounded-sm bg-[var(--color-surface-hover)]', 
+        'relative overflow-hidden rounded-sm bg-[var(--color-surface-hover)]',
         fill && 'w-full h-full',
         containerClassName
-      )} 
+      )}
       style={style}
     >
       <Image

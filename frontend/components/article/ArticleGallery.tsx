@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight, ImageIcon } from 'lucide-react';
 import type { GalleryImage } from '@/lib/types/article';
 import { resolveImageSrc } from '@/lib/safeImage';
@@ -13,6 +14,11 @@ interface ArticleGalleryProps {
 
 export function ArticleGallery({ images }: ArticleGalleryProps) {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const close = useCallback(() => setOpenIdx(null), []);
   const next = useCallback(() => {
@@ -75,7 +81,7 @@ export function ArticleGallery({ images }: ArticleGalleryProps) {
         ))}
       </div>
 
-      {openIdx !== null && images[openIdx] && (
+      {mounted && openIdx !== null && images[openIdx] && createPortal(
         <div
           className="fixed inset-0 z-[120] bg-black/95 flex items-center justify-center p-4 animate-fade-in"
           role="dialog"
@@ -113,19 +119,16 @@ export function ArticleGallery({ images }: ArticleGalleryProps) {
           )}
 
           <figure
-            className="relative w-full max-w-5xl h-full flex flex-col items-center justify-center"
+            className="relative max-w-5xl flex flex-col items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative w-full flex-1">
-              <OptimizedImage
-                src={images[openIdx].url}
-                alt={images[openIdx].caption || `Gallery image ${openIdx + 1}`}
-                fill
-                objectFit="contain"
-                sizes="100vw"
-                priority
-              />
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              key={openIdx}
+              src={resolveImageSrc(images[openIdx].url)}
+              alt={images[openIdx].caption || `Gallery image ${openIdx + 1}`}
+              className="max-w-[92vw] max-h-[80vh] w-auto h-auto object-contain block"
+            />
             {images[openIdx].caption && (
               <figcaption className="mt-4 text-sm text-white/90 text-center max-w-2xl px-4 animate-fade-in stagger-2">
                 {images[openIdx].caption}
@@ -135,7 +138,8 @@ export function ArticleGallery({ images }: ArticleGalleryProps) {
               {openIdx + 1} / {images.length}
             </div>
           </figure>
-        </div>
+        </div>,
+        document.body
       )}
     </section>
   );
