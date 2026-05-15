@@ -61,24 +61,43 @@ router.post('/image', uploadLimiter, requireAuth, (req: Request, res: Response) 
 
     const stamp = Date.now().toString(36);
     const rand = crypto.randomBytes(6).toString('hex');
-    // We force .jpg for maximum compatibility with all devices, 
-    // even if the user uploaded a massive PNG.
-    const filename = `${stamp}-${rand}.jpg`;
-    const dest = path.join(UPLOAD_DIR, filename);
 
     try {
-      // ── IMAGE OPTIMIZATION ──
-      // Resize to max 1600px width (plenty for any article), 
-      // compress to 85% quality, and strip metadata.
-      const optimizedBuffer = await sharp(req.file.buffer)
-        .resize({ width: 1600, withoutEnlargement: true, fit: 'inside' })
-        .jpeg({ quality: 85, mozjpeg: true })
-        .toBuffer();
+      let finalFilename: string;
+      let finalBuffer: Buffer;
 
-      fs.writeFileSync(dest, optimizedBuffer);
-      
-      const relPath = `/uploads/${filename}`;
-      res.json({ data: { url: relPath, filename, size: optimizedBuffer.length } });
+      // ── Image resizing pipeline ──────────────────────────────────────────
+      // Resize images wider than 1920px (maintaining aspect ratio) and convert
+      // to WebP for better compression and CDN performance. If Sharp fails for
+      // any reason (corrupt image, unsupported format), we fall back to storing
+      // the original so uploads are never blocked.
+      //
+      // GIFs are stored as-is — Sharp's default reader only decodes the first
+      // frame, so resizing or re-encoding would silently strip the animation.
+      // The validator already caps GIFs at 1920 px / 8 MB, so the original is
+      // safe to ship to clients directly.
+      if (validation.ext === 'gif') {
+        finalFilename = `${stamp}-${rand}.gif`;
+        finalBuffer = req.file.buffer;
+      } else {
+        try {
+          finalBuffer = await sharp(req.file.buffer)
+            .resize({ width: 1920, withoutEnlargement: true, fit: 'inside' })
+            .webp({ quality: 82, effort: 4 })
+            .toBuffer();
+          finalFilename = `${stamp}-${rand}.webp`;
+        } catch (sharpErr) {
+          // eslint-disable-next-line no-console
+          console.warn('Sharp processing failed, storing original:', sharpErr);
+          finalFilename = `${stamp}-${rand}.${validation.ext}`;
+          finalBuffer = req.file.buffer;
+        }
+      }
+
+      fs.writeFileSync(path.join(UPLOAD_DIR, finalFilename), finalBuffer);
+
+      const relPath = `/uploads/${finalFilename}`;
+      res.json({ data: { url: relPath, filename: finalFilename, size: finalBuffer.length } });
     } catch (processErr) {
       // eslint-disable-next-line no-console
       console.error('Image processing failed:', processErr);
