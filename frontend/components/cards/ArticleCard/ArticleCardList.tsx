@@ -34,13 +34,13 @@ export function ArticleCardList({ article, showImage = true, titleClassName }: A
           </div>
         </div>
         {showImage && (
-          <div className="flex-shrink-0 w-24 h-24 sm:w-28 sm:h-24">
+          <div className="flex-shrink-0 w-20 h-20 sm:w-28 sm:h-24">
             <ArticleImage
               src={article.imageUrl}
               alt={article.imageAlt}
               aspectRatio="1/1"
               containerClassName="rounded-md shadow-sm"
-              sizes="112px"
+              sizes="(min-width: 640px) 112px, 80px"
             />
           </div>
         )}

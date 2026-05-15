@@ -298,19 +298,19 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     fetchArticlesByCategory(article.category.slug, 5),
   ]);
   const categoryArticles = categoryArticlesRaw.filter((a) => a.id !== article.id);
-
+ console.log (resolveImageSrc(article.imageUrl)+ "yo ho");
   return (
-    <div className="container py-8 animate-fade-in-up">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="container py-6 sm:py-8 animate-fade-in-up">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* Main Content */}
         <article className="lg:col-span-2">
           {/* Category + Breaking */}
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
             <Link href={`/category/${article.category.slug}`}>
               <Badge color={article.category.color}>{article.category.name}</Badge>
             </Link>
             {article.isBreaking && (
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-[var(--color-breaking)]">
+              <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-wide text-[var(--color-breaking)]">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full rounded-full bg-[var(--color-breaking)] opacity-75 animate-pulse-dot" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-breaking)]" />
@@ -321,13 +321,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif text-[var(--color-text-primary)] leading-tight mb-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-serif text-[var(--color-text-primary)] leading-tight mb-3 sm:mb-4 break-words hyphens-auto">
             {article.title}
           </h1>
 
           {/* Excerpt */}
           {article.excerpt && (
-            <p className="text-xl text-[var(--color-text-secondary)] mb-6">
+            <p className="text-base sm:text-lg md:text-xl text-[var(--color-text-secondary)] mb-4 sm:mb-6 leading-relaxed">
               {article.excerpt}
             </p>
           )}

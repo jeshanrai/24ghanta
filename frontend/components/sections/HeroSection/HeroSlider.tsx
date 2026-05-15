@@ -72,7 +72,7 @@ export function HeroSlider({ articles }: HeroSliderProps) {
       onTouchEnd={onTouchEnd}
     >
       {/* Slides */}
-      <div className="shine-hover aspect-[16/10] lg:aspect-[16/9] relative overflow-hidden rounded-md shadow-lg">
+      <div className="shine-hover aspect-[4/3] sm:aspect-[16/10] lg:aspect-[16/9] relative overflow-hidden rounded-md shadow-lg">
         {articles.map((art, i) => (
           <Link
             key={art.id}
@@ -90,6 +90,7 @@ export function HeroSlider({ articles }: HeroSliderProps) {
               alt={art.imageAlt}
               fill
               priority={i === 0}
+              sizes="(min-width: 1024px) 66vw, 100vw"
               containerClassName="w-full h-full relative"
               className="transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
             />
@@ -97,12 +98,12 @@ export function HeroSlider({ articles }: HeroSliderProps) {
         ))}
 
         {/* Gradient overlay — deeper at bottom for stronger text contrast */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-20 pointer-events-none" />
-        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/40 to-transparent z-20 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 sm:via-black/40 to-transparent z-20 pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-16 sm:h-24 bg-gradient-to-b from-black/40 to-transparent z-20 pointer-events-none" />
 
         {/* Content overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-5 px-6 sm:px-14 md:px-16 lg:p-8 lg:px-20 z-30">
-          <div className="flex flex-wrap items-center gap-2 mb-3">
+        <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-6 md:p-8 lg:p-10 z-30">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-3">
             {article.isBreaking && (
               <div className="inline-flex items-center gap-2 animate-fade-in-up">
                 <span className="relative flex h-2 w-2">
@@ -129,17 +130,17 @@ export function HeroSlider({ articles }: HeroSliderProps) {
           >
             <h2
               key={article.id}
-              className="font-headline text-2xl sm:text-h2 lg:text-h1 text-white line-clamp-3 transition-all duration-500 ease-out animate-fade-in-up drop-shadow-md hover:text-white/90"
+              className="font-headline text-base leading-tight sm:text-2xl sm:leading-snug md:text-3xl lg:text-h1 text-white line-clamp-2 sm:line-clamp-3 transition-all duration-500 ease-out animate-fade-in-up drop-shadow-md hover:text-white/90"
             >
               {article.title}
             </h2>
           </Link>
 
-          <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-white/80 mb-5">
+          <div className="mt-1.5 sm:mt-3 flex flex-wrap items-center gap-x-2 sm:gap-x-3 gap-y-1 text-[10px] sm:text-xs text-white/80 mb-2 sm:mb-5">
             {article.author && (
               <>
-                <span className="font-medium text-white/90">{article.author.name}</span>
-                <span className="w-1 h-1 rounded-full bg-white/40" />
+                <span className="hidden sm:inline font-medium text-white/90">{article.author.name}</span>
+                <span className="hidden sm:inline w-1 h-1 rounded-full bg-white/40" />
               </>
             )}
             {article.publishedAt && (
@@ -157,7 +158,7 @@ export function HeroSlider({ articles }: HeroSliderProps) {
             <span>{formatReadTimeShort(article.readTimeMinutes)}</span>
           </div>
 
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
             {/* Dot indicators */}
             {total > 1 ? (
               <div className="flex items-center gap-1.5">
@@ -171,8 +172,8 @@ export function HeroSlider({ articles }: HeroSliderProps) {
                     }}
                     className={`rounded-full transition-all duration-300 ${
                       i === current
-                        ? 'w-8 h-1.5 bg-white'
-                        : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/70'
+                        ? 'w-5 sm:w-8 h-1 sm:h-1.5 bg-white'
+                        : 'w-1 sm:w-1.5 h-1 sm:h-1.5 bg-white/40 hover:bg-white/70'
                     }`}
                     aria-label={`Go to slide ${i + 1}`}
                   />
@@ -184,11 +185,11 @@ export function HeroSlider({ articles }: HeroSliderProps) {
 
             <Link
               href={`/article/${article.slug}`}
-              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white! bg-primary hover:bg-primary/90 px-4 py-2 rounded-full leading-none transition-colors shadow-md"
+              className="inline-flex items-center gap-1 sm:gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white! bg-primary hover:bg-primary/90 px-2.5 py-1 sm:px-4 sm:py-2 rounded-full leading-none transition-colors shadow-md whitespace-nowrap"
               style={{ color: '#ffffff' }}
             >
               Read story
-              <svg className="w-3.5 h-3.5 transition-transform duration-300 hover:translate-x-1 text-white" fill="none" viewBox="0 0 24 24" stroke="#ffffff" strokeWidth={2.5}>
+              <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 transition-transform duration-300 hover:translate-x-1 text-white" fill="none" viewBox="0 0 24 24" stroke="#ffffff" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
             </Link>
