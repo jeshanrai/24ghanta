@@ -40,6 +40,16 @@ export function resolveImageSrc(src: string): string {
   return resolved;
 }
 
+export function isBackendImage(src: string): boolean {
+  const resolved = resolveImageSrc(src);
+  try {
+    const apiHostname = new URL(API_ORIGIN).hostname;
+    return new URL(resolved).hostname === apiHostname;
+  } catch {
+    return false;
+  }
+}
+
 export function isValidImageSrc(src: unknown): src is string | object {
   if (!src) return false;
   if (typeof src === 'object') return true; // Support StaticImport

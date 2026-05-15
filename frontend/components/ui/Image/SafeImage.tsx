@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image, { ImageProps } from 'next/image';
 import { FileImage } from 'lucide-react';
-import { isValidImageSrc, resolveImageSrc } from '@/lib/safeImage';
+import { isValidImageSrc, resolveImageSrc, isBackendImage } from '@/lib/safeImage';
 
 type SafeImageProps = ImageProps & {
   fallbackClassName?: string;
@@ -18,6 +18,8 @@ export function SafeImage({ src, alt, fallbackClassName, unoptimized, ...rest }:
   const [error, setError] = useState(false);
   const [useUnoptimized, setUseUnoptimized] = useState(false);
   const resolved = typeof src === 'string' ? resolveImageSrc(src) : src;
+  // vercel optimization lai choddine. images already .webp so farak pardaina.
+  const isBackend = typeof src === 'string' && isBackendImage(src);
 
   if (!isValidImageSrc(src) || error) {
     const style =
@@ -43,7 +45,7 @@ export function SafeImage({ src, alt, fallbackClassName, unoptimized, ...rest }:
     <Image 
       src={resolved} 
       alt={alt} 
-      unoptimized={unoptimized || useUnoptimized} 
+      unoptimized={unoptimized || useUnoptimized || isBackend}
       onError={() => {
         if (!useUnoptimized) {
           setUseUnoptimized(true);
