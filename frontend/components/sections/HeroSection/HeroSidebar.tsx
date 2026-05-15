@@ -1,5 +1,8 @@
+import Link from 'next/link';
 import type { Article } from '@/lib/types';
-import { ArticleCardList, ArticleCardMedium } from '@/components/cards';
+import { ArticleCardList } from '@/components/cards';
+import { OptimizedImage } from '@/components/ui';
+import { cn, formatDate, formatReadTimeShort } from '@/lib/utils';
 
 interface HeroSidebarProps {
   articles: Article[];
@@ -14,12 +17,36 @@ export function HeroSidebar({ articles }: HeroSidebarProps) {
     <div>
       {topArticle && (
         <div className="animate-fade-in-up stagger-2">
-          <ArticleCardMedium
-            article={topArticle}
-            showExcerpt={false}
-            showCategory={false}
-            titleClassName="text-sidebar-title"
-          />
+          <article
+            className="group"
+            style={{ ['--hover-accent' as string]: topArticle.category.color || 'var(--color-primary)' }}
+          >
+            <Link href={`/article/${topArticle.slug}`} className="block">
+              <div className="relative h-[220px] w-full overflow-hidden rounded-md shadow-sm group-hover:shadow-md transition-shadow duration-500">
+                <OptimizedImage
+                  src={topArticle.imageUrl}
+                  alt={topArticle.imageAlt}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 33vw"
+                  objectFit="cover"
+                  containerClassName="absolute inset-0"
+                  className="transition-transform duration-[1000ms] group-hover:scale-[1.03]"
+                />
+              </div>
+              <div className="mt-4">
+                <h3 className={cn(
+                  "font-headline text-sidebar-title text-[var(--color-text-primary)] group-hover:text-[var(--hover-accent)] transition-colors duration-300 line-clamp-3 leading-snug"
+                )}>
+                  {topArticle.title}
+                </h3>
+                <div className="mt-3 flex items-center gap-2 text-xs text-[var(--color-text-muted)] font-medium">
+                  <span>{formatDate(topArticle.publishedAt)}</span>
+                  <span className="w-1 h-1 rounded-full bg-[var(--color-text-muted)]" />
+                  <span>{formatReadTimeShort(topArticle.readTimeMinutes)}</span>
+                </div>
+              </div>
+            </Link>
+          </article>
         </div>
       )}
       {restArticles.length > 0 && (
