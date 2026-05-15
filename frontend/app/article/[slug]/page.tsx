@@ -298,7 +298,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     fetchArticlesByCategory(article.category.slug, 5),
   ]);
   const categoryArticles = categoryArticlesRaw.filter((a) => a.id !== article.id);
- console.log (resolveImageSrc(article.imageUrl)+ "yo ho");
+ 
   return (
     <div className="container py-6 sm:py-8 animate-fade-in-up">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">

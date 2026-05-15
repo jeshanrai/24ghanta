@@ -32,6 +32,10 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "img.republicworld.com" },
       ...(apiPattern ? [apiPattern] : []),
     ],
+    // Next.js 16 blocks optimizer fetches whose DNS resolves to a private IP
+    // (SSRF protection). The local backend at localhost:5000 falls into that
+    // bucket, so allow it only in development.
+    dangerouslyAllowLocalIP: process.env.NODE_ENV !== "production",
   },
   turbopack: {
     root: __dirname,
