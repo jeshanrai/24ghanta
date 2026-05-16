@@ -101,7 +101,7 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
     <div className="relative overflow-hidden group">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <span className="text-sm md:text-2xl font-headline font-extrabold uppercase tracking-tight text-[var(--color-text-primary)]">
+          <span className="text-xl md:text-2xl font-headline font-extrabold uppercase tracking-tight text-[var(--color-text-primary)]">
             Quick Poll
           </span>
         </div>
