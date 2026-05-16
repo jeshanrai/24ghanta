@@ -81,7 +81,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               article={article}
               showCategory={false}
               showExcerpt
-              titleClassName="text-lg lg:text-xl"
+              titleClassName="text-base lg:text-lg"
             />
           </div>
         ))}
