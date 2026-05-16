@@ -67,7 +67,7 @@ function HeroSplitLayout({ articles }: { articles: Article[] }) {
           <ArticleCardMedium
             article={main}
             showCategory={false}
-            titleClassName="text-lg lg:text-xl"
+            titleClassName="text-sidebar-title"
           />
         )}
       </div>
@@ -111,7 +111,7 @@ function TripleGridLayout({
             <ArticleCardMedium
               article={a}
               showCategory={false}
-              titleClassName="text-lg lg:text-xl"
+              titleClassName="text-sidebar-title"
             />
           </div>
         ))}
@@ -142,7 +142,7 @@ function TripleGridLayout({
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-headline text-base lg:text-lg leading-snug text-[var(--color-text-primary)] group-hover:text-[var(--hover-accent)] transition-colors line-clamp-2">
+                <h3 className="font-headline text-sidebar-title leading-snug text-[var(--color-text-primary)] group-hover:text-[var(--hover-accent)] transition-colors line-clamp-2">
                   {a.title}
                 </h3>
                 <div className="mt-2 flex items-center gap-2 text-xs text-[var(--color-text-muted)] font-medium">

@@ -22,7 +22,7 @@ export function LatestStrip({ articles }: LatestStripProps) {
               article={article}
               showExcerpt={false}
               showCategory
-              titleClassName="text-lg lg:text-xl"
+              titleClassName="text-sidebar-title"
             />
           </div>
         ))}
