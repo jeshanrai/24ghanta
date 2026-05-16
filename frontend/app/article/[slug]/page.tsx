@@ -321,13 +321,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </div>
 
           {/* Title */}
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-serif text-[var(--color-text-primary)] leading-tight mb-3 sm:mb-4 break-words hyphens-auto">
+          <h1 className="text-h2 lg:text-h1 font-bold font-serif text-[var(--color-text-primary)] leading-tight mb-3 sm:mb-4 break-words hyphens-auto">
             {article.title}
           </h1>
 
           {/* Excerpt */}
           {article.excerpt && (
-            <p className="text-base sm:text-lg md:text-xl text-[var(--color-text-secondary)] mb-4 sm:mb-6 leading-relaxed">
+            <p className="text-deck text-[var(--color-text-secondary)] mb-4 sm:mb-6 leading-relaxed">
               {article.excerpt}
             </p>
           )}
@@ -348,7 +348,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 <p className="font-medium text-[var(--color-text-primary)]">
                   {article.author.name}
                 </p>
-                <p className="text-sm text-[var(--color-text-secondary)]">
+                <p className="text-xs text-[var(--color-text-secondary)]">
                   <time dateTime={article.publishedAt}>{formatFullDate(article.publishedAt)}</time>
                   {' · '}
                   {formatReadTime(article.readTimeMinutes)}
@@ -370,7 +370,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               className="w-full h-auto rounded-lg shadow-sm"
             />
             {article.imageAlt && (
-              <figcaption className="mt-3 text-sm text-[var(--color-text-secondary)] font-medium italic border-l-2 border-[var(--color-primary)] pl-3">
+              <figcaption className="mt-3 text-small text-[var(--color-text-secondary)] font-medium italic border-l-2 border-[var(--color-primary)] pl-3">
                 {article.imageAlt}
               </figcaption>
             )}
@@ -382,7 +382,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           {/* Inline Ad */}
           <AdSlot
             placement="article_inline"
-            className="my-10 max-w-md mx-auto"
+            className="my-10 max-w-[260px] sm:max-w-[403px] mx-auto"
           />
 
           {/* Photo gallery */}
@@ -401,7 +401,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   <Link
                     key={tag}
                     href={`/search?q=${encodeURIComponent(tag)}`}
-                    className="px-3 py-1 bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-primary)] hover:text-white text-sm rounded-full transition-colors duration-200"
+                    className="px-3 py-1 bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-primary)] hover:text-white text-small rounded-full transition-colors duration-200"
                   >
                     #{tag}
                   </Link>
@@ -412,7 +412,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
           {/* Footer share */}
           <div className="mt-8 pt-6 border-t border-[var(--color-border)] flex flex-wrap items-center justify-between gap-4">
-            <p className="text-sm text-[var(--color-text-secondary)]">
+            <p className="text-small text-[var(--color-text-secondary)]">
               Published {formatDate(article.publishedAt)} in{' '}
               <Link
                 href={`/category/${article.category.slug}`}
@@ -438,13 +438,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           {/* More from Category */}
           {categoryArticles.length > 0 && (
             <div className="mb-8">
-              <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-4 pb-2 border-b-2 border-[var(--color-primary)]">
+              <h3 className="text-sidebar-title font-bold text-[var(--color-text-primary)] mb-4 pb-2 border-b-2 border-[var(--color-primary)]">
                 More in {article.category.name}
               </h3>
               <div className="space-y-4">
                 {categoryArticles.slice(0, 4).map((relatedArticle, idx) => (
                   <Fragment key={relatedArticle.id}>
-                    <ArticleCardList article={relatedArticle} />
+                    <ArticleCardList article={relatedArticle} titleClassName="text-sidebar-title" />
                     {idx === 1 && (
                       <AdSlot
                         placement="article_more_in_category"
@@ -460,13 +460,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           {/* Related Articles */}
           {relatedArticles.length > 0 && (
             <div>
-              <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-4 pb-2 border-b-2 border-[var(--color-primary)]">
+              <h3 className="text-sidebar-title font-bold text-[var(--color-text-primary)] mb-4 pb-2 border-b-2 border-[var(--color-primary)]">
                 Related Stories
               </h3>
               <div className="space-y-4">
                 {relatedArticles.map((relatedArticle, idx) => (
                   <Fragment key={relatedArticle.id}>
-                    <ArticleCardList article={relatedArticle} />
+                    <ArticleCardList article={relatedArticle} titleClassName="text-sidebar-title" />
                     {idx === 1 && (
                       <AdSlot
                         placement="article_related_stories"
