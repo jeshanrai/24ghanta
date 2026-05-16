@@ -125,7 +125,7 @@ export default async function HomePage() {
               placement="between_sections"
               ad={adSlot1}
               className="shadow-md rounded-lg overflow-hidden bg-white w-full max-w-[728px]"
-              aspectClassName="aspect-[300/100] md:aspect-[728/90]"
+              aspectClassName="aspect-[728/90]"
             />
           </div>
         )}
@@ -144,7 +144,7 @@ export default async function HomePage() {
               placement="between_sections_2"
               ad={adSlot2}
               className="shadow-md rounded-lg overflow-hidden bg-white w-full max-w-[728px]"
-              aspectClassName="aspect-[300/100] md:aspect-[728/90]"
+              aspectClassName="aspect-[728/90]"
             />
           </div>
         )}
