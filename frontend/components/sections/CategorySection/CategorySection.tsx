@@ -226,9 +226,9 @@ function MagazineLayout({
                 className="group-hover:scale-[1.04] transition-transform duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-5 lg:p-7">
+              <div className="absolute bottom-0 left-0 right-0 p-3 min-[400px]:p-4 sm:p-5 lg:p-7">
                 <Badge color={accent}>Featured</Badge>
-                <h3 className="mt-3 font-headline text-h1 lg:text-hero/[1.1] text-white line-clamp-3 leading-tight">
+                <h3 className="mt-2 sm:mt-3 font-headline text-[clamp(0.875rem,3.5vw,3rem)] text-white line-clamp-3 leading-tight">
                   {feature.title}
                 </h3>
                 {feature.excerpt && (
