@@ -908,3 +908,9 @@ img {
   pointer-events: none;
   height: 0;
 }
+
+@media (min-width: 1024px) {
+  [style*="--ar-desktop"] {
+    aspect-ratio: var(--ar-desktop);
+  }
+}

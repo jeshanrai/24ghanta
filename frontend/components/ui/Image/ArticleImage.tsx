@@ -71,30 +71,18 @@ export function ArticleImage({
     overlay === 'strong' && "bg-gradient-to-t from-black/95 via-black/40 to-transparent",
   );
 
-  // Unique identifier for the instance to scope the style tag
-  const instanceId = `ar-${src.split('/').pop()?.split('.')[0] || Math.random().toString(36).substring(7)}`;
-
   return (
-    <div 
+    <div
       className={cn(
         "relative overflow-hidden group/article-image rounded-sm bg-[var(--color-surface-hover)]",
-        instanceId,
         containerClassName
       )}
       style={{
         aspectRatio: mobileAR,
-        maxHeight: 'min(70vh, 800px)', // Prevent images from being too tall on large screens
-      } as any}
+        ['--ar-desktop' as string]: desktopAR,
+        maxHeight: 'min(70vh, 800px)',
+      } as React.CSSProperties}
     >
-      {/* Desktop Aspect Ratio Support - Scoped by instanceId */}
-      <style>{`
-        @media (min-width: 1024px) {
-          .${instanceId} {
-            aspect-ratio: ${desktopAR} !important;
-          }
-        }
-      `}</style>
-
       <OptimizedImage
         src={src}
         alt={alt}
