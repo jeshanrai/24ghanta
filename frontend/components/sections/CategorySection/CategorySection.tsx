@@ -226,17 +226,17 @@ function MagazineLayout({
                 className="group-hover:scale-[1.04] transition-transform duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-3 min-[400px]:p-4 sm:p-5 lg:p-7">
+              <div className="absolute bottom-0 left-0 right-0 p-3 min-[400px]:p-4 sm:p-5 md:p-6 lg:p-6 xl:p-8 2xl:p-10">
                 <Badge color={accent}>Featured</Badge>
-                <h3 className="mt-2 sm:mt-3 font-headline text-[clamp(0.875rem,3.5vw,3rem)] text-white line-clamp-3 leading-tight">
+                <h3 className="mt-1.5 sm:mt-2.5 md:mt-3 font-headline leading-tight sm:leading-snug text-white line-clamp-2 sm:line-clamp-3 text-sm min-[400px]:text-base sm:text-xl md:text-2xl lg:text-2xl xl:text-3xl 2xl:text-4xl">
                   {feature.title}
                 </h3>
                 {feature.excerpt && (
-                  <p className="mt-2 text-sm text-white/85 line-clamp-2 max-w-xl hidden sm:block">
+                  <p className="mt-2 sm:mt-3 text-xs sm:text-sm md:text-base text-white/85 line-clamp-2 max-w-xl hidden sm:block">
                     {feature.excerpt}
                   </p>
                 )}
-                <div className="mt-3 text-[11px] uppercase tracking-wider font-semibold text-white/80">
+                <div className="mt-1.5 sm:mt-3 text-[10px] sm:text-xs uppercase tracking-wider font-semibold text-white/80">
                   {formatReadTimeShort(feature.readTimeMinutes)} ·{' '}
                   <span className="underline decoration-white/40 underline-offset-4">
                     Read story
