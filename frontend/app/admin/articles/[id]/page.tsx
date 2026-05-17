@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Save, Globe, Trash2, Plus, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Globe, Trash2, Plus, Loader2, Send } from "lucide-react";
 import Link from "next/link";
 import { confirmAction } from "@/components/ui/ConfirmDialog";
 import { ImageUploadField } from "@/components/ui/ImageUploadField";
@@ -26,12 +26,14 @@ export default function EditArticlePage() {
   const [showSeo, setShowSeo] = useState(false);
   const [role, setRole] = useState<"admin" | "author">("admin");
   const [currentAuthorId, setCurrentAuthorId] = useState<string>("");
+  const [canSendNewsletter, setCanSendNewsletter] = useState(false);
   const [form, setForm] = useState({
     title: "", slug: "", excerpt: "", content: "", category_id: "", author_id: "",
     image_url: "", image_alt: "", is_featured: false, is_breaking: false, is_published: false,
     display_order: "" as string,
     meta_title: "", meta_description: "", meta_keywords: "", tag_ids: [] as number[], published_at: "",
     gallery: [] as GalleryItem[],
+    notify_subscribers: false,
   });
   const [newTagName, setNewTagName] = useState("");
   const [isCreatingTag, setIsCreatingTag] = useState(false);
@@ -58,10 +60,20 @@ export default function EditArticlePage() {
           meta_title: article.meta_title || "", meta_description: article.meta_description || "", meta_keywords: article.meta_keywords || "",
           tag_ids: (article.tags || []).map((t: any) => t.id), published_at: article.published_at || "",
           gallery: Array.isArray(article.gallery) ? article.gallery : [],
+          notify_subscribers: false,
         });
       }
       setLoading(false);
     });
+    // Permissions for the "Send to subscribers" toggle.
+    if (storedRole === "admin") {
+      setCanSendNewsletter(true);
+    } else {
+      fetch(`${API}/api/admin/me`, { headers: h })
+        .then(r => r.ok ? r.json() : null)
+        .then(me => setCanSendNewsletter(!!me?.can_send_newsletter))
+        .catch(() => setCanSendNewsletter(false));
+    }
   }, [id]);
 
   function update(key: string, val: any) { setForm(f => ({ ...f, [key]: val })); }
@@ -239,6 +251,26 @@ export default function EditArticlePage() {
                 />
                 <p className="text-xs text-gray-400 mt-1.5">Lower number = higher on the page. Leave blank to sort by published date.</p>
               </div>
+            </div>
+          )}
+
+          {canSendNewsletter && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-2">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.notify_subscribers}
+                  onChange={e => update("notify_subscribers", e.target.checked)}
+                  className="w-4 h-4 mt-0.5 text-red-600 rounded"
+                />
+                <span className="text-sm text-gray-700 flex items-center gap-2">
+                  <Send className="w-4 h-4 text-red-600" />
+                  Send to subscribers on save
+                </span>
+              </label>
+              <p className="text-xs text-gray-400 pl-7">
+                One-off email blast to every active subscriber. Only fires when the article is published.
+              </p>
             </div>
           )}
         </div>

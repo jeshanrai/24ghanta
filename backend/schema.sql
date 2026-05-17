@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS authors (
   can_feature_articles BOOLEAN DEFAULT FALSE,
   can_mark_breaking BOOLEAN DEFAULT FALSE,
   can_create_tags BOOLEAN DEFAULT TRUE,
+  can_send_newsletter BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -39,6 +40,7 @@ ALTER TABLE authors ADD COLUMN IF NOT EXISTS can_delete_own BOOLEAN DEFAULT TRUE
 ALTER TABLE authors ADD COLUMN IF NOT EXISTS can_feature_articles BOOLEAN DEFAULT FALSE;
 ALTER TABLE authors ADD COLUMN IF NOT EXISTS can_mark_breaking BOOLEAN DEFAULT FALSE;
 ALTER TABLE authors ADD COLUMN IF NOT EXISTS can_create_tags BOOLEAN DEFAULT TRUE;
+ALTER TABLE authors ADD COLUMN IF NOT EXISTS can_send_newsletter BOOLEAN DEFAULT FALSE;
 ALTER TABLE authors ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();
 
 -- Unique constraint on username only if it doesn't exist yet
@@ -206,8 +208,23 @@ CREATE TABLE IF NOT EXISTS newsletter_subscribers (
   id SERIAL PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   is_active BOOLEAN DEFAULT TRUE,
+  unsubscribe_token TEXT UNIQUE,
+  last_emailed_at TIMESTAMP,
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Backfill columns for older DBs and a partial index that speeds up the
+-- "active recipients with a token" query the digest sender uses on every run.
+ALTER TABLE newsletter_subscribers ADD COLUMN IF NOT EXISTS unsubscribe_token TEXT;
+ALTER TABLE newsletter_subscribers ADD COLUMN IF NOT EXISTS last_emailed_at TIMESTAMP;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'newsletter_subscribers_unsubscribe_token_key') THEN
+    ALTER TABLE newsletter_subscribers ADD CONSTRAINT newsletter_subscribers_unsubscribe_token_key UNIQUE (unsubscribe_token);
+  END IF;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+CREATE INDEX IF NOT EXISTS idx_newsletter_active
+  ON newsletter_subscribers(id) WHERE is_active = TRUE AND unsubscribe_token IS NOT NULL;
 
 -- Contact form submissions
 CREATE TABLE IF NOT EXISTS contact_messages (
@@ -232,6 +249,34 @@ CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug);
 
 -- Admin bootstrap is performed by seed-prod.ts using ADMIN_USERNAME / ADMIN_PASSWORD
 -- environment variables. No default credentials are seeded by the schema itself.
+
+-- Newsletter email settings (single row, id = 1). Holds the admin-configured
+-- weekly schedule and curation mode for the digest.
+CREATE TABLE IF NOT EXISTS email_settings (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  weekly_digest_enabled BOOLEAN DEFAULT FALSE,
+  weekly_digest_day_of_week SMALLINT DEFAULT 1, -- 0=Sun..6=Sat
+  weekly_digest_hour SMALLINT DEFAULT 6,        -- 0..23 in Asia/Kathmandu
+  digest_curation_mode TEXT DEFAULT 'auto',     -- 'auto' | 'manual'
+  weekly_digest_last_sent_at TIMESTAMP,
+  weekly_digest_last_sent_count INTEGER DEFAULT 0,
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Bootstrap the single settings row (no-op if it already exists).
+INSERT INTO email_settings (id) VALUES (1)
+ON CONFLICT (id) DO NOTHING;
+
+-- Manually-curated articles for the next digest (manual mode only).
+-- Cleared after a successful send so the admin can build a fresh list each cycle.
+CREATE TABLE IF NOT EXISTS newsletter_picks (
+  article_id INTEGER PRIMARY KEY REFERENCES articles(id) ON DELETE CASCADE,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  added_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_newsletter_picks_order
+  ON newsletter_picks(sort_order, added_at);
 
 -- Media Library
 CREATE TABLE IF NOT EXISTS media (

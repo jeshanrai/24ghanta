@@ -22,6 +22,7 @@ type Author = {
   can_feature_articles: boolean;
   can_mark_breaking: boolean;
   can_create_tags: boolean;
+  can_send_newsletter: boolean;
   article_count?: number;
 };
 
@@ -39,6 +40,7 @@ type FormState = {
   can_feature_articles: boolean;
   can_mark_breaking: boolean;
   can_create_tags: boolean;
+  can_send_newsletter: boolean;
 };
 
 const emptyForm: FormState = {
@@ -55,6 +57,7 @@ const emptyForm: FormState = {
   can_feature_articles: false,
   can_mark_breaking: false,
   can_create_tags: true,
+  can_send_newsletter: false,
 };
 
 type PermKey =
@@ -65,7 +68,8 @@ type PermKey =
   | "can_delete_own"
   | "can_feature_articles"
   | "can_mark_breaking"
-  | "can_create_tags";
+  | "can_create_tags"
+  | "can_send_newsletter";
 
 const PERMISSIONS: { key: PermKey; title: string; description: string }[] = [
   { key: "is_active",            title: "Can sign in",          description: "Allow this author to log into the CMS." },
@@ -76,6 +80,7 @@ const PERMISSIONS: { key: PermKey; title: string; description: string }[] = [
   { key: "can_feature_articles", title: "Feature articles",     description: "Author can mark their articles as Featured on the homepage." },
   { key: "can_mark_breaking",    title: "Mark breaking news",   description: "Author can flag their articles as Breaking News." },
   { key: "can_create_tags",      title: "Create tags",          description: "Author can add new tags from the article editor." },
+  { key: "can_send_newsletter",  title: "Send newsletter alerts", description: "Author can email subscribers when publishing an article." },
 ];
 
 export default function AuthorsPage() {
@@ -112,6 +117,7 @@ export default function AuthorsPage() {
       can_feature_articles: item.can_feature_articles === true,
       can_mark_breaking: item.can_mark_breaking === true,
       can_create_tags: item.can_create_tags !== false,
+      can_send_newsletter: item.can_send_newsletter === true,
     });
   }
   function startNew() { setShowNew(true); setEditing(null); setForm(emptyForm); setError(""); }

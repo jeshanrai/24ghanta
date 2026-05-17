@@ -4,7 +4,10 @@
       "Bash(npx tsc *)",
       "Bash(npm uninstall *)",
       "Bash(npx next *)",
-      "Bash(findstr \"3000\")"
+      "Bash(findstr \"3000\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Lenovo\\\\Desktop\\\\Sharesarkar\\\\sharesarkar\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(npm install *)"
     ]
   }
 }

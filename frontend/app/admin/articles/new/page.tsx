@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Globe, Plus, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Globe, Plus, Loader2, Send } from "lucide-react";
 import Link from "next/link";
 import { ImageUploadField } from "@/components/ui/ImageUploadField";
 import { RichTextEditor, GalleryField, type GalleryItem } from "@/components/ui";
@@ -21,12 +21,14 @@ export default function NewArticlePage() {
   const [error, setError] = useState("");
   const [role, setRole] = useState<"admin" | "author">("admin");
   const [currentAuthorId, setCurrentAuthorId] = useState<string>("");
+  const [canSendNewsletter, setCanSendNewsletter] = useState(false);
   const [form, setForm] = useState({
     title: "", slug: "", excerpt: "", content: "", category_id: "", author_id: "",
     image_url: "", image_alt: "", is_featured: false, is_breaking: false, is_published: false,
     display_order: "" as string,
     meta_title: "", meta_description: "", meta_keywords: "", tag_ids: [] as number[],
     gallery: [] as GalleryItem[],
+    notify_subscribers: false,
   });
   const [showSeo, setShowSeo] = useState(false);
 
@@ -47,6 +49,15 @@ export default function NewArticlePage() {
       fetch(`${API}/api/admin/tags`, { headers: h }).then(r => r.ok ? r.json() : []),
       fetch(`${API}/api/admin/categories`, { headers: h }).then(r => r.ok ? r.json() : []),
     ]).then(([a, t, c]) => { setAuthors(a); setTags(t); setCategories(c); });
+    // Permissions for the "Send to subscribers" toggle. Admins always allowed.
+    if (storedRole === "admin") {
+      setCanSendNewsletter(true);
+    } else {
+      fetch(`${API}/api/admin/me`, { headers: h })
+        .then(r => r.ok ? r.json() : null)
+        .then(me => setCanSendNewsletter(!!me?.can_send_newsletter))
+        .catch(() => setCanSendNewsletter(false));
+    }
   }, []);
 
   function update(key: string, val: any) {
@@ -221,6 +232,26 @@ export default function NewArticlePage() {
                 />
                 <p className="text-xs text-gray-400 mt-1.5">Lower number = higher on the page. Leave blank to sort by published date.</p>
               </div>
+            </div>
+          )}
+
+          {canSendNewsletter && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-2">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.notify_subscribers}
+                  onChange={e => update("notify_subscribers", e.target.checked)}
+                  className="w-4 h-4 mt-0.5 text-red-600 rounded"
+                />
+                <span className="text-sm text-gray-700 flex items-center gap-2">
+                  <Send className="w-4 h-4 text-red-600" />
+                  Send to subscribers
+                </span>
+              </label>
+              <p className="text-xs text-gray-400 pl-7">
+                Emails every active subscriber when the article is published. Only fires if &quot;Publish&quot; is selected.
+              </p>
             </div>
           )}
         </div>

@@ -3,28 +3,21 @@ import pool from '../db';
 import { requireAuth, AuthRequest } from '../middleware/auth';
 import { parsePagination } from '../utils/pagination';
 import { loadAuthorPerms } from '../utils/authorPerms';
-import { notifySubscribers } from '../mailer';
+import { sendArticleAlert } from '../services/newsletter';
 
 const router = Router();
 router.use(requireAuth);
 
 /**
- * Fire-and-forget newsletter notification.
- *
- * `notifySubscribers` is async and we deliberately don't await it: publishing
- * shouldn't block on email delivery. But that means any synchronous throw OR
- * rejected promise becomes an unhandled rejection that could crash the worker.
- *
- * setImmediate detaches it from the request stack, and the .catch() guarantees
- * a rejection always lands somewhere — never bubbles up to the process.
+ * Fire-and-forget article alert. Decouples email I/O from the HTTP response so
+ * a slow SMTP relay (or hundreds of subscribers) never blocks the admin's save.
+ * Errors are swallowed and logged; the article was already persisted.
  */
-function safeNotify(article: Parameters<typeof notifySubscribers>[0]): void {
+function dispatchArticleAlert(articleId: number): void {
   setImmediate(() => {
-    Promise.resolve()
-      .then(() => notifySubscribers(article))
-      .catch((err) => {
-        console.error('❌ notifySubscribers crashed:', err);
-      });
+    sendArticleAlert(articleId).catch((err) => {
+      console.error(`[admin-articles] Article ${articleId} alert dispatch failed:`, err);
+    });
   });
 }
 
@@ -119,7 +112,7 @@ function parseGallery(v: unknown): { url: string; caption: string | null }[] {
 
 // POST / — create article
 router.post('/', async (req: AuthRequest, res: Response) => {
-  const { title, slug, excerpt, content, category_id, author_id, image_url, image_alt, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords, tag_ids, published_at, gallery } = req.body;
+  const { title, slug, excerpt, content, category_id, author_id, image_url, image_alt, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords, tag_ids, published_at, gallery, notify_subscribers } = req.body;
   if (!title || !slug || !image_url) return res.status(400).json({ error: 'Title, slug, and image_url are required' });
   // Author permission gates
   const perms = req.role === 'author' ? await loadAuthorPerms(req.authorId!) : null;
@@ -133,6 +126,9 @@ router.post('/', async (req: AuthRequest, res: Response) => {
   const effectiveBreaking = req.role === 'author' ? (perms?.can_mark_breaking ? !!is_breaking : false) : (is_breaking || false);
   const effectiveDisplayOrder = req.role === 'author' ? null : parseDisplayOrder(display_order);
   const effectivePublished = req.role === 'author' ? (perms?.can_publish ? !!is_published : false) : !!is_published;
+  // Newsletter alert is admin-by-default, authors require explicit can_send_newsletter.
+  const canNotify = req.role === 'admin' || !!perms?.can_send_newsletter;
+  const shouldNotify = !!notify_subscribers && canNotify && effectivePublished;
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -149,22 +145,8 @@ router.post('/', async (req: AuthRequest, res: Response) => {
       await client.query(`INSERT INTO article_tags (article_id, tag_id) VALUES ${vals}`, [rows[0].id, ...tag_ids]);
     }
     await client.query('COMMIT');
-    
-    // Notify subscribers if published
-    if (rows[0].is_published) {
-      const authorRes = await pool.query('SELECT name FROM authors WHERE id = $1', [rows[0].author_id]);
-      const categoryRes = rows[0].category_id ? await pool.query('SELECT name FROM categories WHERE id = $1', [rows[0].category_id]) : { rows: [] };
-      safeNotify({
-        title: rows[0].title,
-        slug: rows[0].slug,
-        excerpt: rows[0].excerpt,
-        image_url: rows[0].image_url,
-        category_name: categoryRes.rows[0]?.name,
-        author_name: authorRes.rows[0]?.name,
-      });
-    }
-    
-    res.status(201).json(rows[0]);
+    if (shouldNotify) dispatchArticleAlert(rows[0].id);
+    res.status(201).json({ ...rows[0], notified: shouldNotify });
   } catch (error: any) {
     await client.query('ROLLBACK');
     if (error.code === '23505') return res.status(409).json({ error: 'Slug already exists' });
@@ -174,7 +156,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
 
 // PUT /:id — update article
 router.put('/:id', async (req: AuthRequest, res: Response) => {
-  const { title, slug, excerpt, content, category_id, author_id, image_url, image_alt, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords, tag_ids, published_at, gallery } = req.body;
+  const { title, slug, excerpt, content, category_id, author_id, image_url, image_alt, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords, tag_ids, published_at, gallery, notify_subscribers } = req.body;
   if (!title || !slug || !image_url) return res.status(400).json({ error: 'Title, slug, and image_url are required' });
   if (!(await ensureOwnership(req, req.params.id))) {
     return res.status(403).json({ error: 'You can only edit your own articles' });
@@ -186,6 +168,8 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   const effectiveBreaking = req.role === 'author' ? (perms?.can_mark_breaking ? !!is_breaking : false) : (is_breaking || false);
   const effectiveDisplayOrder = req.role === 'author' ? null : parseDisplayOrder(display_order);
   const effectivePublished = req.role === 'author' ? (perms?.can_publish ? !!is_published : false) : !!is_published;
+  const canNotify = req.role === 'admin' || !!perms?.can_send_newsletter;
+  const shouldNotify = !!notify_subscribers && canNotify && effectivePublished;
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -202,7 +186,8 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
       await client.query(`INSERT INTO article_tags (article_id, tag_id) VALUES ${vals}`, [req.params.id, ...tag_ids]);
     }
     await client.query('COMMIT');
-    res.json(rows[0]);
+    if (shouldNotify) dispatchArticleAlert(rows[0].id);
+    res.json({ ...rows[0], notified: shouldNotify });
   } catch (error: any) {
     await client.query('ROLLBACK');
     if (error.code === '23505') return res.status(409).json({ error: 'Slug already exists' });
@@ -239,21 +224,6 @@ router.patch('/:id/toggle', async (req: AuthRequest, res: Response) => {
     const { rows } = await pool.query(
       `UPDATE articles SET is_published = NOT is_published, published_at = CASE WHEN NOT is_published THEN COALESCE(published_at, NOW()) ELSE published_at END, updated_at = NOW() WHERE id = $1 RETURNING *`, [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ error: 'Article not found' });
-    
-    // Notify subscribers if it was just published
-    if (rows[0].is_published) {
-      const authorRes = await pool.query('SELECT name FROM authors WHERE id = $1', [rows[0].author_id]);
-      const categoryRes = rows[0].category_id ? await pool.query('SELECT name FROM categories WHERE id = $1', [rows[0].category_id]) : { rows: [] };
-      safeNotify({
-        title: rows[0].title,
-        slug: rows[0].slug,
-        excerpt: rows[0].excerpt,
-        image_url: rows[0].image_url,
-        category_name: categoryRes.rows[0]?.name,
-        author_name: authorRes.rows[0]?.name,
-      });
-    }
-
     res.json(rows[0]);
   } catch (error) { console.error('Toggle article error:', error); res.status(500).json({ error: 'Internal server error' }); }
 });

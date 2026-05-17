@@ -6,6 +6,7 @@ import path from 'path';
 import apiRoutes from './routes';
 import { applySchema } from './migrate';
 import { seedIfEmpty } from './seed';
+import { applyEmailSettings } from './services/newsletterScheduler';
 import rateLimit from 'express-rate-limit';
 
 // Load environment variables BEFORE anything that reads them.
@@ -150,6 +151,15 @@ app.listen(PORT, async () => {
         error instanceof Error ? error.message : error
       );
     }
+  }
+
+  try {
+    await applyEmailSettings();
+  } catch (error) {
+    console.error(
+      '⚠️  Newsletter scheduler not started — settings unavailable.',
+      error instanceof Error ? error.message : error
+    );
   }
 });
 

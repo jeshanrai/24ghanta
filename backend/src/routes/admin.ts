@@ -64,7 +64,9 @@ router.get('/me', requireAuth, async (req: AuthRequest, res: Response) => {
   try {
     if (req.role === 'author') {
       const { rows } = await pool.query(
-        `SELECT id, name, username, email, avatar_url, is_active, created_at
+        `SELECT id, name, username, email, avatar_url, is_active, created_at,
+                can_publish, can_create_articles, can_create_videos, can_delete_own,
+                can_feature_articles, can_mark_breaking, can_create_tags, can_send_newsletter
            FROM authors WHERE id = $1`,
         [req.authorId]
       );
