@@ -1,7 +1,19 @@
 require('dotenv').config();
 const { Client } = require('pg');
 
-const client = new Client({ connectionString: process.env.DATABASE_URL });
+const buildConnectionString = () => {
+  const dbUser = process.env.DB_USER || 'postgres';
+  const dbPassword = process.env.DB_PASSWORD || '';
+  const dbHost = process.env.DB_HOST || 'localhost';
+  const dbPort = process.env.DB_PORT || '5432';
+  const dbName = process.env.DB_NAME || '24ghanta';
+  
+  const pwd = dbPassword ? `:${dbPassword}` : '';
+  return `postgresql://${dbUser}${pwd}@${dbHost}:${dbPort}/${dbName}`;
+};
+
+const connectionString = process.env.DATABASE_URL || buildConnectionString();
+const client = new Client({ connectionString });
 
 const hoursAgo = (hours) => {
   const d = new Date(); d.setHours(d.getHours() - hours); return d.toISOString();

@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import pool from './db';
 
 const hoursAgo = (hours: number): string => {
@@ -29,6 +30,20 @@ interface VideoSeed {
   dur: number;
   cat: string;
   views: number;
+}
+
+async function seedAdmin(): Promise<void> {
+  const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+  const hash = bcrypt.hashSync(adminPassword, 10);
+  
+  await pool.query(
+    `INSERT INTO admin_users (username, password_hash) VALUES ($1, $2)
+     ON CONFLICT (username) DO UPDATE SET password_hash = $2
+     RETURNING id`,
+    [adminUsername, hash]
+  );
+  console.log(`✓ Admin user "${adminUsername}" seeded`);
 }
 
 async function seedCategories(): Promise<Record<string, number>> {
@@ -342,6 +357,9 @@ async function seedAds(): Promise<void> {
  * Safe to call on every server start.
  */
 export async function seedIfEmpty(): Promise<void> {
+  // Always seed admin user
+  await seedAdmin();
+
   const { rows } = await pool.query('SELECT COUNT(*)::int AS c FROM categories');
   if (rows[0].c > 0) {
     // If categories exist, still check if ads are missing and seed them

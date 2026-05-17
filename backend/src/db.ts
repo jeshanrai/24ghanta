@@ -3,8 +3,18 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const connectionString =
-  process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/24ghantanepal';
+const buildConnectionString = () => {
+  const dbUser = process.env.DB_USER || 'postgres';
+  const dbPassword = process.env.DB_PASSWORD || '';
+  const dbHost = process.env.DB_HOST || 'localhost';
+  const dbPort = process.env.DB_PORT || '5432';
+  const dbName = process.env.DB_NAME || '24ghanta';
+  
+  const pwd = dbPassword ? `:${dbPassword}` : '';
+  return `postgresql://${dbUser}${pwd}@${dbHost}:${dbPort}/${dbName}`;
+};
+
+const connectionString = process.env.DATABASE_URL || buildConnectionString();
 
 // Neon (and most managed Postgres providers) require SSL. Enable it automatically
 // when DATABASE_URL points to a non-local host, or when DB_SSL=true is set.

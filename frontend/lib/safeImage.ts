@@ -5,6 +5,8 @@ const API_ORIGIN =
  *  to absolute URLs against the API origin. Other paths pass through. */
 export function resolveImageSrc(src: string): string {
   if (!src) return '';
+  // Block dangerous protocols
+  if (/^(javascript|vbscript):/i.test(src.trim())) return '';
 
   // Clean the base API URL: remove trailing slash to avoid double slashes
   const base = API_ORIGIN.endsWith('/') ? API_ORIGIN.slice(0, -1) : API_ORIGIN;

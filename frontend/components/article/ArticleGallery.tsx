@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ChevronLeft, ChevronRight, ImageIcon } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, ImageIcon, Loader2, ImageOff } from 'lucide-react';
 import type { GalleryImage } from '@/lib/types/article';
 import { resolveImageSrc } from '@/lib/safeImage';
 
@@ -15,19 +15,23 @@ interface ArticleGalleryProps {
 export function ArticleGallery({ images }: ArticleGalleryProps) {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  const touchStart = useRef<number | null>(null);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
   const close = useCallback(() => setOpenIdx(null), []);
   const next = useCallback(() => {
+    setImgLoaded(false); setImgError(false);
     setOpenIdx((i) => (i === null ? null : (i + 1) % images.length));
   }, [images.length]);
   const prev = useCallback(() => {
+    setImgLoaded(false); setImgError(false);
     setOpenIdx((i) => (i === null ? null : (i - 1 + images.length) % images.length));
   }, [images.length]);
 
+  // Keyboard navigation
   useEffect(() => {
     if (openIdx === null) return;
     const onKey = (e: KeyboardEvent) => {
@@ -42,6 +46,17 @@ export function ArticleGallery({ images }: ArticleGalleryProps) {
       document.body.style.overflow = '';
     };
   }, [openIdx, close, next, prev]);
+
+  // Preload adjacent images when lightbox is open
+  useEffect(() => {
+    if (openIdx === null || images.length <= 1) return;
+    const preload = (idx: number) => {
+      const img = new Image();
+      img.src = resolveImageSrc(images[idx].url);
+    };
+    preload((openIdx + 1) % images.length);
+    preload((openIdx - 1 + images.length) % images.length);
+  }, [openIdx, images]);
 
   if (!images || images.length === 0) return null;
 
@@ -60,9 +75,9 @@ export function ArticleGallery({ images }: ArticleGalleryProps) {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
         {images.map((img, idx) => (
           <button
-            key={idx}
+            key={img.url}
             type="button"
-            onClick={() => setOpenIdx(idx)}
+            onClick={() => { setImgLoaded(false); setImgError(false); setOpenIdx(idx); }}
             className="group relative aspect-[4/3] overflow-hidden rounded-md bg-[var(--color-surface)] cursor-zoom-in"
           >
             <OptimizedImage
@@ -87,6 +102,13 @@ export function ArticleGallery({ images }: ArticleGalleryProps) {
           role="dialog"
           aria-modal="true"
           onClick={close}
+          onTouchStart={(e) => { touchStart.current = e.touches[0].clientX; }}
+          onTouchEnd={(e) => {
+            if (touchStart.current === null) return;
+            const dx = e.changedTouches[0].clientX - touchStart.current;
+            touchStart.current = null;
+            if (Math.abs(dx) > 50) { dx < 0 ? next() : prev(); }
+          }}
         >
           <button
             type="button"
@@ -122,13 +144,28 @@ export function ArticleGallery({ images }: ArticleGalleryProps) {
             className="relative max-w-5xl flex flex-col items-center justify-center"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              key={openIdx}
-              src={resolveImageSrc(images[openIdx].url)}
-              alt={images[openIdx].caption || `Gallery image ${openIdx + 1}`}
-              className="max-w-[92vw] max-h-[80vh] w-auto h-auto object-contain block"
-            />
+            {/* Loading spinner */}
+            {!imgLoaded && !imgError && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-white/50 animate-spin" />
+              </div>
+            )}
+            {imgError ? (
+              <div className="flex flex-col items-center gap-3 text-white/40">
+                <ImageOff className="w-12 h-12" />
+                <span className="text-sm">Image could not be loaded</span>
+              </div>
+            ) : (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                key={openIdx}
+                src={resolveImageSrc(images[openIdx].url)}
+                alt={images[openIdx].caption || `Gallery image ${openIdx + 1}`}
+                className={`max-w-[92vw] max-h-[80vh] w-auto h-auto object-contain block transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+                onLoad={() => setImgLoaded(true)}
+                onError={() => { setImgError(true); setImgLoaded(true); }}
+              />
+            )}
             {images[openIdx].caption && (
               <figcaption className="mt-4 text-sm text-white/90 text-center max-w-2xl px-4 animate-fade-in stagger-2">
                 {images[openIdx].caption}

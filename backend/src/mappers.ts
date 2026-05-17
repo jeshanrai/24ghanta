@@ -36,8 +36,11 @@ function normalizeGallery(value: unknown): GalleryImage[] {
     if (!item || typeof item !== 'object') continue;
     const url = (item as { url?: unknown }).url;
     if (typeof url !== 'string' || !url.trim()) continue;
+    const trimmed = url.trim();
+    // Only allow http(s) URLs and server-relative paths
+    if (!/^(https?:\/\/|\/)/i.test(trimmed)) continue;
     const caption = (item as { caption?: unknown }).caption;
-    const entry: GalleryImage = { url: url.trim() };
+    const entry: GalleryImage = { url: trimmed };
     if (typeof caption === 'string' && caption.trim()) {
       entry.caption = caption;
     }

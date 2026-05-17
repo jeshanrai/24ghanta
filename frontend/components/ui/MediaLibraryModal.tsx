@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
-import { X, Search, UploadCloud, Loader2, Link as LinkIcon, FileImage } from "lucide-react";
+import { X, Search, UploadCloud, Loader2, Link as LinkIcon, FileImage, Check } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -28,9 +28,13 @@ interface MediaLibraryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (url: string) => void;
+  /** Enable multi-select mode with checkboxes and batch insert */
+  multiple?: boolean;
+  /** Called with all selected URLs when user clicks "Insert N images" in multi mode */
+  onSelectMultiple?: (urls: string[]) => void;
 }
 
-export function MediaLibraryModal({ isOpen, onClose, onSelect }: MediaLibraryModalProps) {
+export function MediaLibraryModal({ isOpen, onClose, onSelect, multiple, onSelectMultiple }: MediaLibraryModalProps) {
   const [data, setData] = useState<{ media: MediaItem[]; total: number; page: number; totalPages: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -38,10 +42,18 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect }: MediaLibraryMod
   const [uploading, setUploading] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [externalUrl, setExternalUrl] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const token = typeof window !== "undefined" ? localStorage.getItem("24ghanta_admin_token") : null;
+
+  // Reset selection when modal opens/closes
+  useEffect(() => {
+    if (isOpen) {
+      setSelected(new Set());
+    }
+  }, [isOpen]);
 
   const fetchMedia = async (p = 1, s = search) => {
     if (!token) return;
@@ -96,8 +108,13 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect }: MediaLibraryMod
             const data = await res.json();
             // Automatically select the freshly uploaded image if it's the only one being uploaded
             if (files.length === 1 && data.media) {
-                onSelect(`/uploads/${data.media.storage_key}`);
-                return;
+                const url = `/uploads/${data.media.storage_key}`;
+                if (multiple) {
+                  setSelected(prev => new Set(prev).add(url));
+                } else {
+                  onSelect(url);
+                  return;
+                }
             }
         }
       } catch (error) {
@@ -114,11 +131,45 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect }: MediaLibraryMod
   const handleUrlSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (externalUrl.trim()) {
-      onSelect(externalUrl.trim());
+      if (multiple) {
+        setSelected(prev => new Set(prev).add(externalUrl.trim()));
+      } else {
+        onSelect(externalUrl.trim());
+      }
       setExternalUrl("");
       setShowUrlInput(false);
     }
   };
+
+  function toggleSelect(url: string) {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(url)) next.delete(url);
+      else next.add(url);
+      return next;
+    });
+  }
+
+  function handleInsertSelected() {
+    const urls = Array.from(selected);
+    if (urls.length === 0) return;
+    if (onSelectMultiple) {
+      onSelectMultiple(urls);
+    } else {
+      // Fallback: call onSelect for each
+      urls.forEach(url => onSelect(url));
+      onClose();
+    }
+  }
+
+  function handleImageClick(storageKey: string) {
+    const url = `/uploads/${storageKey}`;
+    if (multiple) {
+      toggleSelect(url);
+    } else {
+      onSelect(url);
+    }
+  }
 
   if (!isOpen) return null;
 
@@ -127,7 +178,14 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect }: MediaLibraryMod
       <div className="bg-white rounded-2xl w-full max-w-5xl h-[85vh] flex flex-col shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b bg-slate-50">
-          <h2 className="text-xl font-semibold text-slate-800">Media Library</h2>
+          <h2 className="text-xl font-semibold text-slate-800">
+            Media Library
+            {multiple && selected.size > 0 && (
+              <span className="ml-2 text-sm font-normal text-blue-600">
+                ({selected.size} selected)
+              </span>
+            )}
+          </h2>
           <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
             <X className="w-5 h-5" />
           </button>
@@ -185,7 +243,7 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect }: MediaLibraryMod
               required
             />
             <button type="submit" className="px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-medium hover:bg-slate-900">
-              Insert
+              {multiple ? "Add to selection" : "Insert"}
             </button>
           </form>
         )}
@@ -206,25 +264,45 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect }: MediaLibraryMod
           ) : (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {data?.media.map(item => (
-                  <div
-                    key={item.id}
-                    onClick={() => onSelect(`/uploads/${item.storage_key}`)}
-                    className="group relative aspect-square bg-white rounded-xl overflow-hidden cursor-pointer border hover:border-blue-500 hover:ring-2 hover:ring-blue-500/20 transition-all"
-                  >
-                    <Image
-                      src={`${API}/uploads/${item.storage_key}`}
-                      alt={item.alt_text || item.original_name}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
-                      unoptimized
-                    />
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 pt-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <p className="text-white text-xs font-medium truncate">{item.original_name}</p>
+                {data?.media.map(item => {
+                  const url = `/uploads/${item.storage_key}`;
+                  const isSelected = selected.has(url);
+                  return (
+                    <div
+                      key={item.id}
+                      onClick={() => handleImageClick(item.storage_key)}
+                      className={cn(
+                        "group relative aspect-square bg-white rounded-xl overflow-hidden cursor-pointer border transition-all",
+                        isSelected
+                          ? "border-blue-500 ring-2 ring-blue-500/30"
+                          : "hover:border-blue-500 hover:ring-2 hover:ring-blue-500/20"
+                      )}
+                    >
+                      <Image
+                        src={`${API}/uploads/${item.storage_key}`}
+                        alt={item.alt_text || item.original_name}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
+                        unoptimized
+                      />
+                      {/* Selection checkbox overlay for multi mode */}
+                      {multiple && (
+                        <div className={cn(
+                          "absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center transition-all z-10",
+                          isSelected
+                            ? "bg-blue-600 text-white"
+                            : "bg-black/40 text-white/70 opacity-0 group-hover:opacity-100"
+                        )}>
+                          <Check className="w-3.5 h-3.5" />
+                        </div>
+                      )}
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3 pt-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p className="text-white text-xs font-medium truncate">{item.original_name}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               {data && data.page < data.totalPages && (
                 <div className="mt-8 flex justify-center">
@@ -244,6 +322,29 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect }: MediaLibraryMod
             </>
           )}
         </div>
+
+        {/* Multi-select footer */}
+        {multiple && selected.size > 0 && (
+          <div className="px-6 py-3 border-t bg-white flex items-center justify-between">
+            <p className="text-sm text-slate-600">
+              {selected.size} image{selected.size !== 1 ? "s" : ""} selected
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSelected(new Set())}
+                className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+              >
+                Clear
+              </button>
+              <button
+                onClick={handleInsertSelected}
+                className="px-5 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
+              >
+                Insert {selected.size} image{selected.size !== 1 ? "s" : ""}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

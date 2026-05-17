@@ -104,9 +104,12 @@ function parseGallery(v: unknown): { url: string; caption: string | null }[] {
       if (!item || typeof item !== 'object') return null;
       const url = (item as { url?: unknown }).url;
       if (typeof url !== 'string' || !url.trim()) return null;
+      const trimmed = url.trim();
+      // Only allow http(s) URLs and server-relative paths — blocks javascript:, data:, etc.
+      if (!/^(https?:\/\/|\/)/i.test(trimmed)) return null;
       const caption = (item as { caption?: unknown }).caption;
       return {
-        url: url.trim().slice(0, 500),
+        url: trimmed.slice(0, 500),
         caption: typeof caption === 'string' ? caption.trim().slice(0, 240) || null : null,
       };
     })

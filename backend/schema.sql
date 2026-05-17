@@ -98,6 +98,7 @@ CREATE INDEX IF NOT EXISTS idx_articles_display_order ON articles(display_order)
 
 -- Optional gallery: array of { url, caption } objects rendered below the lead image.
 ALTER TABLE articles ADD COLUMN IF NOT EXISTS gallery JSONB NOT NULL DEFAULT '[]'::jsonb;
+CREATE INDEX IF NOT EXISTS idx_articles_gallery ON articles USING GIN (gallery) WHERE gallery != '[]'::jsonb;
 
 CREATE TABLE IF NOT EXISTS article_tags (
   article_id INTEGER REFERENCES articles(id) ON DELETE CASCADE,
