@@ -181,7 +181,7 @@ export function Poll({ poll: propPoll, compact = false }: PollProps) {
                         {isSelected && showResults && <Check className="w-2.5 h-2.5 text-white" />}
                       </div>
                       
-                      <span className={`text-sm md:text-base font-semibold transition-colors flex-grow ${
+                      <span className={`text-sm md:text-base font-normal transition-colors flex-grow ${
                         isSelected && showResults ? 'text-[#c41d2f]' : 'text-[var(--color-text-primary)]'
                       }`}>
                         {option.text}
