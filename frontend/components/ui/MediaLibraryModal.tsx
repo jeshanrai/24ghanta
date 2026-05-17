@@ -5,24 +5,13 @@ import Image from "next/image";
 import { X, Search, UploadCloud, Loader2, Link as LinkIcon, FileImage, Check } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import type { MediaItem } from "@/lib/types/media";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
-interface MediaItem {
-  id: string;
-  storage_key: string;
-  original_name: string;
-  mime_type: string;
-  size_bytes: number;
-  width: number;
-  height: number;
-  alt_text: string | null;
-  created_at: string;
-}
 
 interface MediaLibraryModalProps {
   isOpen: boolean;
@@ -78,10 +67,12 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect, multiple, onSelec
   };
 
   useEffect(() => {
-    if (isOpen) {
+    if (!isOpen) return;
+    const timer = setTimeout(() => {
       setPage(1);
       fetchMedia(1, search);
-    }
+    }, 400);
+    return () => clearTimeout(timer);
   }, [isOpen, search]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,7 +166,7 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect, multiple, onSelec
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl w-full max-w-5xl h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+      <div className="bg-white rounded-2xl w-full max-w-5xl h-[95vh] sm:h-[85vh] flex flex-col shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b bg-slate-50">
           <h2 className="text-xl font-semibold text-slate-800">
@@ -251,7 +242,7 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect, multiple, onSelec
         {/* Grid */}
         <div className="flex-1 overflow-y-auto p-6 bg-slate-50">
           {loading && page === 1 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4">
               {[...Array(10)].map((_, i) => (
                 <div key={i} className="aspect-square bg-slate-200 animate-pulse rounded-xl" />
               ))}
@@ -263,7 +254,7 @@ export function MediaLibraryModal({ isOpen, onClose, onSelect, multiple, onSelec
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4">
                 {data?.media.map(item => {
                   const url = `/uploads/${item.storage_key}`;
                   const isSelected = selected.has(url);

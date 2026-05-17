@@ -6,6 +6,7 @@ import { requireAuth, requireAdmin, AuthRequest } from '../middleware/auth';
 import { validateImage } from '../utils/imageValidation';
 import { storageService } from '../utils/storage';
 import { safeFetchImage } from '../utils/safeFetch';
+import sharp from 'sharp';
 
 const router = Router();
 
@@ -102,12 +103,34 @@ router.post('/', upload.single('file'), async (req: AuthRequest, res: Response):
       return;
     }
 
-    // 4. Save to Disk
-    // Generate unique file name to avoid physical overwrite
-    const uniqueFileName = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}.${validation.ext}`;
-    const storageKey = await storageService.upload(req.file.buffer, uniqueFileName);
+    // 4. Optimize: resize + WebP (GIFs kept as-is to preserve animation)
+    let finalBuffer = req.file.buffer;
+    let finalExt = validation.ext;
+    let finalMime = validation.mimeType;
+    let finalWidth = validation.width;
+    let finalHeight = validation.height;
 
-    // 5. Save to Database (Atomic behavior)
+    if (validation.ext !== 'gif') {
+      try {
+        const optimized = await sharp(req.file.buffer)
+          .resize({ width: 1920, withoutEnlargement: true, fit: 'inside' })
+          .webp({ quality: 82, effort: 4 })
+          .toBuffer({ resolveWithObject: true });
+        finalBuffer = optimized.data;
+        finalExt = 'webp';
+        finalMime = 'image/webp';
+        finalWidth = optimized.info.width;
+        finalHeight = optimized.info.height;
+      } catch (sharpErr) {
+        console.warn('Sharp processing failed, storing original:', sharpErr);
+      }
+    }
+
+    // 5. Save to Disk
+    const uniqueFileName = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}.${finalExt}`;
+    const storageKey = await storageService.upload(finalBuffer, uniqueFileName);
+
+    // 6. Save to Database (Atomic behavior)
     try {
       const result = await pool.query(
         `
@@ -120,10 +143,10 @@ router.post('/', upload.single('file'), async (req: AuthRequest, res: Response):
         [
           storageKey, 
           originalName, 
-          validation.mimeType, 
-          validation.sizeBytes, 
-          validation.width, 
-          validation.height, 
+          finalMime, 
+          finalBuffer.length, 
+          finalWidth, 
+          finalHeight, 
           checksum
         ]
       );
@@ -194,11 +217,34 @@ router.post('/url', requireAdmin, async (req: AuthRequest, res: Response): Promi
       return;
     }
 
-    // 4. Save to Disk
-    const uniqueFileName = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}.${validation.ext}`;
-    const storageKey = await storageService.upload(buffer, uniqueFileName);
+    // 4. Optimize: resize + WebP (GIFs kept as-is to preserve animation)
+    let finalBuffer = buffer;
+    let finalExt = validation.ext;
+    let finalMime = validation.mimeType;
+    let finalWidth = validation.width;
+    let finalHeight = validation.height;
 
-    // 5. Save to Database
+    if (validation.ext !== 'gif') {
+      try {
+        const optimized = await sharp(buffer)
+          .resize({ width: 1920, withoutEnlargement: true, fit: 'inside' })
+          .webp({ quality: 82, effort: 4 })
+          .toBuffer({ resolveWithObject: true });
+        finalBuffer = optimized.data;
+        finalExt = 'webp';
+        finalMime = 'image/webp';
+        finalWidth = optimized.info.width;
+        finalHeight = optimized.info.height;
+      } catch (sharpErr) {
+        console.warn('Sharp processing failed, storing original:', sharpErr);
+      }
+    }
+
+    // 5. Save to Disk
+    const uniqueFileName = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}.${finalExt}`;
+    const storageKey = await storageService.upload(finalBuffer, uniqueFileName);
+
+    // 6. Save to Database
     try {
       const result = await pool.query(
         `
@@ -211,10 +257,10 @@ router.post('/url', requireAdmin, async (req: AuthRequest, res: Response): Promi
         [
           storageKey, 
           originalName, 
-          validation.mimeType, 
-          validation.sizeBytes, 
-          validation.width, 
-          validation.height, 
+          finalMime, 
+          finalBuffer.length, 
+          finalWidth, 
+          finalHeight, 
           checksum
         ]
       );

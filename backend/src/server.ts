@@ -73,7 +73,8 @@ const apiLimiter = rateLimit({
 app.use(
   '/uploads',
   express.static(path.resolve(process.cwd(), 'uploads'), {
-    maxAge: '7d',
+    maxAge: '365d',
+    immutable: true,
     fallthrough: false,
   })
 );

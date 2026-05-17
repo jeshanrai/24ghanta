@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import {
   UploadCloud,
@@ -16,26 +16,13 @@ import {
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import type { MediaItem } from "@/lib/types/media";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
-interface MediaItem {
-  id: string;
-  storage_key: string;
-  original_name: string;
-  mime_type: string;
-  size_bytes: number;
-  width: number;
-  height: number;
-  checksum: string;
-  alt_text: string | null;
-  caption: string | null;
-  created_at: string;
-}
 
 export default function MediaLibrary() {
   const [data, setData] = useState<{ media: MediaItem[]; total: number; page: number; totalPages: number } | null>(null);
@@ -47,10 +34,16 @@ export default function MediaLibrary() {
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [externalUrl, setExternalUrl] = useState("");
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const token = typeof window !== "undefined" ? localStorage.getItem("24ghanta_admin_token") : null;
+
+  const showToast = useCallback((message: string, type: "success" | "error" = "success") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
 
   const fetchMedia = async (p = 1, s = search) => {
     if (!token) return;
@@ -78,7 +71,7 @@ export default function MediaLibrary() {
     const delayDebounceFn = setTimeout(() => {
       setPage(1);
       fetchMedia(1, search);
-    }, 400); // 400ms debounce on search
+    }, 400);
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
 
@@ -89,27 +82,33 @@ export default function MediaLibrary() {
 
   const confirmUpload = async () => {
     setUploading(true);
+    let successCount = 0;
     for (const file of pendingFiles) {
       const formData = new FormData();
       formData.append("file", file);
-      
+
       try {
         const res = await fetch(`${API}/api/admin/media`, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: formData,
         });
-        
+
         if (!res.ok) {
           const err = await res.json();
-          alert(`Failed to upload ${file.name}: ${err.error || 'Unknown error'}`);
+          showToast(`Failed: ${file.name} — ${err.error || "Unknown error"}`, "error");
+        } else {
+          successCount++;
         }
       } catch (error) {
         console.error("Upload error", error);
+        showToast(`Upload failed: ${file.name}`, "error");
       }
     }
-    
-    // Refresh after all uploads
+
+    if (successCount > 0) {
+      showToast(`${successCount} image${successCount !== 1 ? "s" : ""} uploaded`);
+    }
     setUploading(false);
     setPendingFiles([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -125,22 +124,23 @@ export default function MediaLibrary() {
   const handleUrlSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!externalUrl.trim() || !token) return;
-    
+
     setUploading(true);
     try {
       const res = await fetch(`${API}/api/admin/media/url`, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}` 
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ url: externalUrl.trim() }),
       });
-      
+
       const json = await res.json();
       if (!res.ok) {
-        alert(json.error || "Failed to upload from URL");
+        showToast(json.error || "Failed to upload from URL", "error");
       } else {
+        showToast("Image uploaded from URL");
         setExternalUrl("");
         setShowUrlInput(false);
         setPage(1);
@@ -148,7 +148,7 @@ export default function MediaLibrary() {
       }
     } catch (error) {
       console.error(error);
-      alert("Failed to process URL upload");
+      showToast("Failed to process URL upload", "error");
     } finally {
       setUploading(false);
     }
@@ -165,33 +165,34 @@ export default function MediaLibrary() {
         },
         body: JSON.stringify({ alt_text, caption })
       });
-      
+
       if (res.ok) {
         const { media } = await res.json();
-        // Update local state directly to be snappy
         setData(prev => prev ? {
           ...prev,
           media: prev.media.map(m => m.id === media.id ? media : m)
         } : prev);
         setSelectedMedia(media);
-        alert("Details saved successfully!");
+        showToast("Details saved");
+      } else {
+        showToast("Failed to save details", "error");
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to save details");
+      showToast("Failed to save details", "error");
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!token) return;
     if (!confirm("Are you sure you want to permanently delete this media file? It may break articles actively using it.")) return;
-    
+
     try {
       const res = await fetch(`${API}/api/admin/media/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+
       if (res.ok) {
         setData(prev => prev ? {
           ...prev,
@@ -201,8 +202,9 @@ export default function MediaLibrary() {
         if (selectedMedia?.id === id) {
           setSelectedMedia(null);
         }
+        showToast("Media deleted");
       } else {
-        alert("Failed to delete media.");
+        showToast("Failed to delete media", "error");
       }
     } catch (err) {
       console.error(err);
@@ -217,21 +219,16 @@ export default function MediaLibrary() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
-
   return (
     <div className="flex flex-col h-full bg-slate-50 min-h-screen">
       {/* Header and Toolbar */}
-      <div className="bg-white border-b px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 sticky top-0 z-20">
+      <div className="bg-white border-b px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 sticky top-0 z-20">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Media Library</h1>
           <p className="text-sm text-slate-500">Manage images to embed in your articles.</p>
         </div>
-        
+
         <div className="flex w-full sm:w-auto items-center gap-3">
-          {/* Search */}
           <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
@@ -251,7 +248,6 @@ export default function MediaLibrary() {
             <span className="hidden sm:inline">From URL</span>
           </button>
 
-          {/* Upload Button */}
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
@@ -273,7 +269,7 @@ export default function MediaLibrary() {
 
       {/* URL Input Dropdown */}
       {showUrlInput && (
-        <form onSubmit={handleUrlSubmit} className="px-6 py-4 bg-slate-50 border-b flex gap-3 shadow-inner">
+        <form onSubmit={handleUrlSubmit} className="px-4 sm:px-6 py-4 bg-slate-50 border-b flex gap-3 shadow-inner">
           <input
             type="url"
             placeholder="https://example.com/image.jpg"
@@ -283,8 +279,8 @@ export default function MediaLibrary() {
             required
             disabled={uploading}
           />
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={uploading}
             className="px-6 py-2 bg-slate-800 text-white rounded-xl text-sm font-medium hover:bg-slate-900 disabled:opacity-50 flex items-center gap-2"
           >
@@ -295,9 +291,9 @@ export default function MediaLibrary() {
       )}
 
       {/* Main Content Area */}
-      <div className="p-6 relative flex-grow">
+      <div className="p-4 sm:p-6 relative flex-grow">
         {loading && page === 1 ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-4">
             {[...Array(12)].map((_, i) => (
               <div key={i} className="aspect-square bg-slate-200 animate-pulse rounded-xl" />
             ))}
@@ -312,9 +308,9 @@ export default function MediaLibrary() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-4">
               {data?.media.map(item => (
-                <div 
+                <div
                   key={item.id}
                   onClick={() => setSelectedMedia(item)}
                   className="group relative aspect-square bg-slate-100 rounded-xl overflow-hidden cursor-pointer border border-slate-200 hover:ring-4 hover:ring-blue-500/30 transition-all"
@@ -340,7 +336,6 @@ export default function MediaLibrary() {
               ))}
             </div>
 
-            {/* Load More Trigger */}
             {data && data.page < data.totalPages && (
               <div className="mt-8 flex justify-center">
                 <button
@@ -362,18 +357,19 @@ export default function MediaLibrary() {
 
       {/* Details Slide-out Drawer */}
       {selectedMedia && (
-        <MediaDrawer 
-          media={selectedMedia} 
+        <MediaDrawer
+          media={selectedMedia}
           onClose={() => setSelectedMedia(null)}
           onDelete={handleDelete}
           onSave={handleSaveDetails}
+          showToast={showToast}
         />
       )}
 
       {/* Upload Confirmation Modal */}
       {pendingFiles.length > 0 && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full overflow-hidden">
             <div className="p-6 text-center">
               <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <UploadCloud className="w-8 h-8" />
@@ -403,21 +399,33 @@ export default function MediaLibrary() {
           </div>
         </div>
       )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className={cn(
+          "fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] px-5 py-3 rounded-xl shadow-lg text-sm font-medium transition-all",
+          toast.type === "error" ? "bg-red-600 text-white" : "bg-slate-800 text-white"
+        )}>
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 }
 
-// Separate component for the drawer to handle its own complex state
-function MediaDrawer({ 
-  media, 
-  onClose, 
-  onDelete, 
-  onSave 
-}: { 
-  media: MediaItem, 
+/** Media details drawer — bottom sheet on mobile, side panel on desktop */
+function MediaDrawer({
+  media,
+  onClose,
+  onDelete,
+  onSave,
+  showToast,
+}: {
+  media: MediaItem,
   onClose: () => void,
   onDelete: (id: string) => void,
-  onSave: (id: string, alt: string, cap: string) => void
+  onSave: (id: string, alt: string, cap: string) => void,
+  showToast: (msg: string, type?: "success" | "error") => void,
 }) {
   const [altText, setAltText] = useState(media.alt_text || "");
   const [caption, setCaption] = useState(media.caption || "");
@@ -429,23 +437,52 @@ function MediaDrawer({
     setCaption(media.caption || "");
   }, [media]);
 
-  // Use a relative path so it seamlessly works on localhost OR the production domain
+  // Close on Escape key
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   const relativeUrl = `/uploads/${media.storage_key}`;
   const fullUrl = `${API}/uploads/${media.storage_key}`;
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(relativeUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(relativeUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      showToast("Failed to copy — clipboard unavailable", "error");
+    }
   };
 
   return (
     <>
-      <div 
-        className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 transition-opacity" 
+      <div
+        className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 transition-opacity"
         onClick={onClose}
+        aria-hidden="true"
       />
-      <div className="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 overflow-y-auto flex flex-col border-l">
+      <div
+        className={cn(
+          "fixed z-50 overflow-y-auto flex flex-col bg-white shadow-2xl",
+          // Mobile: bottom sheet
+          "inset-x-0 bottom-0 h-[75vh] rounded-t-2xl border-t",
+          // Desktop: side panel
+          "sm:inset-x-auto sm:top-0 sm:right-0 sm:bottom-0 sm:h-full sm:w-full sm:max-w-md sm:rounded-none sm:border-l sm:border-t-0"
+        )}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Media details"
+      >
+        {/* Drag handle for mobile */}
+        <div className="sm:hidden flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 rounded-full bg-slate-300" />
+        </div>
+
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b bg-slate-50 sticky top-0 z-10">
           <h2 className="font-semibold text-slate-800 flex items-center gap-2">
@@ -458,10 +495,11 @@ function MediaDrawer({
         </div>
 
         {/* Content */}
-        <div className="p-6 flex-grow flex flex-col gap-6">
-          <div className="relative aspect-auto max-h-[300px] w-full bg-slate-100 rounded-xl overflow-hidden border">
-            <img 
-              src={fullUrl} 
+        <div className="p-4 sm:p-6 flex-grow flex flex-col gap-5">
+          <div className="relative aspect-auto max-h-[200px] sm:max-h-[300px] w-full bg-slate-100 rounded-xl overflow-hidden border">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={fullUrl}
               alt={media.original_name}
               className="w-full h-full object-contain"
             />
@@ -469,14 +507,14 @@ function MediaDrawer({
 
           {/* Quick Actions */}
           <div className="flex gap-2">
-            <button 
+            <button
               onClick={handleCopy}
               className="flex-1 flex justify-center items-center gap-2 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors border"
             >
               {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
               {copied ? "Copied URL!" : "Copy URL"}
             </button>
-            <button 
+            <button
               onClick={() => { onDelete(media.id); }}
               className="p-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors border border-red-100 shrink-0 group"
               title="Delete permanently"
@@ -498,8 +536,8 @@ function MediaDrawer({
           <div className="flex flex-col gap-4 mt-2">
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-slate-700">Alt Text (SEO)</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={altText}
                 onChange={e => setAltText(e.target.value)}
                 placeholder="Describe this image for screen readers..."
@@ -508,7 +546,7 @@ function MediaDrawer({
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-semibold text-slate-700">Caption (Optional)</label>
-              <textarea 
+              <textarea
                 value={caption}
                 onChange={e => setCaption(e.target.value)}
                 rows={3}
@@ -516,8 +554,8 @@ function MediaDrawer({
                 className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none resize-none"
               />
             </div>
-            
-            <button 
+
+            <button
               onClick={() => onSave(media.id, altText, caption)}
               className="mt-2 w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium text-sm transition-colors"
             >
