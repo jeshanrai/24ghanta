@@ -34,6 +34,7 @@ export default function EditArticlePage() {
     meta_title: "", meta_description: "", meta_keywords: "", tag_ids: [] as number[], published_at: "",
     gallery: [] as GalleryItem[],
     notify_subscribers: false,
+    category_ids: [] as number[],
   });
   const [newTagName, setNewTagName] = useState("");
   const [isCreatingTag, setIsCreatingTag] = useState(false);
@@ -61,6 +62,7 @@ export default function EditArticlePage() {
           tag_ids: (article.tags || []).map((t: any) => t.id), published_at: article.published_at || "",
           gallery: Array.isArray(article.gallery) ? article.gallery : [],
           notify_subscribers: false,
+          category_ids: (article.extra_categories || []).map((c: any) => c.id),
         });
       }
       setLoading(false);
@@ -196,7 +198,31 @@ export default function EditArticlePage() {
         <div className="space-y-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-4">
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Category</label>
-              <select value={form.category_id} onChange={e => update("category_id", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"><option value="">Select</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+              <select value={form.category_id} onChange={e => update("category_id", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"><option value="">Select</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
+              <p className="text-[11px] text-gray-400 mt-1.5">Primary category — used in breadcrumbs and the main badge.</p>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Also in</label>
+              <div className="flex flex-wrap gap-1.5">
+                {categories
+                  .filter(c => String(c.id) !== form.category_id)
+                  .map(c => {
+                    const selected = form.category_ids.includes(c.id);
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => update("category_ids", selected ? form.category_ids.filter((x: number) => x !== c.id) : [...form.category_ids, c.id])}
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${selected ? "bg-red-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                      >
+                        {c.name}
+                      </button>
+                    );
+                  })}
+                {categories.length === 0 && <p className="text-xs text-gray-400">No categories created yet.</p>}
+              </div>
+              <p className="text-[11px] text-gray-400 mt-1.5">Extra categories where this article will also appear.</p>
+            </div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Author</label>
               {role === "author" ? (
                 <div className="px-4 py-2.5 border border-gray-200 bg-gray-50 rounded-xl text-sm text-gray-700">

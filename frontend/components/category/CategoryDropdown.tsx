@@ -10,6 +10,34 @@ interface CategoryDropdownProps {
   currentSlug: string;
 }
 
+/**
+ * Walks the parent_id tree and emits a depth-first list with depth annotations
+ * so the dropdown can indent subcategories under their parent.
+ */
+function sortByTree(categories: Category[]): { category: Category; depth: number }[] {
+  const byParent = new Map<string | null, Category[]>();
+  for (const c of categories) {
+    const key = c.parentId ?? null;
+    if (!byParent.has(key)) byParent.set(key, []);
+    byParent.get(key)!.push(c);
+  }
+  for (const list of byParent.values()) list.sort((a, b) => a.name.localeCompare(b.name));
+  const out: { category: Category; depth: number }[] = [];
+  const walk = (parentId: string | null, depth: number) => {
+    for (const c of byParent.get(parentId) || []) {
+      out.push({ category: c, depth });
+      walk(c.id, depth + 1);
+    }
+  };
+  walk(null, 0);
+  // Orphans (parent missing/deleted): append at end as roots.
+  const seen = new Set(out.map((o) => o.category.id));
+  for (const c of categories) {
+    if (!seen.has(c.id)) out.push({ category: c, depth: 0 });
+  }
+  return out;
+}
+
 export function CategoryDropdown({ categories, currentSlug }: CategoryDropdownProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -66,7 +94,7 @@ export function CategoryDropdown({ categories, currentSlug }: CategoryDropdownPr
           role="listbox"
           className="absolute z-20 mt-2 w-full max-h-80 overflow-y-auto rounded-lg border border-[var(--color-border,rgba(0,0,0,0.1))] bg-[var(--color-bg,#fff)] shadow-lg"
         >
-          {categories.map((c) => {
+          {sortByTree(categories).map(({ category: c, depth }) => {
             const isActive = c.slug === currentSlug;
             return (
               <Link
@@ -75,7 +103,8 @@ export function CategoryDropdown({ categories, currentSlug }: CategoryDropdownPr
                 onClick={() => setOpen(false)}
                 role="option"
                 aria-selected={isActive}
-                className={`flex items-center gap-3 p-3 hover:bg-[var(--color-surface)] transition-colors group ${
+                style={{ paddingLeft: `${12 + depth * 16}px` }}
+                className={`flex items-center gap-3 py-3 pr-3 hover:bg-[var(--color-surface)] transition-colors group ${
                   isActive ? 'bg-[var(--color-surface)] font-bold' : ''
                 }`}
               >

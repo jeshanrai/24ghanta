@@ -76,7 +76,16 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'You can only access your own articles' });
     }
     const tagRes = await pool.query(`SELECT t.id, t.name, t.slug FROM tags t INNER JOIN article_tags at ON t.id = at.tag_id WHERE at.article_id = $1`, [req.params.id]);
-    res.json({ ...rows[0], tags: tagRes.rows });
+    // Extra (non-primary) categories so the edit form can preload its chips.
+    const catRes = await pool.query(
+      `SELECT c.id, c.name, c.slug
+         FROM article_categories ac
+         JOIN categories c ON c.id = ac.category_id
+        WHERE ac.article_id = $1
+        ORDER BY c.name ASC`,
+      [req.params.id]
+    );
+    res.json({ ...rows[0], tags: tagRes.rows, extra_categories: catRes.rows });
   } catch (error) { console.error('Get article error:', error); res.status(500).json({ error: 'Internal server error' }); }
 });
 
@@ -84,6 +93,27 @@ function parseDisplayOrder(v: unknown): number | null {
   if (v === null || v === undefined || v === '') return null;
   const n = typeof v === 'number' ? v : parseInt(String(v), 10);
   return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+/**
+ * Sanitises a category_ids[] payload from the article form. Drops anything
+ * non-numeric, dedupes, removes the primary (which lives on articles.category_id
+ * — we don't want to double-count it in article_categories), caps the list.
+ */
+function parseCategoryIds(raw: unknown, primaryId: number | null): number[] {
+  if (!Array.isArray(raw)) return [];
+  const seen = new Set<number>();
+  const out: number[] = [];
+  for (const v of raw) {
+    const n = typeof v === 'number' ? v : parseInt(String(v), 10);
+    if (!Number.isFinite(n) || n <= 0) continue;
+    if (primaryId && n === primaryId) continue;
+    if (seen.has(n)) continue;
+    seen.add(n);
+    out.push(n);
+    if (out.length >= 10) break;
+  }
+  return out;
 }
 
 /**
@@ -112,7 +142,7 @@ function parseGallery(v: unknown): { url: string; caption: string | null }[] {
 
 // POST / — create article
 router.post('/', async (req: AuthRequest, res: Response) => {
-  const { title, slug, excerpt, content, category_id, author_id, image_url, image_alt, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords, tag_ids, published_at, gallery, notify_subscribers } = req.body;
+  const { title, slug, excerpt, content, category_id, category_ids, author_id, image_url, image_alt, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords, tag_ids, published_at, gallery, notify_subscribers } = req.body;
   if (!title || !slug || !image_url) return res.status(400).json({ error: 'Title, slug, and image_url are required' });
   // Author permission gates
   const perms = req.role === 'author' ? await loadAuthorPerms(req.authorId!) : null;
@@ -144,6 +174,11 @@ router.post('/', async (req: AuthRequest, res: Response) => {
       const vals = tag_ids.map((_: number, i: number) => `($1, $${i + 2})`).join(',');
       await client.query(`INSERT INTO article_tags (article_id, tag_id) VALUES ${vals}`, [rows[0].id, ...tag_ids]);
     }
+    const extraCats = parseCategoryIds(category_ids, rows[0].category_id);
+    if (extraCats.length) {
+      const vals = extraCats.map((_, i) => `($1, $${i + 2})`).join(',');
+      await client.query(`INSERT INTO article_categories (article_id, category_id) VALUES ${vals}`, [rows[0].id, ...extraCats]);
+    }
     await client.query('COMMIT');
     if (shouldNotify) dispatchArticleAlert(rows[0].id);
     res.status(201).json({ ...rows[0], notified: shouldNotify });
@@ -156,7 +191,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
 
 // PUT /:id — update article
 router.put('/:id', async (req: AuthRequest, res: Response) => {
-  const { title, slug, excerpt, content, category_id, author_id, image_url, image_alt, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords, tag_ids, published_at, gallery, notify_subscribers } = req.body;
+  const { title, slug, excerpt, content, category_id, category_ids, author_id, image_url, image_alt, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords, tag_ids, published_at, gallery, notify_subscribers } = req.body;
   if (!title || !slug || !image_url) return res.status(400).json({ error: 'Title, slug, and image_url are required' });
   if (!(await ensureOwnership(req, req.params.id))) {
     return res.status(403).json({ error: 'You can only edit your own articles' });
@@ -184,6 +219,12 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     if (tag_ids?.length) {
       const vals = tag_ids.map((_: number, i: number) => `($1, $${i + 2})`).join(',');
       await client.query(`INSERT INTO article_tags (article_id, tag_id) VALUES ${vals}`, [req.params.id, ...tag_ids]);
+    }
+    await client.query('DELETE FROM article_categories WHERE article_id = $1', [req.params.id]);
+    const extraCats = parseCategoryIds(category_ids, rows[0].category_id);
+    if (extraCats.length) {
+      const vals = extraCats.map((_, i) => `($1, $${i + 2})`).join(',');
+      await client.query(`INSERT INTO article_categories (article_id, category_id) VALUES ${vals}`, [req.params.id, ...extraCats]);
     }
     await client.query('COMMIT');
     if (shouldNotify) dispatchArticleAlert(rows[0].id);

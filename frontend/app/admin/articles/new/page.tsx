@@ -29,6 +29,7 @@ export default function NewArticlePage() {
     meta_title: "", meta_description: "", meta_keywords: "", tag_ids: [] as number[],
     gallery: [] as GalleryItem[],
     notify_subscribers: false,
+    category_ids: [] as number[],
   });
   const [showSeo, setShowSeo] = useState(false);
 
@@ -170,7 +171,31 @@ export default function NewArticlePage() {
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Category</label>
               <select value={form.category_id} onChange={e => update("category_id", e.target.value)} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20">
                 <option value="">Select category</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select></div>
+              </select>
+              <p className="text-[11px] text-gray-400 mt-1.5">Primary category — used in breadcrumbs and the main badge.</p>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Also in</label>
+              <div className="flex flex-wrap gap-1.5">
+                {categories
+                  .filter(c => String(c.id) !== form.category_id)
+                  .map(c => {
+                    const selected = form.category_ids.includes(c.id);
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => update("category_ids", selected ? form.category_ids.filter(x => x !== c.id) : [...form.category_ids, c.id])}
+                        className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${selected ? "bg-red-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                      >
+                        {c.name}
+                      </button>
+                    );
+                  })}
+                {categories.length === 0 && <p className="text-xs text-gray-400">No categories created yet.</p>}
+              </div>
+              <p className="text-[11px] text-gray-400 mt-1.5">Extra categories where this article will also appear.</p>
+            </div>
             <div><label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Author</label>
               {role === "author" ? (
                 <div className="px-4 py-2.5 border border-gray-200 bg-gray-50 rounded-xl text-sm text-gray-700">

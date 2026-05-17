@@ -9,6 +9,7 @@ export interface Category {
   name: string;
   slug: string;
   color?: string;
+  parentId?: string | null;
 }
 
 export interface GalleryImage {

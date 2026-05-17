@@ -14,6 +14,13 @@ const ORDER_BY = `
 `;
 
 // GET /api/articles?category=slug&limit=20
+//
+// Category filter behaviour: an article matches if `slug` equals:
+//   1. its primary category's slug, OR
+//   2. the slug of any *extra* category attached via article_categories, OR
+//   3. the slug of any *descendant* of the requested category.
+// So requesting `/api/articles?category=education` returns articles tagged
+// directly to Education plus everything under University → Course.
 router.get('/', async (req: Request, res: Response) => {
   const category = typeof req.query.category === 'string' ? req.query.category : null;
   const limit = Math.min(parseInt((req.query.limit as string) ?? '10', 10) || 10, 100);
@@ -23,7 +30,34 @@ router.get('/', async (req: Request, res: Response) => {
     let where = 'WHERE a.is_published = TRUE';
     if (category) {
       params.push(category);
-      where += ` AND c.slug = $${params.length}`;
+      const p = `$${params.length}`;
+      // Recursive CTE walks the parent chain *upward* from each candidate
+      // category to find every ancestor; if any ancestor's slug matches the
+      // filter, the article surfaces. Combined with the extras-join EXISTS,
+      // this covers primary + extras + descendants in one predicate.
+      where += ` AND (
+        EXISTS (
+          WITH RECURSIVE chain AS (
+            SELECT id, slug, parent_id FROM categories WHERE id = a.category_id
+            UNION ALL
+            SELECT c2.id, c2.slug, c2.parent_id
+              FROM categories c2 JOIN chain ON c2.id = chain.parent_id
+          )
+          SELECT 1 FROM chain WHERE slug = ${p}
+        )
+        OR EXISTS (
+          WITH RECURSIVE chain2 AS (
+            SELECT cc.id, cc.slug, cc.parent_id
+              FROM categories cc
+              JOIN article_categories ac ON ac.category_id = cc.id
+             WHERE ac.article_id = a.id
+            UNION ALL
+            SELECT c3.id, c3.slug, c3.parent_id
+              FROM categories c3 JOIN chain2 ON c3.id = chain2.parent_id
+          )
+          SELECT 1 FROM chain2 WHERE slug = ${p}
+        )
+      )`;
     }
     params.push(limit);
 
@@ -167,10 +201,31 @@ router.get('/:slug', async (req: Request, res: Response) => {
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Article not found' });
 
+    // Pull the extra (non-primary) categories so the article page can render
+    // chips/links for every section the story belongs to.
+    const extras = await pool.query(
+      `SELECT c.id, c.name, c.slug, c.color
+         FROM article_categories ac
+         JOIN categories c ON c.id = ac.category_id
+        WHERE ac.article_id = $1
+        ORDER BY c.name ASC`,
+      [rows[0].id]
+    );
+
     // Fire-and-forget view increment
     pool.query('UPDATE articles SET views = views + 1 WHERE id = $1', [rows[0].id]).catch(() => {});
 
-    res.json({ data: mapArticleRow(rows[0]) });
+    res.json({
+      data: {
+        ...mapArticleRow(rows[0]),
+        extraCategories: extras.rows.map((r) => ({
+          id: String(r.id),
+          name: r.name,
+          slug: r.slug,
+          color: r.color ?? undefined,
+        })),
+      },
+    });
   } catch (error) {
     console.error('Get article error:', error);
     res.status(500).json({ error: 'Failed to load article' });

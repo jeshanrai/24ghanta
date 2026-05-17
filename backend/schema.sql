@@ -58,10 +58,15 @@ CREATE TABLE IF NOT EXISTS categories (
   name TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL,
   color TEXT,
+  parent_id INTEGER REFERENCES categories(id) ON DELETE RESTRICT,
   meta_title TEXT,
   meta_description TEXT,
   meta_keywords TEXT
 );
+
+-- Back-compat for DBs created before parent_id existed.
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS parent_id INTEGER REFERENCES categories(id) ON DELETE RESTRICT;
+CREATE INDEX IF NOT EXISTS idx_categories_parent ON categories(parent_id);
 
 CREATE TABLE IF NOT EXISTS tags (
   id SERIAL PRIMARY KEY,
@@ -107,6 +112,17 @@ CREATE TABLE IF NOT EXISTS article_tags (
   tag_id INTEGER REFERENCES tags(id) ON DELETE CASCADE,
   PRIMARY KEY (article_id, tag_id)
 );
+
+-- Many-to-many: an article's primary category lives on articles.category_id,
+-- any *extra* categories live here. Public filters look at both, so an article
+-- tagged with the leaf "Course" also surfaces under "University" and "Education".
+CREATE TABLE IF NOT EXISTS article_categories (
+  article_id INTEGER REFERENCES articles(id) ON DELETE CASCADE,
+  category_id INTEGER REFERENCES categories(id) ON DELETE CASCADE,
+  PRIMARY KEY (article_id, category_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_article_categories_category ON article_categories(category_id);
 
 CREATE TABLE IF NOT EXISTS videos (
   id SERIAL PRIMARY KEY,

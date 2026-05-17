@@ -3,11 +3,11 @@ import pool from '../db';
 
 const router = Router();
 
-// GET /api/categories
+// GET /api/categories — flat list incl. parent_id so callers can build a tree
 router.get('/', async (_req: Request, res: Response) => {
   try {
     const { rows } = await pool.query(
-      `SELECT id, name, slug, color FROM categories ORDER BY id ASC`
+      `SELECT id, name, slug, color, parent_id FROM categories ORDER BY id ASC`
     );
     res.json({
       data: rows.map((r) => ({
@@ -15,6 +15,7 @@ router.get('/', async (_req: Request, res: Response) => {
         name: r.name,
         slug: r.slug,
         color: r.color ?? undefined,
+        parentId: r.parent_id ? String(r.parent_id) : null,
       })),
     });
   } catch (error) {
@@ -27,7 +28,7 @@ router.get('/', async (_req: Request, res: Response) => {
 router.get('/:slug', async (req: Request, res: Response) => {
   try {
     const { rows } = await pool.query(
-      `SELECT id, name, slug, color FROM categories WHERE slug = $1 LIMIT 1`,
+      `SELECT id, name, slug, color, parent_id FROM categories WHERE slug = $1 LIMIT 1`,
       [req.params.slug]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Category not found' });
@@ -38,6 +39,7 @@ router.get('/:slug', async (req: Request, res: Response) => {
         name: r.name,
         slug: r.slug,
         color: r.color ?? undefined,
+        parentId: r.parent_id ? String(r.parent_id) : null,
       },
     });
   } catch (error) {
