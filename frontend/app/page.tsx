@@ -23,8 +23,8 @@ export default async function HomePage() {
     entertainmentCategory,
     entertainmentArticles,
     activePoll,
-    adSlot1,
-    adSlot2,
+    adSlot1Left,
+    adSlot1Right,
     adSlot3,
     adSlot4,
   ] = await Promise.all([
@@ -38,7 +38,7 @@ export default async function HomePage() {
     fetchArticlesByCategory('entertainment', 5),
     fetchActivePoll(),
     fetchAd('between_sections'),
-    fetchAd('between_sections_2'),
+    fetchAd('between_sections_right'),
     fetchAd('just_in_sports_left'),
     fetchAd('just_in_sports_right'),
   ]);
@@ -55,8 +55,8 @@ export default async function HomePage() {
     ((ad.adType === 'html' && !!ad.htmlContent) ||
       (ad.adType !== 'html' && !!ad.imageUrl));
 
-  const showAd1 = hasRenderableAd(adSlot1);
-  const showAd2 = hasRenderableAd(adSlot2);
+  const showAd1Left = hasRenderableAd(adSlot1Left);
+  const showAd1Right = hasRenderableAd(adSlot1Right);
   const leftAdRenderable = hasRenderableAd(adSlot3);
   const rightAdRenderable = hasRenderableAd(adSlot4);
 
@@ -119,14 +119,28 @@ export default async function HomePage() {
           />
         )}
 
-        {showAd1 && (
-          <div className="flex justify-center py-6 my-2">
-            <AdSlot
-              placement="between_sections"
-              ad={adSlot1}
-              className="shadow-md rounded-lg overflow-hidden bg-white w-full max-w-[728px]"
-              aspectClassName="aspect-[728/90]"
-            />
+        {(showAd1Left || showAd1Right) && (
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-stretch py-6 my-2">
+            {showAd1Left && (
+              <div className="w-full sm:flex-1 max-w-[728px] mx-auto sm:mx-0">
+                <AdSlot
+                  placement="between_sections"
+                  ad={adSlot1Left}
+                  className="shadow-md rounded-lg overflow-hidden bg-white w-full"
+                  aspectClassName="aspect-[728/180]"
+                />
+              </div>
+            )}
+            {showAd1Right && (
+              <div className="w-full sm:flex-1 max-w-[728px] mx-auto sm:mx-0">
+                <AdSlot
+                  placement="between_sections_right"
+                  ad={adSlot1Right}
+                  className="shadow-md rounded-lg overflow-hidden bg-white w-full"
+                  aspectClassName="aspect-[728/180]"
+                />
+              </div>
+            )}
           </div>
         )}
 
@@ -136,17 +150,6 @@ export default async function HomePage() {
             articles={businessArticles}
             variant="triple-grid"
           />
-        )}
-
-        {showAd2 && (
-          <div className="flex justify-center py-6 my-2">
-            <AdSlot
-              placement="between_sections_2"
-              ad={adSlot2}
-              className="shadow-md rounded-lg overflow-hidden bg-white w-full max-w-[728px]"
-              aspectClassName="aspect-[728/90]"
-            />
-          </div>
         )}
 
         {entertainmentCategory && entertainmentArticles.length > 0 && (

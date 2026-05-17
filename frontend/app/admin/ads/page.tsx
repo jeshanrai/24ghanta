@@ -20,15 +20,15 @@ import { resolveImageSrc } from "@/lib/safeImage";
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 const PLACEMENTS: { value: string; label: string; recommended: string }[] = [
-  { value: "category_header_banner", label: "Category header banner (above title)", recommended: "1200×90 leaderboard" },
-  { value: "between_sections", label: "Between category sections 1", recommended: "300×250 rectangle" },
-  { value: "between_sections_2", label: "Between category sections 2", recommended: "300×250 rectangle" },
+  { value: "category_header_banner", label: "Category header banner (above title)", recommended: "1200×180 wide banner" },
+  { value: "between_sections", label: "Between Sports & Business (Left)", recommended: "728×180 wide banner" },
+  { value: "between_sections_right", label: "Between Sports & Business (Right)", recommended: "728×180 wide banner" },
   { value: "just_in_sports_left", label: "Between Just In & Sports (Left)", recommended: "300×250 rectangle" },
   { value: "just_in_sports_right", label: "Between Just In & Sports (Right)", recommended: "300×250 rectangle" },
   { value: "article_inline", label: "Article inline (mid-body)", recommended: "336×280" },
-  { value: "article_sidebar", label: "Article sidebar", recommended: "300×600" },
-  { value: "article_more_in_category", label: "Article — More in category (in-list)", recommended: "300×250 rectangle" },
-  { value: "article_related_stories", label: "Article — Related stories (in-list)", recommended: "300×150 banner" },
+  { value: "article_sidebar", label: "Article sidebar", recommended: "300×200 rectangle" },
+  { value: "article_more_in_category", label: "Article — More in category (in-list)", recommended: "300×122 banner" },
+  { value: "article_related_stories", label: "Article — Related stories (in-list)", recommended: "300×122 banner" },
   { value: "footer_banner", label: "Footer banner", recommended: "728×90 leaderboard" },
   { value: "popup_landing", label: "Landing popup", recommended: "600×450" },
   { value: "mobile_sticky", label: "Mobile sticky bottom", recommended: "320×50" },

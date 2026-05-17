@@ -6,7 +6,7 @@ export type AdPlacement =
   | 'article_more_in_category'
   | 'article_related_stories'
   | 'between_sections'
-  | 'between_sections_2'
+  | 'between_sections_right'
   | 'footer_banner'
   | 'popup_landing'
   | 'mobile_sticky';
