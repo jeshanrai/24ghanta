@@ -165,10 +165,15 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     const readTime = Math.max(1, Math.ceil((content || '').split(/\s+/).length / 200));
     const pubAt = effectivePublished ? (published_at || new Date().toISOString()) : published_at || null;
     const galleryJson = JSON.stringify(parseGallery(gallery));
+    // When an admin saves without picking an author, remember WHICH admin so
+    // the public byline can fall back to their display_name. For authors this
+    // stays null — author_id is sufficient.
+    const publishedByAdminId =
+      req.role === 'admin' && !effectiveAuthorId ? (req.adminId ?? null) : null;
     const { rows } = await client.query(
-      `INSERT INTO articles (title, slug, excerpt, content, category_id, author_id, image_url, image_alt, published_at, updated_at, read_time_minutes, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords, gallery)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),$10,$11,$12,$13,$14,$15,$16,$17,$18::jsonb) RETURNING *`,
-      [title, slug, excerpt, content, category_id || null, effectiveAuthorId, image_url, image_alt || '', pubAt, readTime, effectiveFeatured, effectiveBreaking, effectivePublished, effectiveDisplayOrder, meta_title || null, meta_description || null, meta_keywords || null, galleryJson]
+      `INSERT INTO articles (title, slug, excerpt, content, category_id, author_id, image_url, image_alt, published_at, updated_at, read_time_minutes, is_featured, is_breaking, is_published, display_order, meta_title, meta_description, meta_keywords, gallery, published_by_admin_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),$10,$11,$12,$13,$14,$15,$16,$17,$18::jsonb,$19) RETURNING *`,
+      [title, slug, excerpt, content, category_id || null, effectiveAuthorId, image_url, image_alt || '', pubAt, readTime, effectiveFeatured, effectiveBreaking, effectivePublished, effectiveDisplayOrder, meta_title || null, meta_description || null, meta_keywords || null, galleryJson, publishedByAdminId]
     );
     if (tag_ids?.length) {
       const vals = tag_ids.map((_: number, i: number) => `($1, $${i + 2})`).join(',');
@@ -210,9 +215,11 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
     await client.query('BEGIN');
     const readTime = Math.max(1, Math.ceil((content || '').split(/\s+/).length / 200));
     const galleryJson = JSON.stringify(parseGallery(gallery));
+    const publishedByAdminId =
+      req.role === 'admin' && !effectiveAuthorId ? (req.adminId ?? null) : null;
     const { rows } = await client.query(
-      `UPDATE articles SET title=$1, slug=$2, excerpt=$3, content=$4, category_id=$5, author_id=$6, image_url=$7, image_alt=$8, published_at=$9, updated_at=NOW(), read_time_minutes=$10, is_featured=$11, is_breaking=$12, is_published=$13, display_order=$14, meta_title=$15, meta_description=$16, meta_keywords=$17, gallery=$18::jsonb WHERE id=$19 RETURNING *`,
-      [title, slug, excerpt, content, category_id || null, effectiveAuthorId, image_url, image_alt || '', published_at || null, readTime, effectiveFeatured, effectiveBreaking, effectivePublished, effectiveDisplayOrder, meta_title || null, meta_description || null, meta_keywords || null, galleryJson, req.params.id]
+      `UPDATE articles SET title=$1, slug=$2, excerpt=$3, content=$4, category_id=$5, author_id=$6, image_url=$7, image_alt=$8, published_at=$9, updated_at=NOW(), read_time_minutes=$10, is_featured=$11, is_breaking=$12, is_published=$13, display_order=$14, meta_title=$15, meta_description=$16, meta_keywords=$17, gallery=$18::jsonb, published_by_admin_id=$19 WHERE id=$20 RETURNING *`,
+      [title, slug, excerpt, content, category_id || null, effectiveAuthorId, image_url, image_alt || '', published_at || null, readTime, effectiveFeatured, effectiveBreaking, effectivePublished, effectiveDisplayOrder, meta_title || null, meta_description || null, meta_keywords || null, galleryJson, publishedByAdminId, req.params.id]
     );
     if (rows.length === 0) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Article not found' }); }
     await client.query('DELETE FROM article_tags WHERE article_id = $1', [req.params.id]);

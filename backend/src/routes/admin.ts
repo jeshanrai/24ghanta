@@ -22,6 +22,7 @@ router.post('/login', loginLimiter, async (req: Request, res: Response) => {
       return res.json({
         token,
         username: admin.username,
+        displayName: admin.display_name || admin.username,
         role: 'admin',
         id: admin.id,
       });
@@ -75,7 +76,7 @@ router.get('/me', requireAuth, async (req: AuthRequest, res: Response) => {
     }
 
     const { rows } = await pool.query(
-      'SELECT id, username, created_at FROM admin_users WHERE id = $1',
+      'SELECT id, username, display_name, created_at FROM admin_users WHERE id = $1',
       [req.adminId]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
@@ -105,29 +106,50 @@ router.patch('/change-password', requireAuth, async (req: AuthRequest, res: Resp
   }
 });
 
-// PATCH /profile -> updates author profile
+// PATCH /profile
+//
+// Authors: update `name` + `avatar_url`.
+// Admins:  update `display_name`. This name shows in the CMS header AND is
+//          used as the default byline when an admin publishes an article
+//          without picking an author.
 router.patch('/profile', requireAuth, async (req: AuthRequest, res: Response) => {
-  const { name, avatar_url } = req.body;
-  
-  if (req.role !== 'author') {
-    return res.status(403).json({ error: 'Only authors can update their profile this way' });
+  const { name, avatar_url, display_name } = req.body;
+
+  if (req.role === 'admin') {
+    const trimmed = typeof display_name === 'string' ? display_name.trim() : '';
+    if (!trimmed) return res.status(400).json({ error: 'Display name is required' });
+    try {
+      const { rows } = await pool.query(
+        `UPDATE admin_users
+            SET display_name = $1
+          WHERE id = $2
+          RETURNING id, username, display_name, created_at`,
+        [trimmed.slice(0, 120), req.adminId]
+      );
+      if (rows.length === 0) return res.status(404).json({ error: 'User not found' });
+      return res.json({ ...rows[0], role: 'admin' });
+    } catch (error) {
+      console.error('Update admin profile error:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
   }
 
+  // Author branch (unchanged)
   if (!name || typeof name !== 'string' || name.trim() === '') {
     return res.status(400).json({ error: 'Name is required' });
   }
 
   try {
     const { rows } = await pool.query(
-      `UPDATE authors 
+      `UPDATE authors
        SET name = $1, avatar_url = $2
-       WHERE id = $3 
+       WHERE id = $3
        RETURNING id, name, username, email, avatar_url`,
       [name.trim(), avatar_url || null, req.authorId]
     );
 
     if (rows.length === 0) return res.status(404).json({ error: 'Author not found' });
-    
+
     return res.json({ ...rows[0], role: 'author' });
   } catch (error) {
     console.error('Update profile error:', error);

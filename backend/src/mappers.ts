@@ -124,7 +124,11 @@ export function mapVideoRow(row: VideoRow): Video {
   };
 }
 
-// SELECT fragments to include everywhere we return articles/videos publicly
+// SELECT fragments to include everywhere we return articles/videos publicly.
+//
+// `author_name` falls back to the publishing admin's display_name when no
+// `authors` row is attached, so articles posted directly by an admin show
+// their chosen name in the byline instead of "Editorial Team".
 export const ARTICLE_SELECT = `
   a.id, a.slug, a.title, a.excerpt, a.content,
   a.image_url, a.image_alt, a.published_at, a.updated_at,
@@ -133,7 +137,8 @@ export const ARTICLE_SELECT = `
   a.category_id,
   c.name AS category_name, c.slug AS category_slug, c.color AS category_color,
   a.author_id,
-  au.name AS author_name, au.avatar_url AS author_avatar_url,
+  COALESCE(au.name, adm.display_name, adm.username) AS author_name,
+  au.avatar_url AS author_avatar_url,
   COALESCE(
     (SELECT array_agg(t.name)
        FROM article_tags at
@@ -146,6 +151,7 @@ export const ARTICLE_SELECT = `
 export const ARTICLE_JOIN = `
   LEFT JOIN categories c ON c.id = a.category_id
   LEFT JOIN authors au ON au.id = a.author_id
+  LEFT JOIN admin_users adm ON adm.id = a.published_by_admin_id
 `;
 
 export const VIDEO_SELECT = `

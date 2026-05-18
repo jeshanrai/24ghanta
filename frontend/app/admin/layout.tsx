@@ -13,6 +13,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const [role, setRole] = useState<AdminRole>("admin");
   const [checking, setChecking] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -24,10 +25,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (isLoginRoute) { setChecking(false); return; }
     const token = localStorage.getItem("24ghanta_admin_token");
     const username = localStorage.getItem("24ghanta_admin_user");
+    const storedDisplay = localStorage.getItem("24ghanta_admin_display_name");
     const storedRole = localStorage.getItem("24ghanta_admin_role");
     if (!token) { router.push("/admin/login"); return; }
     const resolvedRole: AdminRole = storedRole === "author" ? "author" : "admin";
     setUser(username);
+    setDisplayName(storedDisplay || username);
     setRole(resolvedRole);
 
     // Authors don't get access to admin-only sections — redirect them home.
@@ -59,6 +62,31 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, []);
 
+  // Keep the browser tab title in sync with the admin's chosen display name.
+  // Resets to the static title when the admin signs out / leaves the panel.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const previous = document.title;
+    if (displayName) {
+      document.title = `${displayName} · 24Ghanta CMS`;
+    }
+    return () => {
+      document.title = previous;
+    };
+  }, [displayName]);
+
+  // If the settings page updates display_name in another tab, pick it up live.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "24ghanta_admin_display_name") {
+        setDisplayName(e.newValue || user);
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [user]);
+
   // Close sidebar on mobile when route changes
   useEffect(() => {
     if (isMobile) {
@@ -69,6 +97,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   function handleLogout() {
     localStorage.removeItem("24ghanta_admin_token");
     localStorage.removeItem("24ghanta_admin_user");
+    localStorage.removeItem("24ghanta_admin_display_name");
     localStorage.removeItem("24ghanta_admin_role");
     localStorage.removeItem("24ghanta_admin_id");
     router.push("/admin/login");
@@ -201,10 +230,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="hidden sm:block w-px h-6 bg-gray-200" />
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-red-100 to-red-200 border border-red-300 flex items-center justify-center font-bold text-red-700 shadow-sm shrink-0">
-                {user ? user.charAt(0).toUpperCase() : "A"}
+                {(displayName || user) ? (displayName || user)!.charAt(0).toUpperCase() : "A"}
               </div>
               <div className="hidden sm:block text-sm">
-                <p className="font-semibold text-gray-900 leading-none">{user}</p>
+                <p className="font-semibold text-gray-900 leading-none">{displayName || user}</p>
                 <p className="text-gray-500 text-xs mt-1">{role === "author" ? "Author" : "Administrator"}</p>
               </div>
             </div>

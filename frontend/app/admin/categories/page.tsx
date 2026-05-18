@@ -15,6 +15,7 @@ import {
   ChevronDown,
   FolderPlus,
   ArrowUpRight,
+  FileText,
 } from "lucide-react";
 import Link from "next/link";
 import { confirmAction } from "@/components/ui/ConfirmDialog";
@@ -32,6 +33,21 @@ interface Category {
   article_count?: number;
 }
 
+interface PanelArticle {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  image_url: string | null;
+  published_at: string | null;
+  is_published: boolean;
+  is_featured: boolean;
+  is_breaking: boolean;
+  category_id: number | null;
+  category_name: string | null;
+  author_name: string | null;
+}
+
 export default function CategoriesPage() {
   const [items, setItems] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +59,12 @@ export default function CategoriesPage() {
   const [saving, setSaving] = useState(false);
   // Roots expanded by default; user can collapse. Persists in-session only.
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
+
+  // Right-pane state: which category's articles are being shown.
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [panelArticles, setPanelArticles] = useState<PanelArticle[]>([]);
+  const [panelLoading, setPanelLoading] = useState(false);
+  const [panelSearch, setPanelSearch] = useState("");
 
   async function load() {
     setLoading(true);
@@ -65,6 +87,41 @@ export default function CategoriesPage() {
   }
 
   useEffect(() => { load(); }, []);
+
+  // Fetch the right-pane article list whenever the selected category changes
+  // or the in-panel search debounces. The endpoint already includes
+  // descendants, so selecting "Education" returns Education + University +
+  // Course articles in one call.
+  useEffect(() => {
+    if (selectedId == null) {
+      setPanelArticles([]);
+      return;
+    }
+    const controller = new AbortController();
+    const t = setTimeout(async () => {
+      setPanelLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (panelSearch.trim()) params.set("search", panelSearch.trim());
+        params.set("limit", "100");
+        const res = await fetch(
+          `${API}/api/admin/categories/${selectedId}/articles?${params.toString()}`,
+          { headers: { Authorization: `Bearer ${getToken()}` }, signal: controller.signal }
+        );
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        setPanelArticles(data.data || []);
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") setPanelArticles([]);
+      } finally {
+        setPanelLoading(false);
+      }
+    }, 200);
+    return () => {
+      controller.abort();
+      clearTimeout(t);
+    };
+  }, [selectedId, panelSearch]);
 
   /* ── tree helpers ─────────────────────────────────────── */
 
@@ -214,7 +271,7 @@ export default function CategoriesPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Categories</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Organise articles into a tree (up to 3 levels, e.g. Education › University › Course).
+            Organise articles into a tree. Click a category to see its articles on the right.
           </p>
         </div>
         <button
@@ -244,36 +301,56 @@ export default function CategoriesPage() {
         </div>
       </div>
 
-      {/* Body */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        {loading ? (
-          <div className="py-24 text-center">
-            <Loader2 className="w-10 h-10 text-red-600 animate-spin mx-auto mb-4 opacity-20" />
-            <p className="text-sm text-gray-400">Loading categories...</p>
-          </div>
-        ) : items.length === 0 ? (
-          <EmptyState />
-        ) : searchHits ? (
-          <SearchHits hits={searchHits} onEdit={startEdit} onDelete={remove} />
-        ) : roots.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <ul className="divide-y divide-gray-50">
-            {roots.map((root) => (
-              <TreeNode
-                key={root.id}
-                node={root}
-                depth={0}
-                childrenOf={childrenOf}
-                expanded={expanded}
-                onToggle={toggleExpanded}
-                onAddChild={(id) => startNew(id)}
-                onEdit={startEdit}
-                onDelete={remove}
-              />
-            ))}
-          </ul>
-        )}
+      {/* Body: tree on the left, articles for selected category on the right */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          {loading ? (
+            <div className="py-24 text-center">
+              <Loader2 className="w-10 h-10 text-red-600 animate-spin mx-auto mb-4 opacity-20" />
+              <p className="text-sm text-gray-400">Loading categories...</p>
+            </div>
+          ) : items.length === 0 ? (
+            <EmptyState />
+          ) : searchHits ? (
+            <SearchHits
+              hits={searchHits}
+              onEdit={startEdit}
+              onDelete={remove}
+              onSelect={setSelectedId}
+              selectedId={selectedId}
+            />
+          ) : roots.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <ul className="divide-y divide-gray-50">
+              {roots.map((root) => (
+                <TreeNode
+                  key={root.id}
+                  node={root}
+                  depth={0}
+                  childrenOf={childrenOf}
+                  expanded={expanded}
+                  selectedId={selectedId}
+                  onToggle={toggleExpanded}
+                  onSelect={setSelectedId}
+                  onAddChild={(id) => startNew(id)}
+                  onEdit={startEdit}
+                  onDelete={remove}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="lg:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <ArticlesPanel
+            selected={selectedId != null ? itemsById.get(selectedId) ?? null : null}
+            articles={panelArticles}
+            loading={panelLoading}
+            search={panelSearch}
+            onSearchChange={setPanelSearch}
+          />
+        </div>
       </div>
 
       {/* Modal */}
@@ -301,7 +378,9 @@ function TreeNode({
   depth,
   childrenOf,
   expanded,
+  selectedId,
   onToggle,
+  onSelect,
   onAddChild,
   onEdit,
   onDelete,
@@ -310,7 +389,9 @@ function TreeNode({
   depth: number;
   childrenOf: Map<number | null, Category[]>;
   expanded: Set<number>;
+  selectedId: number | null;
   onToggle: (id: number) => void;
+  onSelect: (id: number) => void;
   onAddChild: (parentId: number) => void;
   onEdit: (c: Category) => void;
   onDelete: (c: Category) => void;
@@ -318,21 +399,23 @@ function TreeNode({
   const kids = childrenOf.get(node.id) || [];
   const hasKids = kids.length > 0;
   const isOpen = expanded.has(node.id);
-  // Max depth is 3 (root=0, child=1, grandchild=2). Don't show "add child"
-  // on depth 2 nodes — the API would reject it anyway.
-  const canAddChild = depth < 2;
+  const isSelected = selectedId === node.id;
+  // No more depth cap — admins can nest arbitrarily, so every node can spawn children.
 
   return (
     <li>
       <div
-        className="group flex items-center gap-2 py-2.5 pr-3 hover:bg-gray-50/60 transition-colors"
+        className={`group flex items-center gap-2 py-2.5 pr-3 transition-colors cursor-pointer ${
+          isSelected ? "bg-red-50/70" : "hover:bg-gray-50/60"
+        }`}
         style={{ paddingLeft: `${12 + depth * 24}px` }}
+        onClick={() => onSelect(node.id)}
       >
         {/* Expand/collapse chevron — invisible placeholder when no kids so rows align */}
         {hasKids ? (
           <button
             type="button"
-            onClick={() => onToggle(node.id)}
+            onClick={(e) => { e.stopPropagation(); onToggle(node.id); }}
             className="p-1 -ml-1 text-gray-400 hover:text-gray-700 rounded transition-colors"
             aria-label={isOpen ? "Collapse" : "Expand"}
             title={isOpen ? "Collapse" : "Expand"}
@@ -361,25 +444,23 @@ function TreeNode({
           {node.article_count || 0}
         </span>
 
-        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
           <Link
             href={`/category/${node.slug}`}
             target="_blank"
             className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
-            title="View articles in this category"
+            title="View on public site"
           >
             <ArrowUpRight className="w-4 h-4" />
           </Link>
-          {canAddChild && (
-            <button
-              type="button"
-              onClick={() => onAddChild(node.id)}
-              className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg"
-              title="Add subcategory"
-            >
-              <FolderPlus className="w-4 h-4" />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => onAddChild(node.id)}
+            className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg"
+            title="Add subcategory"
+          >
+            <FolderPlus className="w-4 h-4" />
+          </button>
           <button
             type="button"
             onClick={() => onEdit(node)}
@@ -408,7 +489,9 @@ function TreeNode({
               depth={depth + 1}
               childrenOf={childrenOf}
               expanded={expanded}
+              selectedId={selectedId}
               onToggle={onToggle}
+              onSelect={onSelect}
               onAddChild={onAddChild}
               onEdit={onEdit}
               onDelete={onDelete}
@@ -424,10 +507,14 @@ function TreeNode({
 
 function SearchHits({
   hits,
+  selectedId,
+  onSelect,
   onEdit,
   onDelete,
 }: {
   hits: { category: Category; path: string }[];
+  selectedId: number | null;
+  onSelect: (id: number) => void;
   onEdit: (c: Category) => void;
   onDelete: (c: Category) => void;
 }) {
@@ -438,35 +525,44 @@ function SearchHits({
   }
   return (
     <ul className="divide-y divide-gray-50">
-      {hits.map(({ category, path }) => (
-        <li key={category.id} className="group flex items-center gap-3 px-4 py-3 hover:bg-gray-50/60">
-          <span
-            className="w-2.5 h-2.5 rounded-full shrink-0 ring-2 ring-white shadow-sm"
-            style={{ backgroundColor: category.color || "#ef4444" }}
-          />
-          <div className="min-w-0 flex-1">
-            <div className="text-xs text-gray-400 truncate">{path}</div>
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-gray-900 truncate">{category.name}</span>
-              <code className="text-[11px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">/{category.slug}</code>
+      {hits.map(({ category, path }) => {
+        const isSelected = selectedId === category.id;
+        return (
+          <li
+            key={category.id}
+            className={`group flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
+              isSelected ? "bg-red-50/70" : "hover:bg-gray-50/60"
+            }`}
+            onClick={() => onSelect(category.id)}
+          >
+            <span
+              className="w-2.5 h-2.5 rounded-full shrink-0 ring-2 ring-white shadow-sm"
+              style={{ backgroundColor: category.color || "#ef4444" }}
+            />
+            <div className="min-w-0 flex-1">
+              <div className="text-xs text-gray-400 truncate">{path}</div>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-gray-900 truncate">{category.name}</span>
+                <code className="text-[11px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">/{category.slug}</code>
+              </div>
             </div>
-          </div>
-          <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-red-50 text-red-700 shrink-0">
-            {category.article_count || 0}
-          </span>
-          <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Link href={`/category/${category.slug}`} target="_blank" className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg" title="View articles">
-              <ArrowUpRight className="w-4 h-4" />
-            </Link>
-            <button type="button" onClick={() => onEdit(category)} className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="Edit">
-              <Pencil className="w-4 h-4" />
-            </button>
-            <button type="button" onClick={() => onDelete(category)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg" title="Delete">
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </div>
-        </li>
-      ))}
+            <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-red-50 text-red-700 shrink-0">
+              {category.article_count || 0}
+            </span>
+            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+              <Link href={`/category/${category.slug}`} target="_blank" className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg" title="View on public site">
+                <ArrowUpRight className="w-4 h-4" />
+              </Link>
+              <button type="button" onClick={() => onEdit(category)} className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="Edit">
+                <Pencil className="w-4 h-4" />
+              </button>
+              <button type="button" onClick={() => onDelete(category)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg" title="Delete">
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -585,7 +681,7 @@ function Modal({
                   </option>
                 ))}
             </select>
-            <p className="text-[11px] text-gray-400">Max 3 levels deep (e.g. Education › University › Course).</p>
+            <p className="text-[11px] text-gray-400">Nest as deep as you need (e.g. Education › University › Course › Year 1 ...).</p>
           </div>
 
           <div className="space-y-1.5">
@@ -638,6 +734,134 @@ function breadcrumbFor(c: Category, itemsById: Map<number, Category>): string {
     cursor = parent;
   }
   return parts.join(" › ");
+}
+
+/* ─── right-hand articles panel ────────────────────────── */
+
+function ArticlesPanel({
+  selected,
+  articles,
+  loading,
+  search,
+  onSearchChange,
+}: {
+  selected: Category | null;
+  articles: PanelArticle[];
+  loading: boolean;
+  search: string;
+  onSearchChange: (v: string) => void;
+}) {
+  if (!selected) {
+    return (
+      <div className="py-24 text-center px-4">
+        <FileText className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+        <p className="text-sm text-gray-500 font-medium">Select a category</p>
+        <p className="text-xs text-gray-400 mt-1 max-w-xs mx-auto">
+          Click any category on the left to see all the articles filed under it (including its subcategories).
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="px-5 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
+        <div className="flex items-center gap-2 mb-3">
+          <span
+            className="w-2.5 h-2.5 rounded-full shrink-0 ring-2 ring-white shadow-sm"
+            style={{ backgroundColor: selected.color || "#ef4444" }}
+          />
+          <h2 className="font-bold text-gray-900 truncate">{selected.name}</h2>
+          <code className="text-[11px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+            /{selected.slug}
+          </code>
+          <span className="text-[11px] text-gray-400 ml-auto">
+            {loading ? "loading…" : `${articles.length} article${articles.length === 1 ? "" : "s"}`}
+          </span>
+        </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder="Search within this category…"
+            className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-red-400"
+          />
+        </div>
+      </div>
+
+      <div className="overflow-y-auto max-h-[600px]">
+        {loading ? (
+          <div className="py-16 text-center">
+            <Loader2 className="w-6 h-6 text-gray-300 animate-spin mx-auto" />
+          </div>
+        ) : articles.length === 0 ? (
+          <div className="py-16 text-center text-sm text-gray-400">
+            {search ? "No articles match your search." : "No articles in this category yet."}
+          </div>
+        ) : (
+          <ul className="divide-y divide-gray-50">
+            {articles.map((a) => (
+              <li key={a.id}>
+                <Link
+                  href={`/admin/articles/${a.id}`}
+                  className="flex items-start gap-3 px-5 py-3 hover:bg-gray-50/60 transition-colors"
+                >
+                  {a.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={a.image_url}
+                      alt=""
+                      className="w-14 h-14 object-cover rounded-lg shrink-0 bg-gray-100"
+                    />
+                  ) : (
+                    <div className="w-14 h-14 rounded-lg shrink-0 bg-gray-100 flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-gray-300" />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-gray-900 line-clamp-2">{a.title}</p>
+                    <div className="flex items-center gap-2 mt-1 text-[11px] text-gray-400">
+                      {a.category_name && a.category_id !== selected.id && (
+                        <span className="px-1.5 py-0.5 rounded-full bg-gray-100">
+                          {a.category_name}
+                        </span>
+                      )}
+                      {a.is_breaking && (
+                        <span className="px-1.5 py-0.5 rounded-full bg-red-50 text-red-600 font-semibold">
+                          Breaking
+                        </span>
+                      )}
+                      {a.is_featured && (
+                        <span className="px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-semibold">
+                          Featured
+                        </span>
+                      )}
+                      {!a.is_published && (
+                        <span className="px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500">
+                          Draft
+                        </span>
+                      )}
+                      {a.author_name && <span>by {a.author_name}</span>}
+                      {a.published_at && (
+                        <span>
+                          {new Date(a.published_at).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function EmptyState() {

@@ -34,6 +34,12 @@ export default function AdminLoginPage() {
 
       localStorage.setItem("24ghanta_admin_token", data.token);
       localStorage.setItem("24ghanta_admin_user", data.username);
+      // displayName is what the header + browser tab title show. Admin can
+      // change it in /admin/settings. Falls back to username on first login.
+      localStorage.setItem(
+        "24ghanta_admin_display_name",
+        data.displayName || data.name || data.username
+      );
       localStorage.setItem("24ghanta_admin_role", data.role || "admin");
       if (data.id != null) {
         localStorage.setItem("24ghanta_admin_id", String(data.id));

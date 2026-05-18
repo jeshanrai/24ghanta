@@ -5,40 +5,23 @@ import { requireAuth, requireAdmin, AuthRequest } from '../middleware/auth';
 const router = Router();
 
 /**
- * Hard cap on nesting depth. 3 levels covers the common
- * Education → University → Course pattern without letting the tree become
- * unbrowsable. Deeper trees also make breadcrumb rendering noisy.
+ * Soft bound used only as a runaway-loop guard inside depth/cycle walks.
+ * The DB itself has no depth limit — admins can nest arbitrarily deep.
+ * If you ever build trees deeper than this, raise the constant; the recursive
+ * CTEs in articles.ts already walk unbounded depth.
  */
-const MAX_DEPTH = 3;
+const SAFETY_DEPTH = 50;
 
 /* ─── helpers ──────────────────────────────────────────── */
 
 /** Walk up parent chain to compute a node's depth (root = 1). */
 type ParentRow = { parent_id: number | null };
 
-async function depthOf(id: number | null): Promise<number> {
-  if (!id) return 0;
-  let current: number | null = id;
-  let depth = 0;
-  // Bound the loop in case of corrupted data — should never hit MAX_DEPTH+5.
-  for (let i = 0; i < MAX_DEPTH + 5; i++) {
-    if (current === null) break;
-    depth++;
-    const result: { rows: ParentRow[] } = await pool.query<ParentRow>(
-      'SELECT parent_id FROM categories WHERE id = $1',
-      [current]
-    );
-    if (result.rows.length === 0) break;
-    current = result.rows[0].parent_id;
-  }
-  return depth;
-}
-
 /** True if setting `newParentId` on `id` would create a cycle. */
 async function wouldCycle(id: number, newParentId: number): Promise<boolean> {
   if (id === newParentId) return true;
   let current: number | null = newParentId;
-  for (let i = 0; i < MAX_DEPTH + 5; i++) {
+  for (let i = 0; i < SAFETY_DEPTH; i++) {
     if (current === null) return false;
     if (current === id) return true;
     const result: { rows: ParentRow[] } = await pool.query<ParentRow>(
@@ -69,12 +52,7 @@ async function validateParent(
   // Parent must exist.
   const { rows } = await pool.query('SELECT id FROM categories WHERE id = $1', [parentId]);
   if (rows.length === 0) return { error: 'Parent category not found' };
-  // Depth check: new node sits ONE below parent → must keep ≤ MAX_DEPTH.
-  const parentDepth = await depthOf(parentId);
-  if (parentDepth + 1 > MAX_DEPTH) {
-    return { error: `Max nesting depth is ${MAX_DEPTH}` };
-  }
-  // Cycle check (only meaningful on updates).
+  // Cycle check (only meaningful on updates). Depth is unbounded.
   if (selfId && (await wouldCycle(selfId, parentId))) {
     return { error: 'Cannot move a category under one of its own descendants' };
   }
@@ -172,6 +150,68 @@ router.delete('/:id', requireAdmin, async (req: AuthRequest, res: Response) => {
     res.json({ message: 'Category deleted' });
   } catch (error) {
     console.error('Delete category error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * GET /api/admin/categories/:id/articles?search=&limit=
+ *
+ * Articles belonging to the category OR any of its descendants. Match logic
+ * mirrors the public articles filter:
+ *   - article's primary category_id is the requested id or any descendant, OR
+ *   - article is attached via article_categories to the requested id / descendant
+ *
+ * Drives the right-hand pane on the admin /admin/categories page so the editor
+ * can review everything filed under a node without leaving the tree.
+ */
+router.get('/:id/articles', requireAuth, async (req: AuthRequest, res: Response) => {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isFinite(id)) return res.status(400).json({ error: 'Invalid id' });
+  const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+  const limit = Math.min(parseInt(String(req.query.limit ?? '50'), 10) || 50, 200);
+
+  try {
+    // Collect the requested category id plus every descendant in one query,
+    // then use a flat `= ANY($1)` lookup against both the primary FK and the
+    // join table. Single CTE, single scan — fast even on deep trees.
+    const params: any[] = [id];
+    let searchClause = '';
+    if (search) {
+      params.push(`%${search}%`);
+      searchClause = ` AND (a.title ILIKE $${params.length} OR a.excerpt ILIKE $${params.length})`;
+    }
+    params.push(limit);
+
+    const { rows } = await pool.query(
+      `WITH RECURSIVE subtree AS (
+         SELECT id FROM categories WHERE id = $1
+         UNION ALL
+         SELECT c.id FROM categories c JOIN subtree s ON c.parent_id = s.id
+       )
+       SELECT a.id, a.title, a.slug, a.excerpt, a.image_url, a.published_at,
+              a.is_published, a.is_featured, a.is_breaking,
+              a.category_id, c.name AS category_name,
+              au.name AS author_name
+         FROM articles a
+         LEFT JOIN categories c ON c.id = a.category_id
+         LEFT JOIN authors au ON au.id = a.author_id
+        WHERE (
+          a.category_id IN (SELECT id FROM subtree)
+          OR EXISTS (
+            SELECT 1 FROM article_categories ac
+             WHERE ac.article_id = a.id
+               AND ac.category_id IN (SELECT id FROM subtree)
+          )
+        )
+        ${searchClause}
+        ORDER BY a.published_at DESC NULLS LAST, a.id DESC
+        LIMIT $${params.length}`,
+      params
+    );
+    res.json({ data: rows });
+  } catch (error) {
+    console.error('Category articles error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

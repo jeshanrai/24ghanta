@@ -6,8 +6,13 @@ CREATE TABLE IF NOT EXISTS admin_users (
   id SERIAL PRIMARY KEY,
   username TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
+  display_name TEXT,
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Back-compat for DBs created before display_name existed. Falls back to
+-- `username` at read time when null.
+ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS display_name TEXT;
 
 CREATE TABLE IF NOT EXISTS authors (
   id SERIAL PRIMARY KEY,
@@ -102,6 +107,11 @@ CREATE TABLE IF NOT EXISTS articles (
 -- Safe ALTER for databases created before display_order existed
 ALTER TABLE articles ADD COLUMN IF NOT EXISTS display_order INTEGER;
 CREATE INDEX IF NOT EXISTS idx_articles_display_order ON articles(display_order);
+
+-- When an admin publishes without picking an `authors` row, store WHICH admin
+-- did so. The public renderer coalesces author_name from authors.name first,
+-- then admin_users.display_name, giving the admin's set name as a byline.
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS published_by_admin_id INTEGER REFERENCES admin_users(id) ON DELETE SET NULL;
 
 -- Optional gallery: array of { url, caption } objects rendered below the lead image.
 ALTER TABLE articles ADD COLUMN IF NOT EXISTS gallery JSONB NOT NULL DEFAULT '[]'::jsonb;
