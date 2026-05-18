@@ -117,8 +117,11 @@ export async function fetchCategoryBySlug(slug: string): Promise<Category | null
 }
 
 // ── Polls ──────────────────────────────────────────────
-export async function fetchActivePoll(): Promise<Poll | null> {
-  return api<Poll>('/api/polls/active');
+// Returns ALL active polls in admin-controlled display order. The homepage
+// renders them as a slider; the first poll is what previously was "the
+// active poll" before multi-poll support landed.
+export async function fetchActivePolls(): Promise<Poll[]> {
+  return (await api<Poll[]>('/api/polls/active')) ?? [];
 }
 
 // ── Trending ───────────────────────────────────────────

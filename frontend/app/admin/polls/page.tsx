@@ -30,6 +30,7 @@ interface Poll {
   total_votes: number;
   ends_at: string | null;
   is_active: boolean;
+  display_order: number;
   options: PollOption[];
 }
 
@@ -45,6 +46,7 @@ export default function AdminPolls() {
   const [options, setOptions] = useState<string[]>(["", ""]);
   const [isActive, setIsActive] = useState(true);
   const [endsAt, setEndsAt] = useState("");
+  const [displayOrder, setDisplayOrder] = useState<string>("0");
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -80,6 +82,7 @@ export default function AdminPolls() {
     setOptions(["", ""]);
     setIsActive(true);
     setEndsAt("");
+    setDisplayOrder("0");
     setFormError(null);
     setEditingPoll(null);
   }
@@ -96,6 +99,7 @@ export default function AdminPolls() {
     setOptions(poll.options.map((o) => o.text));
     setIsActive(poll.is_active);
     setEndsAt(poll.ends_at ? poll.ends_at.slice(0, 16) : "");
+    setDisplayOrder(String(poll.display_order ?? 0));
     setFormError(null);
     setShowForm(true);
   }
@@ -124,6 +128,7 @@ export default function AdminPolls() {
         options: cleanOptions,
         is_active: isActive,
         ends_at: endsAt || null,
+        display_order: Number.isFinite(Number(displayOrder)) ? Number(displayOrder) : 0,
       };
 
       const url = editingPoll
@@ -511,6 +516,24 @@ export default function AdminPolls() {
                   onChange={(e) => setEndsAt(e.target.value)}
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all"
                 />
+              </div>
+
+              {/* Display order — controls slider position when multiple polls are active */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Display order
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={displayOrder}
+                  onChange={(e) => setDisplayOrder(e.target.value)}
+                  placeholder="0"
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-100 transition-all"
+                />
+                <p className="text-xs text-gray-400 mt-1.5">
+                  Lower numbers appear first in the slider. Use this to order multiple active polls.
+                </p>
               </div>
 
               {formError && (

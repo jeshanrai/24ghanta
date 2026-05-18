@@ -6,7 +6,7 @@ import {
   fetchLatestArticles,
   fetchArticlesByCategory,
   fetchCategoryBySlug,
-  fetchActivePoll,
+  fetchActivePolls,
   fetchAd,
 } from '@/lib/api';
 
@@ -22,7 +22,7 @@ export default async function HomePage() {
     businessArticles,
     entertainmentCategory,
     entertainmentArticles,
-    activePoll,
+    activePolls,
     adSlot1Left,
     adSlot1Right,
     adSlot3,
@@ -36,7 +36,7 @@ export default async function HomePage() {
     fetchArticlesByCategory('business', 5),
     fetchCategoryBySlug('entertainment'),
     fetchArticlesByCategory('entertainment', 5),
-    fetchActivePoll(),
+    fetchActivePolls(),
     fetchAd('between_sections'),
     fetchAd('between_sections_right'),
     fetchAd('just_in_sports_left'),
@@ -67,7 +67,7 @@ export default async function HomePage() {
           <HeroSection
             heroArticles={heroArticles}
             sidebarArticles={sidebarArticles}
-            activePoll={activePoll}
+            activePolls={activePolls}
           />
         ) : (
           <EmptyState

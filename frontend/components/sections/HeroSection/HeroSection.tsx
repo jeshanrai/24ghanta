@@ -3,27 +3,28 @@ import type { Poll as PollType } from '@/lib/data/polls';
 import { HeroSlider } from './HeroSlider';
 import { HeroSidebar } from './HeroSidebar';
 import { Poll } from '@/components/ui';
-import { AdSlot } from '@/components/ads';
 
 interface HeroSectionProps {
   heroArticles: Article[];
   sidebarArticles: Article[];
-  activePoll?: PollType | null;
+  // Array now — Poll component handles slider behaviour for multi-poll lists.
+  // Single-poll deployments still work (just an array of length 1).
+  activePolls?: PollType[];
 }
 
 export function HeroSection({
   heroArticles,
   sidebarArticles,
-  activePoll,
+  activePolls,
 }: HeroSectionProps) {
   return (
     <section className="py-2">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <div className="lg:col-span-2 animate-fade-in-up">
           <HeroSlider articles={heroArticles} />
-          {activePoll && (
+          {activePolls && activePolls.length > 0 && (
             <div className="mt-4 pt-4 border-t border-[var(--color-border)] animate-fade-in-up stagger-3">
-              <Poll poll={activePoll} compact />
+              <Poll polls={activePolls} compact />
             </div>
           )}
         </div>

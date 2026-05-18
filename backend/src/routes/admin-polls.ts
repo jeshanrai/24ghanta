@@ -5,11 +5,17 @@ import { requireAdmin, AuthRequest } from '../middleware/auth';
 const router = Router();
 router.use(requireAdmin);
 
+function parseDisplayOrder(v: unknown): number {
+  if (v === null || v === undefined || v === '') return 0;
+  const n = typeof v === 'number' ? v : parseInt(String(v), 10);
+  return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+
 // GET / — list all polls with options
 router.get('/', async (_req: AuthRequest, res: Response) => {
   try {
     const { rows: polls } = await pool.query(
-      'SELECT * FROM polls ORDER BY id DESC'
+      'SELECT * FROM polls ORDER BY display_order ASC, id DESC'
     );
     const ids = polls.map((p) => p.id);
     let options: any[] = [];
@@ -28,6 +34,7 @@ router.get('/', async (_req: AuthRequest, res: Response) => {
       total_votes: p.total_votes,
       ends_at: p.ends_at,
       is_active: p.is_active,
+      display_order: p.display_order ?? 0,
       options: options
         .filter((o) => o.poll_id === p.id)
         .map((o) => ({ id: o.id, text: o.text, votes: o.votes })),
@@ -67,26 +74,25 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
 
 // POST / — create poll with options
 router.post('/', async (req: AuthRequest, res: Response) => {
-  const { question, options, ends_at, is_active, image_url } = req.body;
+  const { question, options, ends_at, is_active, image_url, display_order } = req.body;
   if (!question || !options || !Array.isArray(options) || options.length < 2) {
     return res
       .status(400)
       .json({ error: 'Question and at least 2 options are required' });
   }
 
+  // Multiple polls can be active at once now (homepage slider).
+  // Default new polls to the end of the order so they don't shove others around.
+  const order = parseDisplayOrder(display_order);
+
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
-    // If this poll is active, deactivate all others
-    if (is_active) {
-      await client.query('UPDATE polls SET is_active = FALSE');
-    }
-
     const { rows } = await client.query(
-      `INSERT INTO polls (question, image_url, total_votes, ends_at, is_active)
-       VALUES ($1, $2, 0, $3, $4) RETURNING *`,
-      [question, image_url || null, ends_at || null, is_active ?? true]
+      `INSERT INTO polls (question, image_url, total_votes, ends_at, is_active, display_order)
+       VALUES ($1, $2, 0, $3, $4, $5) RETURNING *`,
+      [question, image_url || null, ends_at || null, is_active ?? true, order]
     );
     const pollId = rows[0].id;
 
@@ -120,35 +126,35 @@ router.post('/', async (req: AuthRequest, res: Response) => {
   }
 });
 
-// PUT /:id — update poll question/options/active status
+// PUT /:id — update poll question/options/active status/display order
 router.put('/:id', async (req: AuthRequest, res: Response) => {
-  const { question, options, ends_at, is_active, image_url } = req.body;
+  const { question, options, ends_at, is_active, image_url, display_order } = req.body;
   if (!question) {
     return res.status(400).json({ error: 'Question is required' });
   }
+
+  const order = parseDisplayOrder(display_order);
 
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
-    // If making this poll active, deactivate all others
-    if (is_active) {
-      await client.query('UPDATE polls SET is_active = FALSE WHERE id != $1', [
-        req.params.id,
-      ]);
-    }
-
+    // Note: options replacement also resets total_votes to 0 (since old options
+    // would otherwise be orphaned). poll_votes rows cascade away via FK when
+    // their option_id rows are deleted, so dedupe history is correctly wiped
+    // alongside the count reset — voters can vote on the rewritten poll.
     const updateQuery = options && Array.isArray(options) && options.length >= 2
-      ? `UPDATE polls SET question = $1, image_url = $2, ends_at = $3, is_active = $4, total_votes = 0
-         WHERE id = $5 RETURNING *`
-      : `UPDATE polls SET question = $1, image_url = $2, ends_at = $3, is_active = $4
-         WHERE id = $5 RETURNING *`;
+      ? `UPDATE polls SET question = $1, image_url = $2, ends_at = $3, is_active = $4, display_order = $5, total_votes = 0
+         WHERE id = $6 RETURNING *`
+      : `UPDATE polls SET question = $1, image_url = $2, ends_at = $3, is_active = $4, display_order = $5
+         WHERE id = $6 RETURNING *`;
 
     const { rows } = await client.query(updateQuery, [
       question,
       image_url || null,
       ends_at || null,
       is_active ?? true,
+      order,
       req.params.id,
     ]);
     if (rows.length === 0) {
@@ -209,11 +215,7 @@ router.patch('/:id/toggle', async (req: AuthRequest, res: Response) => {
 
     const newActive = !current[0].is_active;
 
-    // If activating, deactivate all others first
-    if (newActive) {
-      await client.query('UPDATE polls SET is_active = FALSE');
-    }
-
+    // Multiple polls can be active simultaneously now — no sibling deactivation.
     const { rows } = await client.query(
       'UPDATE polls SET is_active = $1 WHERE id = $2 RETURNING *',
       [newActive, req.params.id]
@@ -230,11 +232,14 @@ router.patch('/:id/toggle', async (req: AuthRequest, res: Response) => {
   }
 });
 
-// PATCH /:id/reset — reset all vote counts to 0
+// PATCH /:id/reset — reset all vote counts AND voter dedupe history
 router.patch('/:id/reset', async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
+    // Wipe per-voter records too — otherwise a "reset" would still block
+    // previous voters from voting again, which isn't what an admin expects.
+    await client.query('DELETE FROM poll_votes WHERE poll_id = $1', [req.params.id]);
     await client.query(
       'UPDATE poll_options SET votes = 0 WHERE poll_id = $1',
       [req.params.id]

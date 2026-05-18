@@ -14,6 +14,9 @@ export interface Poll {
   totalVotes: number;
   endsAt?: string;
   isActive: boolean;
+  displayOrder?: number;
+  /** Option id this visitor already chose, or null. Source: server. */
+  userVotedOptionId?: string | null;
 }
 
 export const polls: Poll[] = [

@@ -161,10 +161,15 @@ CREATE TABLE IF NOT EXISTS polls (
   image_url TEXT,
   total_votes INTEGER DEFAULT 0,
   ends_at TIMESTAMP,
-  is_active BOOLEAN DEFAULT TRUE
+  is_active BOOLEAN DEFAULT TRUE,
+  display_order INTEGER DEFAULT 0
 );
 
 ALTER TABLE polls ADD COLUMN IF NOT EXISTS image_url TEXT;
+-- Back-compat for DBs created before display_order existed. Used by the public
+-- slider to order multiple active polls (lower number = shown first).
+ALTER TABLE polls ADD COLUMN IF NOT EXISTS display_order INTEGER DEFAULT 0;
+CREATE INDEX IF NOT EXISTS idx_polls_active_order ON polls(is_active, display_order, id);
 
 CREATE TABLE IF NOT EXISTS poll_options (
   id SERIAL PRIMARY KEY,
@@ -172,6 +177,19 @@ CREATE TABLE IF NOT EXISTS poll_options (
   text TEXT NOT NULL,
   votes INTEGER DEFAULT 0
 );
+
+-- Server-side dedupe for anonymous voting. voter_key is a hash of IP + UA so
+-- the same browser can't keep posting. Composite PK enforces one vote per
+-- (poll, voter) without any application-level coordination.
+CREATE TABLE IF NOT EXISTS poll_votes (
+  poll_id INTEGER REFERENCES polls(id) ON DELETE CASCADE,
+  voter_key TEXT NOT NULL,
+  option_id INTEGER REFERENCES poll_options(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  PRIMARY KEY (poll_id, voter_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_poll_votes_poll ON poll_votes(poll_id);
 
 CREATE TABLE IF NOT EXISTS trending_items (
   id SERIAL PRIMARY KEY,

@@ -54,7 +54,7 @@ export function ArticleCardLarge({
 
       {activePoll && (
         <div className="mt-4 pt-4 border-t border-[var(--color-border)] animate-fade-in-up stagger-3">
-          <Poll poll={activePoll} compact />
+          <Poll polls={[activePoll]} compact />
         </div>
       )}
     </article>
