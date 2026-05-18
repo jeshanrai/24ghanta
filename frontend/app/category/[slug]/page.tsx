@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { notFound } from 'next/navigation';
 import { fetchArticlesByCategory, fetchCategoryBySlug, fetchCategories } from '@/lib/api';
 import { ArticleCardMedium, ArticleCardList } from '@/components/cards';
@@ -94,12 +95,24 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           </h2>
           {remainingArticles.length > 0 ? (
             <div>
-              {remainingArticles.map((article) => (
-                <ArticleCardList
-                  key={article.id}
-                  article={article}
-                  titleClassName="text-base lg:text-lg"
-                />
+              {remainingArticles.map((article, idx) => (
+                <Fragment key={article.id}>
+                  <ArticleCardList
+                    article={article}
+                    titleClassName="text-base lg:text-lg"
+                  />
+                  {/* In-feed ad after every 3rd article. Same placement as
+                      the article-page sidebar lists, so creatives can be
+                      reused across the site. */}
+                  {(idx + 1) % 3 === 0 && (
+                    <div className="py-4 border-b border-[var(--color-border-light)]">
+                      <AdSlot
+                        placement="in_feed_list"
+                        aspectClassName="aspect-[600/192]"
+                      />
+                    </div>
+                  )}
+                </Fragment>
               ))}
             </div>
           ) : (

@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS authors (
   can_mark_breaking BOOLEAN DEFAULT FALSE,
   can_create_tags BOOLEAN DEFAULT TRUE,
   can_send_newsletter BOOLEAN DEFAULT FALSE,
+  can_manage_ads BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -46,6 +47,7 @@ ALTER TABLE authors ADD COLUMN IF NOT EXISTS can_feature_articles BOOLEAN DEFAUL
 ALTER TABLE authors ADD COLUMN IF NOT EXISTS can_mark_breaking BOOLEAN DEFAULT FALSE;
 ALTER TABLE authors ADD COLUMN IF NOT EXISTS can_create_tags BOOLEAN DEFAULT TRUE;
 ALTER TABLE authors ADD COLUMN IF NOT EXISTS can_send_newsletter BOOLEAN DEFAULT FALSE;
+ALTER TABLE authors ADD COLUMN IF NOT EXISTS can_manage_ads BOOLEAN DEFAULT FALSE;
 ALTER TABLE authors ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();
 
 -- Unique constraint on username only if it doesn't exist yet

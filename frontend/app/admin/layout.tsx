@@ -29,6 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [user, setUser] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [role, setRole] = useState<AdminRole>("admin");
+  const [canManageAds, setCanManageAds] = useState(false);
   const [checking, setChecking] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -48,13 +49,40 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setRole(resolvedRole);
 
     // Authors don't get access to admin-only sections — redirect them home.
-    const adminOnlyPrefixes = ["/admin/categories", "/admin/tags", "/admin/authors", "/admin/subscribers", "/admin/newsletter", "/admin/polls", "/admin/trending", "/admin/ads", "/admin/settings"];
-    if (resolvedRole === "author" && adminOnlyPrefixes.some(p => pathname === p || pathname.startsWith(p + "/"))) {
+    // /admin/ads is the one exception: authors with `can_manage_ads` can use
+    // it, so we resolve their perms first and only redirect if they don't
+    // have the grant. All other admin-only pages stay strictly admin.
+    const strictAdminOnly = ["/admin/categories", "/admin/tags", "/admin/authors", "/admin/subscribers", "/admin/newsletter", "/admin/polls", "/admin/trending", "/admin/settings"];
+    const isOnAdsPage = pathname === "/admin/ads" || pathname.startsWith("/admin/ads/");
+
+    if (resolvedRole === "author" && strictAdminOnly.some(p => pathname === p || pathname.startsWith(p + "/"))) {
       router.replace("/admin");
       return;
     }
 
-    setChecking(false);
+    if (resolvedRole === "admin") {
+      setCanManageAds(true);
+      setChecking(false);
+      return;
+    }
+
+    // Author: fetch perms so we can both render the right nav AND gate /admin/ads.
+    const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+    fetch(`${API}/api/admin/me`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((me) => {
+        const allowed = !!me?.can_manage_ads;
+        setCanManageAds(allowed);
+        if (isOnAdsPage && !allowed) {
+          router.replace("/admin");
+          return;
+        }
+        setChecking(false);
+      })
+      .catch(() => {
+        if (isOnAdsPage) router.replace("/admin");
+        else setChecking(false);
+      });
   }, [router, isLoginRoute, pathname]);
 
   useEffect(() => {
@@ -148,6 +176,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin/media", label: "Media Library", icon: Images },
     { href: "/admin/articles", label: "My Articles", icon: FileText },
     { href: "/admin/videos", label: "My Videos", icon: Video },
+    // Conditional: only authors with can_manage_ads see this entry. Admins
+    // already have it in adminNav.
+    ...(canManageAds ? [{ href: "/admin/ads", label: "Advertisements", icon: Megaphone }] : []),
     { href: "/admin/profile", label: "My Profile", icon: UserPen },
   ];
   const navItems = role === "author" ? authorNav : adminNav;

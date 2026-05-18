@@ -10,6 +10,7 @@ export type AuthorPerms = {
   can_mark_breaking: boolean;
   can_create_tags: boolean;
   can_send_newsletter: boolean;
+  can_manage_ads: boolean;
 };
 
 export const PERM_COLUMNS = [
@@ -22,13 +23,14 @@ export const PERM_COLUMNS = [
   'can_mark_breaking',
   'can_create_tags',
   'can_send_newsletter',
+  'can_manage_ads',
 ] as const;
 
 export async function loadAuthorPerms(authorId: number): Promise<AuthorPerms | null> {
   const { rows } = await pool.query(
     `SELECT is_active, can_publish, can_create_articles, can_create_videos,
             can_delete_own, can_feature_articles, can_mark_breaking, can_create_tags,
-            can_send_newsletter
+            can_send_newsletter, can_manage_ads
        FROM authors WHERE id = $1`,
     [authorId]
   );

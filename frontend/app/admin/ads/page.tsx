@@ -19,21 +19,40 @@ import { resolveImageSrc } from "@/lib/safeImage";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-const PLACEMENTS: { value: string; label: string; recommended: string }[] = [
-  { value: "category_header_banner", label: "Category header banner (above title)", recommended: "1200×180 wide banner" },
-  { value: "between_sections", label: "Between Sports & Business (Left)", recommended: "728×180 wide banner" },
-  { value: "between_sections_right", label: "Between Sports & Business (Right)", recommended: "728×180 wide banner" },
-  { value: "just_in_sports_left", label: "Between Just In & Sports (Left)", recommended: "300×250 rectangle" },
-  { value: "just_in_sports_right", label: "Between Just In & Sports (Right)", recommended: "300×250 rectangle" },
-  { value: "article_inline", label: "Article inline (mid-body)", recommended: "336×280" },
-  { value: "article_sidebar", label: "Article sidebar", recommended: "300×150 rectangle (MPU half)" },
-  { value: "article_more_in_category", label: "Article — More in category (in-list)", recommended: "300×122 banner" },
-  { value: "article_related_stories", label: "Article — Related stories (in-list)", recommended: "300×122 banner" },
-  { value: "footer_banner", label: "Footer banner", recommended: "728×90 leaderboard" },
-  { value: "popup_landing", label: "Landing popup", recommended: "600×450" },
-  { value: "mobile_sticky", label: "Mobile sticky bottom", recommended: "320×50" },
-  { value: "poll_sidebar", label: "Poll sidebar (below options)", recommended: "300×150 banner" },
+interface Placement {
+  value: string;
+  label: string;
+  /** Recommended pixel dimensions (drives validation tolerance). */
+  width: number;
+  height: number;
+  /** Friendly description shown beneath the field. */
+  note?: string;
+}
+
+// Single source of truth for recommended ad sizes. The form computes the
+// target aspect ratio from width/height, then warns if the uploaded image
+// is more than ~25% off either dimension. Admin can still save — it's a
+// soft warning, not a hard reject — but the layout will look weird.
+const PLACEMENTS: Placement[] = [
+  { value: "category_header_banner",   label: "Category header banner (above title)",            width: 1200, height: 180, note: "Stretches above category titles." },
+  { value: "between_sections",         label: "Between Sports & Business (Left)",                width: 728,  height: 180 },
+  { value: "between_sections_right",   label: "Between Sports & Business (Right)",               width: 728,  height: 180 },
+  { value: "just_in_sports_left",      label: "Between Just In & Sports (Left)",                 width: 300,  height: 250 },
+  { value: "just_in_sports_right",     label: "Between Just In & Sports (Right)",                width: 300,  height: 250 },
+  { value: "article_inline",           label: "Article inline (mid-body)",                       width: 336,  height: 280 },
+  { value: "article_sidebar",          label: "Article sidebar",                                 width: 300,  height: 150, note: "IAB MPU half." },
+  { value: "article_more_in_category", label: "Article — More in category (in-list)",            width: 300,  height: 122 },
+  { value: "article_related_stories",  label: "Article — Related stories (in-list)",             width: 300,  height: 122 },
+  { value: "in_feed_list",             label: "In-feed list (after every 3rd article)",          width: 600,  height: 192, note: "Matches the row layout used on category and sidebar lists. Animated GIFs allowed." },
+  { value: "footer_banner",            label: "Footer banner",                                   width: 728,  height: 90  },
+  { value: "popup_landing",            label: "Landing popup",                                   width: 600,  height: 450 },
+  { value: "mobile_sticky",            label: "Mobile sticky bottom",                            width: 320,  height: 50  },
+  { value: "poll_sidebar",             label: "Poll sidebar (below options)",                    width: 300,  height: 150 },
 ];
+
+function placementFor(value: string): Placement | undefined {
+  return PLACEMENTS.find((p) => p.value === value);
+}
 
 interface Ad {
   id: number;
@@ -73,6 +92,12 @@ export default function AdminAds() {
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // Measured dimensions of the currently-chosen ad image. `null` until the
+  // image loads; populated in the effect below. Used purely for UX feedback
+  // — admin can still save a mis-sized image (some campaigns deliberately
+  // do this), they just see a yellow warning.
+  const [imageDims, setImageDims] = useState<{ width: number; height: number } | null>(null);
+
   const token =
     typeof window !== "undefined"
       ? localStorage.getItem("24ghanta_admin_token")
@@ -85,11 +110,15 @@ export default function AdminAds() {
       const res = await fetch(`${API}/api/admin/ads`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        // Surface the actual server response so 401/403/500 is distinguishable.
+        const body = await res.text().catch(() => "");
+        throw new Error(`${res.status} ${res.statusText}${body ? ` — ${body.slice(0, 200)}` : ""}`);
+      }
       const data = await res.json();
       setAds(data.data || []);
-    } catch {
-      console.error("Failed to load ads");
+    } catch (err) {
+      console.error("Failed to load ads:", err);
     } finally {
       setLoading(false);
     }
@@ -105,6 +134,26 @@ export default function AdminAds() {
     return () => clearInterval(id);
   }, [fetchAds, showForm]);
 
+  // Measure the chosen image whenever the URL changes. Resolves /uploads/...
+  // paths to absolute URLs so the in-browser <img> can fetch from the API
+  // origin (the admin frontend runs on a different port in dev).
+  useEffect(() => {
+    if (adType !== "image" || !imageUrl) {
+      setImageDims(null);
+      return;
+    }
+    const src = imageUrl.startsWith("/uploads/") ? `${API}${imageUrl}` : imageUrl;
+    const img = new Image();
+    img.onload = () => setImageDims({ width: img.naturalWidth, height: img.naturalHeight });
+    img.onerror = () => setImageDims(null);
+    img.src = src;
+    return () => {
+      // Detach handlers so a stale load can't clobber a newer measurement.
+      img.onload = null;
+      img.onerror = null;
+    };
+  }, [imageUrl, adType]);
+
   function resetForm() {
     setName("");
     setPlacement(PLACEMENTS[0].value);
@@ -117,6 +166,7 @@ export default function AdminAds() {
     setPriority(0);
     setStartsAt("");
     setEndsAt("");
+    setImageDims(null);
     setFormError(null);
     setEditing(null);
   }
@@ -495,10 +545,16 @@ export default function AdminAds() {
                       </option>
                     ))}
                   </select>
-                  <p className="text-[11px] text-gray-400 mt-1">
-                    Recommended:{" "}
-                    {PLACEMENTS.find((p) => p.value === placement)?.recommended}
-                  </p>
+                  {(() => {
+                    const p = placementFor(placement);
+                    if (!p) return null;
+                    return (
+                      <p className="text-[11px] text-gray-400 mt-1">
+                        Recommended size: <strong className="text-gray-600">{p.width}×{p.height}px</strong>
+                        {p.note ? ` — ${p.note}` : ""}
+                      </p>
+                    );
+                  })()}
                 </div>
 
                 <div>
@@ -529,6 +585,12 @@ export default function AdminAds() {
                       onChange={setImageUrl}
                       placeholder="https://example.com/banner.webp"
                     />
+                    {imageUrl && (
+                      <DimensionFeedback
+                        dims={imageDims}
+                        target={placementFor(placement)}
+                      />
+                    )}
                   </div>
 
                   <div>
@@ -680,6 +742,57 @@ export default function AdminAds() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * Shows the measured image dimensions alongside the recommended ones, with a
+ * yellow warning when the aspect ratio is significantly off (≥25%). We don't
+ * block saving — some campaigns intentionally use non-standard sizes — but
+ * we surface the mismatch loudly because the page layout reserves a fixed
+ * aspect-ratio box and a wrong image gets letterboxed or cropped hard.
+ */
+function DimensionFeedback({
+  dims,
+  target,
+}: {
+  dims: { width: number; height: number } | null;
+  target?: Placement;
+}) {
+  if (!dims) {
+    return (
+      <p className="text-[11px] text-gray-400 mt-1.5">
+        Measuring image…
+      </p>
+    );
+  }
+  if (!target) {
+    return (
+      <p className="text-[11px] text-gray-500 mt-1.5">
+        Image is {dims.width}×{dims.height}px.
+      </p>
+    );
+  }
+  const actualAspect = dims.width / dims.height;
+  const targetAspect = target.width / target.height;
+  // ±25% aspect deviation is the threshold — chosen because a 728×180
+  // banner uploaded as 728×220 still works fine, but 728×400 would crop.
+  const ratioDiff = Math.abs(actualAspect - targetAspect) / targetAspect;
+  const mismatch = ratioDiff > 0.25;
+  return (
+    <div
+      className={`mt-1.5 text-[11px] rounded-lg px-2.5 py-1.5 flex items-start gap-1.5 ${
+        mismatch ? "bg-amber-50 text-amber-800 border border-amber-200" : "bg-green-50 text-green-700 border border-green-100"
+      }`}
+    >
+      {mismatch ? <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" /> : <Check className="w-3.5 h-3.5 mt-0.5 shrink-0" />}
+      <span>
+        Uploaded: <strong>{dims.width}×{dims.height}px</strong> · Recommended: <strong>{target.width}×{target.height}px</strong>
+        {mismatch && (
+          <> — aspect ratio is off by {Math.round(ratioDiff * 100)}%. The slot will crop or letterbox.</>
+        )}
+      </span>
     </div>
   );
 }

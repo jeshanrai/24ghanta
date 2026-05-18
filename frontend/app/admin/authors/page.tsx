@@ -23,6 +23,7 @@ type Author = {
   can_mark_breaking: boolean;
   can_create_tags: boolean;
   can_send_newsletter: boolean;
+  can_manage_ads: boolean;
   article_count?: number;
 };
 
@@ -41,6 +42,7 @@ type FormState = {
   can_mark_breaking: boolean;
   can_create_tags: boolean;
   can_send_newsletter: boolean;
+  can_manage_ads: boolean;
 };
 
 const emptyForm: FormState = {
@@ -58,6 +60,7 @@ const emptyForm: FormState = {
   can_mark_breaking: false,
   can_create_tags: true,
   can_send_newsletter: false,
+  can_manage_ads: false,
 };
 
 type PermKey =
@@ -69,7 +72,8 @@ type PermKey =
   | "can_feature_articles"
   | "can_mark_breaking"
   | "can_create_tags"
-  | "can_send_newsletter";
+  | "can_send_newsletter"
+  | "can_manage_ads";
 
 const PERMISSIONS: { key: PermKey; title: string; description: string }[] = [
   { key: "is_active",            title: "Can sign in",          description: "Allow this author to log into the CMS." },
@@ -81,6 +85,7 @@ const PERMISSIONS: { key: PermKey; title: string; description: string }[] = [
   { key: "can_mark_breaking",    title: "Mark breaking news",   description: "Author can flag their articles as Breaking News." },
   { key: "can_create_tags",      title: "Create tags",          description: "Author can add new tags from the article editor." },
   { key: "can_send_newsletter",  title: "Send newsletter alerts", description: "Author can email subscribers when publishing an article." },
+  { key: "can_manage_ads",       title: "Manage advertisements", description: "Author can create, edit, and delete ads alongside admins." },
 ];
 
 export default function AuthorsPage() {
@@ -118,6 +123,7 @@ export default function AuthorsPage() {
       can_mark_breaking: item.can_mark_breaking === true,
       can_create_tags: item.can_create_tags !== false,
       can_send_newsletter: item.can_send_newsletter === true,
+      can_manage_ads: item.can_manage_ads === true,
     });
   }
   function startNew() { setShowNew(true); setEditing(null); setForm(emptyForm); setError(""); }

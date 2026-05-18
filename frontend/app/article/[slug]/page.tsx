@@ -197,7 +197,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             />
           </div>
 
-          {/* More from Category */}
+          {/* More from Category — in-feed ad after every 3rd article. */}
           {categoryArticles.length > 0 && (
             <div className="mb-8">
               <h3 className="text-sidebar-title font-bold text-[var(--color-text-primary)] mb-4 pb-2 border-b-2 border-[var(--color-primary)]">
@@ -207,10 +207,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 {categoryArticles.slice(0, 4).map((relatedArticle, idx) => (
                   <Fragment key={relatedArticle.id}>
                     <ArticleCardList article={relatedArticle} titleClassName="text-sidebar-title" />
-                    {idx === 1 && (
+                    {/* Inject after positions 3, 6, 9… so the ad mirrors the
+                        row layout of the card immediately above it. */}
+                    {(idx + 1) % 3 === 0 && (
                       <AdSlot
-                        placement="article_more_in_category"
-                        aspectClassName="aspect-[300/121.5]"
+                        placement="in_feed_list"
+                        aspectClassName="aspect-[600/192]"
                       />
                     )}
                   </Fragment>
@@ -219,7 +221,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </div>
           )}
 
-          {/* Related Articles */}
+          {/* Related Articles — same every-3rd pattern. */}
           {relatedArticles.length > 0 && (
             <div>
               <h3 className="text-sidebar-title font-bold text-[var(--color-text-primary)] mb-4 pb-2 border-b-2 border-[var(--color-primary)]">
@@ -229,10 +231,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                 {relatedArticles.map((relatedArticle, idx) => (
                   <Fragment key={relatedArticle.id}>
                     <ArticleCardList article={relatedArticle} titleClassName="text-sidebar-title" />
-                    {idx === 1 && (
+                    {(idx + 1) % 3 === 0 && (
                       <AdSlot
-                        placement="article_related_stories"
-                        aspectClassName="aspect-[300/121.5]"
+                        placement="in_feed_list"
+                        aspectClassName="aspect-[600/192]"
                       />
                     )}
                   </Fragment>

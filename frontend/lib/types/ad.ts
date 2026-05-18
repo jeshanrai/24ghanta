@@ -8,6 +8,7 @@ export type AdPlacement =
   | 'between_sections'
   | 'between_sections_right'
   | 'footer_banner'
+  | 'in_feed_list'
   | 'popup_landing'
   | 'mobile_sticky';
 

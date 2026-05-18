@@ -15,6 +15,7 @@ const PERM_FIELDS = [
   'can_mark_breaking',
   'can_create_tags',
   'can_send_newsletter',
+  'can_manage_ads',
 ] as const;
 
 const PERM_DEFAULTS: Record<typeof PERM_FIELDS[number], boolean> = {
@@ -27,6 +28,7 @@ const PERM_DEFAULTS: Record<typeof PERM_FIELDS[number], boolean> = {
   can_mark_breaking: false,
   can_create_tags: true,
   can_send_newsletter: false,
+  can_manage_ads: false,
 };
 
 function pickPerms(body: Record<string, unknown>) {
@@ -41,7 +43,7 @@ const SELECT_COLS = `
   id, name, avatar_url, username, email,
   is_active, can_publish, can_create_articles, can_create_videos,
   can_delete_own, can_feature_articles, can_mark_breaking, can_create_tags,
-  can_send_newsletter,
+  can_send_newsletter, can_manage_ads,
   created_at
 `;
 
@@ -54,7 +56,7 @@ router.get('/', requireAuth, async (_req: AuthRequest, res: Response) => {
       `SELECT au.id, au.name, au.avatar_url, au.username, au.email,
               au.is_active, au.can_publish, au.can_create_articles, au.can_create_videos,
               au.can_delete_own, au.can_feature_articles, au.can_mark_breaking, au.can_create_tags,
-              au.can_send_newsletter,
+              au.can_send_newsletter, au.can_manage_ads,
               au.created_at,
               COUNT(a.id) AS article_count
          FROM authors au
@@ -84,14 +86,14 @@ router.post('/', requireAdmin, async (req: AuthRequest, res: Response) => {
          (name, avatar_url, username, email, password_hash,
           is_active, can_publish, can_create_articles, can_create_videos,
           can_delete_own, can_feature_articles, can_mark_breaking, can_create_tags,
-          can_send_newsletter)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+          can_send_newsletter, can_manage_ads)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
        RETURNING ${SELECT_COLS}`,
       [
         name, avatar_url || null, cleanUsername || null, email || null, passwordHash,
         perms.is_active, perms.can_publish, perms.can_create_articles, perms.can_create_videos,
         perms.can_delete_own, perms.can_feature_articles, perms.can_mark_breaking, perms.can_create_tags,
-        perms.can_send_newsletter,
+        perms.can_send_newsletter, perms.can_manage_ads,
       ]
     );
     res.status(201).json(rows[0]);
@@ -117,7 +119,7 @@ router.put('/:id', requireAdmin, async (req: AuthRequest, res: Response) => {
       name, avatar_url || null, cleanUsername || null, email || null,
       perms.is_active, perms.can_publish, perms.can_create_articles, perms.can_create_videos,
       perms.can_delete_own, perms.can_feature_articles, perms.can_mark_breaking, perms.can_create_tags,
-      perms.can_send_newsletter,
+      perms.can_send_newsletter, perms.can_manage_ads,
     ];
 
     if (password && password.length >= 6) {
@@ -127,9 +129,9 @@ router.put('/:id', requireAdmin, async (req: AuthRequest, res: Response) => {
             SET name=$1, avatar_url=$2, username=$3, email=$4,
                 is_active=$5, can_publish=$6, can_create_articles=$7, can_create_videos=$8,
                 can_delete_own=$9, can_feature_articles=$10, can_mark_breaking=$11, can_create_tags=$12,
-                can_send_newsletter=$13,
-                password_hash=$14
-          WHERE id=$15
+                can_send_newsletter=$13, can_manage_ads=$14,
+                password_hash=$15
+          WHERE id=$16
           RETURNING ${SELECT_COLS}`,
         [...baseParams, hash, req.params.id]
       );
@@ -142,8 +144,8 @@ router.put('/:id', requireAdmin, async (req: AuthRequest, res: Response) => {
           SET name=$1, avatar_url=$2, username=$3, email=$4,
               is_active=$5, can_publish=$6, can_create_articles=$7, can_create_videos=$8,
               can_delete_own=$9, can_feature_articles=$10, can_mark_breaking=$11, can_create_tags=$12,
-              can_send_newsletter=$13
-        WHERE id=$14
+              can_send_newsletter=$13, can_manage_ads=$14
+        WHERE id=$15
         RETURNING ${SELECT_COLS}`,
       [...baseParams, req.params.id]
     );
