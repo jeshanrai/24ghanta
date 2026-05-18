@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { Article } from '@/lib/types';
 import { ArticleCardList } from '@/components/cards';
 import { OptimizedImage } from '@/components/ui';
+import { AdSlot } from '@/components/ads';
 import { cn, formatDate, formatReadTimeShort } from '@/lib/utils';
 
 interface HeroSidebarProps {
@@ -51,7 +52,17 @@ export function HeroSidebar({ articles }: HeroSidebarProps) {
       )}
       {restArticles.length > 0 && (
         <div className="mt-4 animate-fade-in-up stagger-3 space-y-2">
-          {restArticles.slice(0, 4).map((article) => (
+          {restArticles.slice(0, 2).map((article) => (
+            <ArticleCardList key={article.id} article={article} titleClassName="text-sidebar-title" />
+          ))}
+          <div className="py-2">
+            <AdSlot
+              placement="article_sidebar"
+              aspectClassName="aspect-[300/150]"
+              className="shadow-sm rounded-md overflow-hidden bg-white"
+            />
+          </div>
+          {restArticles.slice(2, 4).map((article) => (
             <ArticleCardList key={article.id} article={article} titleClassName="text-sidebar-title" />
           ))}
         </div>

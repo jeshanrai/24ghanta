@@ -9,6 +9,10 @@ interface SectionHeaderProps {
   kicker?: string;
   /** Layout style — keeps each section visually distinct on the home page. */
   style?: 'bar' | 'tag' | 'underline';
+  /** Optional class applied to the title element (overrides default size). */
+  titleClassName?: string;
+  /** Optional inline style applied to the title element (highest priority). */
+  titleStyle?: React.CSSProperties;
 }
 
 export function SectionHeader({
@@ -17,6 +21,8 @@ export function SectionHeader({
   color,
   kicker,
   style = 'bar',
+  titleClassName,
+  titleStyle,
 }: SectionHeaderProps) {
   const accent = color || 'var(--color-primary)';
 
@@ -54,7 +60,10 @@ export function SectionHeader({
                 {kicker}
               </p>
             )}
-            <h2 className="font-headline text-h3 font-bold text-[var(--color-text-primary)] tracking-tight uppercase">
+            <h2
+              className={`font-headline ${titleClassName ?? 'text-h3'} font-bold text-[var(--color-text-primary)] tracking-tight uppercase`}
+              style={titleStyle}
+            >
               {title}
             </h2>
           </div>
@@ -75,7 +84,10 @@ export function SectionHeader({
         className="absolute bottom-[-2px] left-0 h-[3px] w-32 animate-expand-x"
         style={{ background: accent }}
       />
-      <h2 className="text-h3 font-bold text-[var(--color-text-primary)] flex items-center gap-3 tracking-tight">
+      <h2
+        className={`${titleClassName ?? 'text-h3'} font-bold text-[var(--color-text-primary)] flex items-center gap-3 tracking-tight`}
+        style={titleStyle}
+      >
         <span
           className="inline-block h-7 w-1.5 rounded-sm animate-fade-in-left"
           style={{ background: accent }}

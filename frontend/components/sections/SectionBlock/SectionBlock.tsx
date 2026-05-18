@@ -9,6 +9,10 @@ interface SectionBlockProps {
   headerStyle?: 'bar' | 'tag' | 'underline';
   /** Optional very-subtle tinted background that picks up the accent color. */
   tinted?: boolean;
+  /** Optional class for the section title (overrides default size). */
+  titleClassName?: string;
+  /** Optional inline style for the section title (highest priority). */
+  titleStyle?: React.CSSProperties;
   children: ReactNode;
   className?: string;
 }
@@ -20,6 +24,8 @@ export function SectionBlock({
   kicker,
   headerStyle = 'bar',
   tinted = false,
+  titleClassName,
+  titleStyle,
   children,
   className,
 }: SectionBlockProps) {
@@ -39,6 +45,8 @@ export function SectionBlock({
           color={color}
           kicker={kicker}
           style={headerStyle}
+          titleClassName={titleClassName}
+          titleStyle={titleStyle}
         />
         <div className="animate-fade-in-up stagger-1">{children}</div>
       </section>
@@ -53,6 +61,8 @@ export function SectionBlock({
         color={color}
         kicker={kicker}
         style={headerStyle}
+        titleClassName={titleClassName}
+        titleStyle={titleStyle}
       />
       <div className="animate-fade-in-up stagger-1">{children}</div>
     </section>

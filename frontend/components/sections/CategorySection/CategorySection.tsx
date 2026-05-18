@@ -42,6 +42,11 @@ export function CategorySection({
       kicker={kicker}
       headerStyle={headerStyle}
       tinted={tinted}
+      titleStyle={
+        ['sports', 'business'].includes(category.name.toLowerCase())
+          ? { fontSize: 'clamp(1.375rem, 3.5vw, 1.875rem)' }
+          : undefined
+      }
     >
       {variant === 'hero-split' && (
         <HeroSplitLayout articles={articles} />
