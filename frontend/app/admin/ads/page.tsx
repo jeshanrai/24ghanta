@@ -38,6 +38,7 @@ interface Placement {
 // soft warning, not a hard reject — but the layout will look weird.
 const PLACEMENTS: Placement[] = [
   { value: "category_header_banner",   label: "Category header banner (above title)",            width: 1456, height: 180, note: "Displays as full-width banner above category titles." },
+  { value: "landing_sports_sidebar",   label: "Landing — Sports sidebar (below articles)",       width: 300,  height: 150, note: "IAB MPU half." },
   { value: "article_inline",           label: "Article inline (mid-body)",                       width: 336,  height: 280 },
   { value: "article_sidebar",          label: "Article sidebar",                                 width: 300,  height: 150, note: "IAB MPU half." },
   { value: "article_more_in_category", label: "Article — More in category (in-list)",            width: 112,  height: 96 },

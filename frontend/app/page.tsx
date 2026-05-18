@@ -1,11 +1,13 @@
 import { HeroSection, CategorySection, LatestStrip } from '@/components/sections';
 import { AdPopup } from '@/components/ui';
+import { AdSlot } from '@/components/ads';
 import {
   fetchHeroArticles,
   fetchLatestArticles,
   fetchArticlesByCategory,
   fetchCategoryBySlug,
   fetchActivePolls,
+  fetchAd,
 } from '@/lib/api';
 
 export const revalidate = 30;
@@ -21,6 +23,7 @@ export default async function HomePage() {
     entertainmentCategory,
     entertainmentArticles,
     activePolls,
+    sportsSidebarAd,
   ] = await Promise.all([
     fetchHeroArticles(),
     fetchLatestArticles(14),
@@ -31,6 +34,7 @@ export default async function HomePage() {
     fetchCategoryBySlug('entertainment'),
     fetchArticlesByCategory('entertainment', 5),
     fetchActivePolls(),
+    fetchAd('landing_sports_sidebar'),
   ]);
 
   // Exclude hero articles from sidebar and strip to avoid duplicates
@@ -38,6 +42,14 @@ export default async function HomePage() {
   const nonHeroLatest = latestArticles.filter((a) => !heroIds.has(a.id));
   const justInArticles = nonHeroLatest.slice(0, 4);
   const sidebarArticles = nonHeroLatest.slice(4, 9);
+
+  // An ad is renderable only if it has displayable content for its type.
+  const hasRenderableAd = (ad: any) =>
+    !!ad &&
+    ((ad.adType === 'html' && !!ad.htmlContent) ||
+      (ad.adType !== 'html' && !!ad.imageUrl));
+
+  const sportsSidebarAdRenderable = hasRenderableAd(sportsSidebarAd);
 
   return (
     <div>
@@ -68,6 +80,20 @@ export default async function HomePage() {
             category={sportsCategory}
             articles={sportsArticles}
             variant="hero-split"
+            sidebarSlot={
+              sportsSidebarAdRenderable ? (
+                <div className="w-full flex justify-center">
+                  <div className="w-full max-w-[300px]">
+                    <AdSlot
+                      placement="landing_sports_sidebar"
+                      ad={sportsSidebarAd}
+                      className="shadow-sm rounded-md overflow-hidden bg-white"
+                      aspectClassName="aspect-[300/150]"
+                    />
+                  </div>
+                </div>
+              ) : null
+            }
           />
         )}
 

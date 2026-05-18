@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import type { Article, Category } from '@/lib/types';
 import { SectionBlock } from '@/components/sections/SectionBlock';
@@ -15,12 +16,15 @@ interface CategorySectionProps {
   category: Category;
   articles: Article[];
   variant?: CategorySectionVariant;
+  /** Optional slot rendered below the sidebar list in the hero-split variant. */
+  sidebarSlot?: ReactNode;
 }
 
 export function CategorySection({
   category,
   articles,
   variant = 'hero-split',
+  sidebarSlot,
 }: CategorySectionProps) {
   if (articles.length === 0) return null;
 
@@ -49,7 +53,7 @@ export function CategorySection({
       }
     >
       {variant === 'hero-split' && (
-        <HeroSplitLayout articles={articles} />
+        <HeroSplitLayout articles={articles} sidebarSlot={sidebarSlot} />
       )}
       {variant === 'triple-grid' && (
         <TripleGridLayout articles={articles} accent={accent} />
@@ -64,8 +68,15 @@ export function CategorySection({
 // ─────────────────────────────────────────────────────────────────
 // 1) HERO-SPLIT — large lead on the left, list on the right.
 // ─────────────────────────────────────────────────────────────────
-function HeroSplitLayout({ articles }: { articles: Article[] }) {
+function HeroSplitLayout({
+  articles,
+  sidebarSlot,
+}: {
+  articles: Article[];
+  sidebarSlot?: ReactNode;
+}) {
   const [main, ...rest] = articles;
+  const sidebarArticles = rest.slice(0, 4);
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 animate-fade-in-up">
@@ -78,7 +89,7 @@ function HeroSplitLayout({ articles }: { articles: Article[] }) {
         )}
       </div>
       <div className="lg:col-span-1">
-        {rest.slice(0, 4).map((article, idx) => (
+        {sidebarArticles.map((article, idx) => (
           <div
             key={article.id}
             className="animate-fade-in-up"
@@ -87,6 +98,14 @@ function HeroSplitLayout({ articles }: { articles: Article[] }) {
             <ArticleCardList article={article} titleClassName="text-sidebar-title" />
           </div>
         ))}
+        {sidebarSlot && (
+          <div
+            className="mt-4 animate-fade-in-up"
+            style={{ animationDelay: `${120 + sidebarArticles.length * 70}ms` }}
+          >
+            {sidebarSlot}
+          </div>
+        )}
       </div>
     </div>
   );
