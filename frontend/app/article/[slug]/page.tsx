@@ -79,7 +79,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </div>
 
           {/* Title */}
-          <h1 className="text-h2 lg:text-h1 font-bold font-serif text-[var(--color-text-primary)] leading-tight mb-3 sm:mb-4 break-words hyphens-auto">
+          <h1 className="font-headline text-base leading-tight sm:text-2xl sm:leading-snug md:text-3xl lg:text-h1 text-[var(--color-text-primary)] transition-all duration-500 ease-out drop-shadow-md mb-3 sm:mb-4 break-words hyphens-auto">
             {article.title}
           </h1>
 

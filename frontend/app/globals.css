@@ -803,19 +803,19 @@ img {
 .tiptap-content h2,
 .article-rich-content h2 {
   font-family: var(--font-headline), inherit;
-  font-size: 1.75rem;
+  font-size: clamp(2rem, 5vw, 2.5rem);
   font-weight: 700;
   margin: 1.8em 0 0.6em;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
 }
 .tiptap-content h3,
 .article-rich-content h3 {
   font-family: var(--font-headline), inherit;
-  font-size: 1.375rem;
+  font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: 700;
   margin: 1.4em 0 0.5em;
-  line-height: 1.2;
+  line-height: 1.1;
 }
 .tiptap-content ul,
 .article-rich-content ul,
