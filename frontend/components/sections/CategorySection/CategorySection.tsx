@@ -229,9 +229,9 @@ function MagazineLayout({
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-3 min-[400px]:p-4 sm:p-5 md:p-6 lg:p-6 xl:p-8 2xl:p-10">
                 <Badge color={accent}>Featured</Badge>
-                <h3 className="mt-1.5 sm:mt-2.5 md:mt-3 font-headline leading-tight sm:leading-snug text-white line-clamp-2 sm:line-clamp-3 text-sm min-[400px]:text-base sm:text-xl md:text-2xl lg:text-2xl xl:text-3xl 2xl:text-4xl">
+                <h2 className="mt-1.5 sm:mt-2.5 md:mt-3 font-headline leading-tight sm:leading-snug text-white line-clamp-2 sm:line-clamp-3 text-sm min-[400px]:text-base sm:text-xl md:text-2xl lg:text-2xl xl:text-3xl 2xl:text-4xl">
                   {feature.title}
-                </h3>
+                </h2>
                 {feature.excerpt && (
                   <p className="mt-2 sm:mt-3 text-xs sm:text-sm md:text-base text-white/85 line-clamp-2 max-w-xl hidden sm:block">
                     {feature.excerpt}
