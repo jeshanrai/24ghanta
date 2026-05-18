@@ -6,6 +6,7 @@ import {
   ArticleCardList,
 } from '@/components/cards';
 import { OptimizedImage, Badge } from '@/components/ui';
+import { ChevronRightIcon } from '@/components/icons';
 import { formatDate, formatReadTimeShort } from '@/lib/utils';
 
 export type CategorySectionVariant = 'hero-split' | 'triple-grid' | 'magazine';
@@ -249,10 +250,13 @@ function MagazineLayout({
         <div className="mt-3 flex justify-end">
           <Link
             href={href}
-            className="text-xs uppercase tracking-wider font-bold text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors"
+            className="group inline-flex items-center gap-1 text-xs uppercase tracking-wider font-bold text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors"
             style={{ ['--accent' as string]: accent }}
           >
-            More from this section →
+            More from this section
+            <span className="inline-block transition-transform duration-300 ease-out group-hover:translate-x-1">
+              <ChevronRightIcon size={14} />
+            </span>
           </Link>
         </div>
       </div>
