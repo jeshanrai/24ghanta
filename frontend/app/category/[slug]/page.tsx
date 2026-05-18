@@ -36,8 +36,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <div className="container py-8 animate-fade-in-up">
         <AdSlot
           placement="category_header_banner"
-          className="my-2"
-          aspectClassName="aspect-[1200/180]"
+          className="my-2 w-full"
+          aspectClassName="aspect-[1456/180]"
         />
         <div className="flex items-center mb-6">
           <div
@@ -60,8 +60,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     <div className="container py-8 animate-fade-in-up">
       <AdSlot
         placement="category_header_banner"
-        className="my-2"
-        aspectClassName="aspect-[1200/180]"
+        className="my-2 w-full"
+        aspectClassName="aspect-[1456/180]"
       />
       <div className="flex items-center mb-8 animate-fade-in-left">
         <span
@@ -108,7 +108,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                     <div className="py-4 border-b border-[var(--color-border-light)]">
                       <AdSlot
                         placement="in_feed_list"
-                        aspectClassName="aspect-[600/192]"
+                        className="w-full"
+                        aspectClassName="aspect-[7/6]"
                       />
                     </div>
                   )}

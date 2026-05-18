@@ -214,7 +214,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                     {(idx + 1) % 3 === 0 && (
                       <AdSlot
                         placement="in_feed_list"
-                        aspectClassName="aspect-[600/192]"
+                        className="w-20 h-20 sm:w-28 sm:h-24"
+                        aspectClassName="aspect-square"
                       />
                     )}
                   </Fragment>
@@ -236,7 +237,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                     {(idx + 1) % 3 === 0 && (
                       <AdSlot
                         placement="in_feed_list"
-                        aspectClassName="aspect-[600/192]"
+                        className="w-full"
+                        aspectClassName="aspect-[7/6]"
                       />
                     )}
                   </Fragment>

@@ -37,12 +37,12 @@ interface Placement {
 // is more than ~25% off either dimension. Admin can still save — it's a
 // soft warning, not a hard reject — but the layout will look weird.
 const PLACEMENTS: Placement[] = [
-  { value: "category_header_banner",   label: "Category header banner (above title)",            width: 1200, height: 180, note: "Stretches above category titles." },
+  { value: "category_header_banner",   label: "Category header banner (above title)",            width: 1456, height: 180, note: "Displays as full-width banner above category titles." },
   { value: "article_inline",           label: "Article inline (mid-body)",                       width: 336,  height: 280 },
   { value: "article_sidebar",          label: "Article sidebar",                                 width: 300,  height: 150, note: "IAB MPU half." },
-  { value: "article_more_in_category", label: "Article — More in category (in-list)",            width: 300,  height: 122 },
-  { value: "article_related_stories",  label: "Article — Related stories (in-list)",             width: 300,  height: 122 },
-  { value: "in_feed_list",             label: "In-feed list (after every 3rd article)",          width: 600,  height: 192, note: "Matches the row layout used on category and sidebar lists. Animated GIFs allowed." },
+  { value: "article_more_in_category", label: "Article — More in category (in-list)",            width: 112,  height: 96 },
+  { value: "article_related_stories",  label: "Article — Related stories (in-list)",             width: 112,  height: 96 },
+  { value: "in_feed_list",             label: "In-feed list (after every 3rd article)",          width: 112,  height: 96, note: "Compact square ads matching article card size. Animated GIFs allowed." },
   { value: "footer_banner",            label: "Footer banner",                                   width: 1920, height: 192, note: "Full-width banner. Aspect ratio 728:73 — image is scaled to viewport width." },
   { value: "popup_landing",            label: "Landing popup",                                   width: 600,  height: 450 },
   { value: "mobile_sticky",            label: "Mobile sticky bottom",                            width: 320,  height: 50  },
