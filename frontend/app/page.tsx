@@ -1,13 +1,11 @@
 import { HeroSection, CategorySection, LatestStrip } from '@/components/sections';
 import { AdPopup } from '@/components/ui';
-import { AdSlot } from '@/components/ads';
 import {
   fetchHeroArticles,
   fetchLatestArticles,
   fetchArticlesByCategory,
   fetchCategoryBySlug,
   fetchActivePolls,
-  fetchAd,
 } from '@/lib/api';
 
 export const revalidate = 30;
@@ -23,8 +21,6 @@ export default async function HomePage() {
     entertainmentCategory,
     entertainmentArticles,
     activePolls,
-    adSlot3,
-    adSlot4,
   ] = await Promise.all([
     fetchHeroArticles(),
     fetchLatestArticles(14),
@@ -35,8 +31,6 @@ export default async function HomePage() {
     fetchCategoryBySlug('entertainment'),
     fetchArticlesByCategory('entertainment', 5),
     fetchActivePolls(),
-    fetchAd('just_in_sports_left'),
-    fetchAd('just_in_sports_right'),
   ]);
 
   // Exclude hero articles from sidebar and strip to avoid duplicates
@@ -44,15 +38,6 @@ export default async function HomePage() {
   const nonHeroLatest = latestArticles.filter((a) => !heroIds.has(a.id));
   const justInArticles = nonHeroLatest.slice(0, 4);
   const sidebarArticles = nonHeroLatest.slice(4, 9);
-
-  // An ad is renderable only if it has displayable content for its type.
-  const hasRenderableAd = (ad: any) =>
-    !!ad &&
-    ((ad.adType === 'html' && !!ad.htmlContent) ||
-      (ad.adType !== 'html' && !!ad.imageUrl));
-
-  const leftAdRenderable = hasRenderableAd(adSlot3);
-  const rightAdRenderable = hasRenderableAd(adSlot4);
 
   return (
     <div>
@@ -74,33 +59,6 @@ export default async function HomePage() {
       {justInArticles.length > 0 && (
         <div className="container pb-2">
           <LatestStrip articles={justInArticles} />
-        </div>
-      )}
-
-      {(leftAdRenderable || rightAdRenderable) && (
-        <div className="container py-6">
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center w-full bg-muted/20 py-6 rounded-lg">
-            {leftAdRenderable && (
-              <div className="w-full sm:w-1/2 flex justify-center max-w-[300px]">
-                <AdSlot
-                  placement="just_in_sports_left"
-                  ad={adSlot3}
-                  className="shadow-sm rounded-md overflow-hidden bg-white"
-                  aspectClassName="aspect-[300/250]"
-                />
-              </div>
-            )}
-            {rightAdRenderable && (
-              <div className="w-full sm:w-1/2 flex justify-center max-w-[300px]">
-                <AdSlot
-                  placement="just_in_sports_right"
-                  ad={adSlot4}
-                  className="shadow-sm rounded-md overflow-hidden bg-white"
-                  aspectClassName="aspect-[300/250]"
-                />
-              </div>
-            )}
-          </div>
         </div>
       )}
 
@@ -130,13 +88,6 @@ export default async function HomePage() {
         )}
       </div>
 
-      {/* Footer Ad */}
-      <div className="w-full pb-10 mt-auto">
-        <AdSlot
-          placement="footer_banner"
-          aspectClassName="aspect-[728/73]"
-        />
-      </div>
     </div>
   );
 }

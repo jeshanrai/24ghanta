@@ -337,6 +337,51 @@ async function seedAds(): Promise<void> {
       alt_text: 'Visit Nepal 2026 — Plan your trip to the roof of the world',
       priority: 10,
       is_active: true
+    },
+    // Newer placements added after the original seed. Image dimensions are
+    // pinned to the slot's recommended size so the in-form dimension chip
+    // shows green when you open these in /admin/ads to review.
+    {
+      name: 'Khalti — Just In | Sports (Left)',
+      placement: 'just_in_sports_left',
+      ad_type: 'image',
+      image_url: 'https://images.unsplash.com/photo-1556745753-b2904692b3cd?w=600&h=500&fit=crop&q=80',
+      link_url: 'https://example.com/sponsor/khalti',
+      alt_text: 'Khalti — Send money instantly with zero fees',
+      priority: 10,
+      is_active: true
+    },
+    {
+      name: 'IME Pay — Just In | Sports (Right)',
+      placement: 'just_in_sports_right',
+      ad_type: 'image',
+      image_url: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&h=500&fit=crop&q=80',
+      link_url: 'https://example.com/sponsor/ime-pay',
+      alt_text: 'IME Pay — Recharge, pay bills and shop online',
+      priority: 10,
+      is_active: true
+    },
+    {
+      // Animated GIF so you can verify the GIF pipeline end-to-end: validator
+      // passes, upload stores as-is (Sharp bypassed for GIFs), <img> animates.
+      name: 'Yatri Motorcycles — in-feed (animated)',
+      placement: 'in_feed_list',
+      ad_type: 'image',
+      image_url: 'https://media.giphy.com/media/3o7TKsrfkKfgK6Cz0c/giphy.gif',
+      link_url: 'https://example.com/sponsor/yatri',
+      alt_text: 'Yatri Motorcycles — The electric bike built in Kathmandu',
+      priority: 10,
+      is_active: true
+    },
+    {
+      name: 'Surya Nepal — poll sidebar',
+      placement: 'poll_sidebar',
+      ad_type: 'image',
+      image_url: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&h=300&fit=crop&q=80',
+      link_url: 'https://example.com/sponsor/surya-nepal',
+      alt_text: 'Surya Nepal — Crafted with care since 1986',
+      priority: 10,
+      is_active: true
     }
   ];
 

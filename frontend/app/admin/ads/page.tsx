@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Megaphone,
   Plus,
@@ -11,6 +11,9 @@ import {
   Check,
   AlertCircle,
   ExternalLink,
+  Search,
+  Eye,
+  Circle,
 } from "lucide-react";
 import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
 import { confirmAction } from "@/components/ui/ConfirmDialog";
@@ -35,10 +38,6 @@ interface Placement {
 // soft warning, not a hard reject — but the layout will look weird.
 const PLACEMENTS: Placement[] = [
   { value: "category_header_banner",   label: "Category header banner (above title)",            width: 1200, height: 180, note: "Stretches above category titles." },
-  { value: "between_sections",         label: "Between Sports & Business (Left)",                width: 728,  height: 180 },
-  { value: "between_sections_right",   label: "Between Sports & Business (Right)",               width: 728,  height: 180 },
-  { value: "just_in_sports_left",      label: "Between Just In & Sports (Left)",                 width: 300,  height: 250 },
-  { value: "just_in_sports_right",     label: "Between Just In & Sports (Right)",                width: 300,  height: 250 },
   { value: "article_inline",           label: "Article inline (mid-body)",                       width: 336,  height: 280 },
   { value: "article_sidebar",          label: "Article sidebar",                                 width: 300,  height: 150, note: "IAB MPU half." },
   { value: "article_more_in_category", label: "Article — More in category (in-list)",            width: 300,  height: 122 },
@@ -53,6 +52,26 @@ const PLACEMENTS: Placement[] = [
 function placementFor(value: string): Placement | undefined {
   return PLACEMENTS.find((p) => p.value === value);
 }
+
+/**
+ * Maps each placement to a public URL where the admin can preview the ad in
+ * its real surroundings — "View on site" link per placement group. We pick a
+ * representative path (e.g. any category page is fine for category_header_banner)
+ * rather than enumerate every host page.
+ */
+const PLACEMENT_PREVIEW_PATH: Record<string, string> = {
+  category_header_banner: "/category/world",
+  article_inline: "/", // article slug-dependent; fall back to homepage
+  article_sidebar: "/",
+  article_more_in_category: "/",
+  article_related_stories: "/",
+  in_feed_list: "/category/world",
+  poll_sidebar: "/",
+  // Surfaces with no public renderer right now — link to homepage as fallback.
+  footer_banner: "/",
+  popup_landing: "/",
+  mobile_sticky: "/",
+};
 
 interface Ad {
   id: number;
@@ -97,6 +116,10 @@ export default function AdminAds() {
   // — admin can still save a mis-sized image (some campaigns deliberately
   // do this), they just see a yellow warning.
   const [imageDims, setImageDims] = useState<{ width: number; height: number } | null>(null);
+
+  // Listing filters — keep them local; this is a CMS page, no need for URL state.
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
 
   const token =
     typeof window !== "undefined"
@@ -320,6 +343,57 @@ export default function AdminAds() {
     return `${((ad.clicks / ad.impressions) * 100).toFixed(1)}%`;
   }
 
+  /**
+   * Bucket ads by placement, apply filters, and tag the "live" ad per slot
+   * (highest-priority active one — same rule the public renderer applies).
+   * Empty groups are still returned when a placement has zero ads so admins
+   * can spot under-served slots.
+   */
+  const grouped = useMemo(() => {
+    const lowered = searchTerm.trim().toLowerCase();
+    const filtered = ads.filter((ad) => {
+      if (statusFilter === "active" && !ad.is_active) return false;
+      if (statusFilter === "inactive" && ad.is_active) return false;
+      if (lowered) {
+        const haystack = `${ad.name} ${placementLabel(ad.placement)}`.toLowerCase();
+        if (!haystack.includes(lowered)) return false;
+      }
+      return true;
+    });
+    const byPlacement = new Map<string, Ad[]>();
+    for (const ad of filtered) {
+      const list = byPlacement.get(ad.placement) || [];
+      list.push(ad);
+      byPlacement.set(ad.placement, list);
+    }
+    // Render order = the curated PLACEMENTS list, so placements appear in the
+    // order admins are used to seeing them in the dropdown.
+    return PLACEMENTS
+      .map((p) => {
+        const list = (byPlacement.get(p.value) || []).slice().sort((a, b) => {
+          if (a.is_active !== b.is_active) return a.is_active ? -1 : 1;
+          if (b.priority !== a.priority) return b.priority - a.priority;
+          return b.id - a.id;
+        });
+        const liveId = list.find((a) => a.is_active)?.id ?? null;
+        return { placement: p, ads: list, liveId };
+      })
+      // Hide placements that have NO ads at all when the user is searching
+      // (otherwise the page would be mostly empty headers). Always show all
+      // placements when no search is active — that's how admins find empty slots.
+      .filter((g) => g.ads.length > 0 || (!lowered && statusFilter === "all"));
+  }, [ads, searchTerm, statusFilter]);
+
+  // Quick stats for the header strip.
+  const summary = useMemo(() => {
+    const total = ads.length;
+    const active = ads.filter((a) => a.is_active).length;
+    const impressions = ads.reduce((s, a) => s + a.impressions, 0);
+    const clicks = ads.reduce((s, a) => s + a.clicks, 0);
+    const overallCtr = impressions > 0 ? `${((clicks / impressions) * 100).toFixed(2)}%` : "0%";
+    return { total, active, impressions, clicks, overallCtr };
+  }, [ads]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
@@ -353,131 +427,195 @@ export default function AdminAds() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {ads.map((ad) => (
-            <div
-              key={ad.id}
-              className={`bg-white rounded-2xl border p-5 transition-all ${ad.is_active
-                  ? "border-green-200 shadow-sm shadow-green-100"
-                  : "border-gray-100"
-                }`}
-            >
-              <div className="flex items-start gap-4">
-                {ad.ad_type === "image" && ad.image_url ? (
-                  <div className="w-24 h-16 shrink-0 rounded-lg overflow-hidden bg-gray-50 border border-gray-100">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={resolveImageSrc(ad.image_url)}
-                      alt={ad.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-24 h-16 shrink-0 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center">
-                    <span className="text-[10px] font-bold uppercase tracking-wide text-blue-700">
-                      HTML
-                    </span>
-                  </div>
-                )}
+        <>
+          {/* Summary strip — at-a-glance numbers across all ads. */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <SummaryStat label="Total ads" value={summary.total.toString()} />
+            <SummaryStat label="Active" value={`${summary.active} / ${summary.total}`} accent="green" />
+            <SummaryStat label="Impressions" value={summary.impressions.toLocaleString()} />
+            <SummaryStat label="Clicks · CTR" value={`${summary.clicks.toLocaleString()} · ${summary.overallCtr}`} />
+          </div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span
-                      className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${ad.is_active
-                          ? "bg-green-50 text-green-700"
-                          : "bg-gray-100 text-gray-500"
-                        }`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${ad.is_active ? "bg-green-500" : "bg-gray-400"
-                          }`}
-                      />
-                      {ad.is_active ? "Active" : "Inactive"}
-                    </span>
-                    <span className="text-[10px] text-gray-400">
-                      Priority {ad.priority}
-                    </span>
-                  </div>
-                  <h3 className="font-semibold text-gray-900 text-sm leading-snug truncate">
-                    {ad.name}
-                  </h3>
-                  <p className="text-xs text-gray-500 mt-0.5 truncate">
-                    {placementLabel(ad.placement)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-gray-50 text-center">
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">
-                    Impressions
-                  </p>
-                  <p className="text-sm font-semibold text-gray-700 mt-0.5">
-                    {ad.impressions.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">
-                    Clicks
-                  </p>
-                  <p className="text-sm font-semibold text-gray-700 mt-0.5">
-                    {ad.clicks.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">
-                    CTR
-                  </p>
-                  <p className="text-sm font-semibold text-gray-700 mt-0.5">
-                    {ctr(ad)}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1 border-t border-gray-50 pt-3 mt-3">
-                <div className="px-2 py-1" title={ad.is_active ? "Deactivate" : "Activate"}>
-                  <ToggleSwitch
-                    checked={ad.is_active}
-                    onChange={() => handleToggle(ad)}
-                  />
-                </div>
-                <button
-                  onClick={() => openEdit(ad)}
-                  className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                  title="Edit"
-                >
-                  <Edit3 className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleReset(ad)}
-                  className="p-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                  title="Reset stats"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </button>
-                {ad.link_url && (
-                  <a
-                    href={ad.link_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                    title="Open click-through URL"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                )}
-                <div className="flex-1" />
-                <button
-                  onClick={() => handleDelete(ad)}
-                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Delete"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
+          {/* Filter strip — search by name/placement + status toggle. */}
+          <div className="bg-white rounded-2xl border border-gray-100 p-3 flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search ads by name or placement…"
+                className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-red-400"
+              />
             </div>
-          ))}
-        </div>
+            <div className="flex items-center bg-gray-50 rounded-xl p-1 self-stretch sm:self-auto">
+              {(["all", "active", "inactive"] as const).map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => setStatusFilter(opt)}
+                  className={`flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold transition-all capitalize ${
+                    statusFilter === opt
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Grouped by placement so admins see "the slot" first, then the
+              creatives competing for it. The currently-serving creative
+              (highest priority + active) carries a Live badge. */}
+          {grouped.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-gray-100 text-center py-16 text-sm text-gray-400">
+              No ads match the current filter.
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {grouped.map(({ placement: p, ads: slotAds, liveId }) => (
+                <section key={p.value} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                  <header className="flex items-center gap-3 px-5 py-3 border-b border-gray-100 bg-gray-50/40">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="text-sm font-bold text-gray-900 truncate">{p.label}</h2>
+                        <span className="text-[10px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+                          {p.width}×{p.height}
+                        </span>
+                        <span className="text-[10px] text-gray-400">
+                          {slotAds.length} ad{slotAds.length === 1 ? "" : "s"}
+                          {liveId == null && slotAds.length > 0 && " · none live"}
+                        </span>
+                      </div>
+                      {p.note && <p className="text-[11px] text-gray-400 mt-0.5">{p.note}</p>}
+                    </div>
+                    <a
+                      href={PLACEMENT_PREVIEW_PATH[p.value] || "/"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors shrink-0"
+                      title="Open the page where this slot appears"
+                    >
+                      <Eye className="w-3.5 h-3.5" /> View on site
+                    </a>
+                  </header>
+
+                  {slotAds.length === 0 ? (
+                    <div className="px-5 py-6 text-xs text-gray-400 italic">
+                      This slot has no ads yet — readers see nothing in this position.
+                    </div>
+                  ) : (
+                    <ul className="divide-y divide-gray-50">
+                      {slotAds.map((ad) => {
+                        const isLive = ad.id === liveId;
+                        return (
+                          <li
+                            key={ad.id}
+                            className={`flex items-start gap-4 px-5 py-4 transition-colors ${
+                              isLive ? "bg-green-50/30" : "hover:bg-gray-50/40"
+                            }`}
+                          >
+                            {ad.ad_type === "image" && ad.image_url ? (
+                              <div className="w-20 h-14 shrink-0 rounded-lg overflow-hidden bg-gray-50 border border-gray-100">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={resolveImageSrc(ad.image_url)}
+                                  alt={ad.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-20 h-14 shrink-0 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center">
+                                <span className="text-[10px] font-bold uppercase tracking-wide text-blue-700">
+                                  HTML
+                                </span>
+                              </div>
+                            )}
+
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                {isLive && (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide bg-green-100 text-green-700">
+                                    <Circle className="w-1.5 h-1.5 fill-green-600 text-green-600" />
+                                    Live
+                                  </span>
+                                )}
+                                <span
+                                  className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${
+                                    ad.is_active
+                                      ? "bg-green-50 text-green-700"
+                                      : "bg-gray-100 text-gray-500"
+                                  }`}
+                                >
+                                  <span className={`w-1.5 h-1.5 rounded-full ${ad.is_active ? "bg-green-500" : "bg-gray-400"}`} />
+                                  {ad.is_active ? "Active" : "Inactive"}
+                                </span>
+                                <span className="text-[10px] text-gray-400">Priority {ad.priority}</span>
+                              </div>
+                              <h3 className="font-semibold text-gray-900 text-sm leading-snug truncate">
+                                {ad.name}
+                              </h3>
+                              <div className="flex items-center gap-4 mt-1.5 text-[11px] text-gray-500">
+                                <span><strong className="text-gray-700">{ad.impressions.toLocaleString()}</strong> impr</span>
+                                <span><strong className="text-gray-700">{ad.clicks.toLocaleString()}</strong> clicks</span>
+                                <span><strong className="text-gray-700">{ctr(ad)}</strong> CTR</span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-0.5 shrink-0">
+                              <div className="px-1.5" title={ad.is_active ? "Deactivate" : "Activate"}>
+                                <ToggleSwitch
+                                  checked={ad.is_active}
+                                  onChange={() => handleToggle(ad)}
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => openEdit(ad)}
+                                className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                title="Edit"
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleReset(ad)}
+                                className="p-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                                title="Reset stats"
+                              >
+                                <RotateCcw className="w-4 h-4" />
+                              </button>
+                              {ad.link_url && (
+                                <a
+                                  href={ad.link_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                                  title="Open click-through URL"
+                                >
+                                  <ExternalLink className="w-4 h-4" />
+                                </a>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => handleDelete(ad)}
+                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </section>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {showForm && (
@@ -793,6 +931,25 @@ function DimensionFeedback({
           <> — aspect ratio is off by {Math.round(ratioDiff * 100)}%. The slot will crop or letterbox.</>
         )}
       </span>
+    </div>
+  );
+}
+
+/** Compact KPI cell used in the page-header strip. */
+function SummaryStat({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent?: "green";
+}) {
+  const tone = accent === "green" ? "text-green-700" : "text-gray-900";
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 px-4 py-3">
+      <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">{label}</p>
+      <p className={`text-lg font-bold ${tone} mt-0.5`}>{value}</p>
     </div>
   );
 }
