@@ -190,13 +190,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         <aside className="lg:col-span-1">
           {/* Sidebar Ad */}
           <div className="mb-8 w-full">
-            {/* Sized to roughly 1.5× the "More in category" cards below so the
-                ad reads as part of the column, not a billboard. 300×150 is
-                the IAB "MPU half" — small enough to integrate, tall enough
-                to remain ad-legible. */}
+            {/* Below lg the aside stacks at full container width, so a 2:1
+                ratio reads as a billboard. Flatten to banner ratios on
+                small/medium and restore 300×150 (IAB MPU half) at lg+ where
+                the column is ~1/3 wide. */}
             <AdSlot
               placement="article_sidebar"
-              aspectClassName="aspect-[300/150]"
+              aspectClassName="aspect-[3/1] sm:aspect-[4/1] lg:aspect-[300/150]"
             />
           </div>
 
