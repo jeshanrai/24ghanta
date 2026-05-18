@@ -26,7 +26,7 @@ const PLACEMENTS: { value: string; label: string; recommended: string }[] = [
   { value: "just_in_sports_left", label: "Between Just In & Sports (Left)", recommended: "300×250 rectangle" },
   { value: "just_in_sports_right", label: "Between Just In & Sports (Right)", recommended: "300×250 rectangle" },
   { value: "article_inline", label: "Article inline (mid-body)", recommended: "336×280" },
-  { value: "article_sidebar", label: "Article sidebar", recommended: "300×200 rectangle" },
+  { value: "article_sidebar", label: "Article sidebar", recommended: "300×150 rectangle (MPU half)" },
   { value: "article_more_in_category", label: "Article — More in category (in-list)", recommended: "300×122 banner" },
   { value: "article_related_stories", label: "Article — Related stories (in-list)", recommended: "300×122 banner" },
   { value: "footer_banner", label: "Footer banner", recommended: "728×90 leaderboard" },
