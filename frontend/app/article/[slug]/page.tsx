@@ -137,11 +137,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           {/* Article Content (rich HTML from Tiptap, sanitised server-side) */}
           <ArticleContent html={article.content || ''} />
 
-          {/* Inline Ad */}
-          <AdSlot
-            placement="article_inline"
-            className="my-10 max-w-[260px] sm:max-w-[403px] mx-auto"
-          />
+          {/* Inline Ad — half-height banner; bottom-clipped so top stays upright */}
+          <div className="my-10 w-full overflow-hidden aspect-4/1 sm:aspect-4/1">
+            <AdSlot
+              placement="article_inline"
+              className="block w-full"
+            />
+          </div>
 
           {/* Photo gallery */}
           {article.gallery && article.gallery.length > 0 && (
