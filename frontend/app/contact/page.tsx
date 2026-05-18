@@ -39,21 +39,21 @@ export default function ContactPage() {
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
   return (
-    <div className="container py-10 lg:py-14 animate-fade-in-up">
+    <div className="container py-8 sm:py-10 lg:py-14 animate-fade-in-up">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center mb-6">
-          <span className="w-12 h-1 bg-[var(--color-primary)] mr-4 animate-expand-x" />
-          <h1 className="text-3xl lg:text-4xl font-bold uppercase tracking-wide">
+          <span className="w-8 sm:w-12 h-1 bg-[var(--color-primary)] mr-3 sm:mr-4 animate-expand-x shrink-0" />
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold uppercase tracking-wide">
             Contact Us
           </h1>
         </div>
 
-        <p className="text-[var(--color-text-secondary)] leading-relaxed mb-8">
+        <p className="text-sm sm:text-base text-[var(--color-text-secondary)] leading-relaxed mb-6 sm:mb-8">
           Have a story tip, feedback, or a correction to report? We&apos;d love to hear
           from you. Expect a reply within 1&ndash;2 business days.
         </p>
 
-        <div className="grid sm:grid-cols-2 gap-4 mb-8">
+        <div className="grid sm:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="p-4 border border-[var(--color-border)] rounded-sm">
             <p className="text-xs uppercase tracking-wide text-[var(--color-text-muted)] font-semibold mb-1">
               Newsroom
@@ -73,7 +73,7 @@ export default function ContactPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium mb-1">Name</label>
               <input
@@ -120,7 +120,7 @@ export default function ContactPage() {
             />
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
             <Button type="submit" variant="primary" isLoading={status === 'sending'}>
               Send Message
             </Button>

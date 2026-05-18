@@ -7,22 +7,22 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="container py-10 lg:py-14 animate-fade-in-up">
+    <div className="container py-8 sm:py-10 lg:py-14 animate-fade-in-up">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center mb-6">
-          <span className="w-12 h-1 bg-[var(--color-primary)] mr-4 animate-expand-x" />
-          <h1 className="text-3xl lg:text-4xl font-bold uppercase tracking-wide">
+          <span className="w-8 sm:w-12 h-1 bg-[var(--color-primary)] mr-3 sm:mr-4 animate-expand-x shrink-0" />
+          <h1 className="text-[22px]! sm:text-[26px]! lg:text-[32px]! font-bold uppercase tracking-wide">
             Privacy Policy
           </h1>
         </div>
 
-        <p className="text-sm text-[var(--color-text-muted)] mb-8">
+        <p className="text-xs sm:text-sm text-[var(--color-text-muted)] mb-6 sm:mb-8">
           Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
         </p>
 
-        <section className="space-y-6 text-[var(--color-text-secondary)] leading-relaxed">
+        <section className="space-y-6 text-[13px] sm:text-[14px] text-[var(--color-text-secondary)] leading-relaxed">
           <div>
-            <h2 className="text-h2 font-bold text-[var(--color-text-primary)] mb-2">1. Information We Collect</h2>
+            <h2 className="text-[16px]! sm:text-[18px]! font-bold text-[var(--color-text-primary)] mb-2">1. Information We Collect</h2>
             <p>
               We collect information you provide directly to us (for example, when you
               subscribe to our newsletter or create an account) and information gathered
@@ -32,7 +32,7 @@ export default function PrivacyPage() {
           </div>
 
           <div>
-            <h2 className="text-h2 font-bold text-[var(--color-text-primary)] mb-2">2. How We Use Information</h2>
+            <h2 className="text-[16px]! sm:text-[18px]! font-bold text-[var(--color-text-primary)] mb-2">2. How We Use Information</h2>
             <p>
               Your information helps us deliver and improve our services, personalise
               content, send newsletters you have opted in to, and comply with legal
@@ -41,7 +41,7 @@ export default function PrivacyPage() {
           </div>
 
           <div>
-            <h2 className="text-h2 font-bold text-[var(--color-text-primary)] mb-2">3. Cookies</h2>
+            <h2 className="text-[16px]! sm:text-[18px]! font-bold text-[var(--color-text-primary)] mb-2">3. Cookies</h2>
             <p>
               We use first-party and third-party cookies to remember your preferences,
               measure site performance and serve relevant advertising. You can disable
@@ -50,7 +50,7 @@ export default function PrivacyPage() {
           </div>
 
           <div>
-            <h2 className="text-h2 font-bold text-[var(--color-text-primary)] mb-2">4. Your Rights</h2>
+            <h2 className="text-[16px]! sm:text-[18px]! font-bold text-[var(--color-text-primary)] mb-2">4. Your Rights</h2>
             <p>
               You may request access to, correction of, or deletion of the personal data
               we hold about you. To exercise these rights, email us via the{' '}
@@ -59,7 +59,7 @@ export default function PrivacyPage() {
           </div>
 
           <div>
-            <h2 className="text-h2 font-bold text-[var(--color-text-primary)] mb-2">5. Contact</h2>
+            <h2 className="text-[16px]! sm:text-[18px]! font-bold text-[var(--color-text-primary)] mb-2">5. Contact</h2>
             <p>
               Questions about this policy? Reach us at{' '}
               <a href="mailto:privacy@24ghanta.com" className="text-[var(--color-primary)] link-underline">
