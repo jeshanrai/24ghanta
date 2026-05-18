@@ -24,6 +24,7 @@ export default async function HomePage() {
     entertainmentArticles,
     activePolls,
     sportsSidebarAd,
+    pollBottomAd,
   ] = await Promise.all([
     fetchHeroArticles(),
     fetchLatestArticles(14),
@@ -35,6 +36,7 @@ export default async function HomePage() {
     fetchArticlesByCategory('entertainment', 5),
     fetchActivePolls(),
     fetchAd('landing_sports_sidebar'),
+    fetchAd('landing_poll_bottom'),
   ]);
 
   // Exclude hero articles from sidebar and strip to avoid duplicates
@@ -59,6 +61,7 @@ export default async function HomePage() {
             heroArticles={heroArticles}
             sidebarArticles={sidebarArticles}
             activePolls={activePolls}
+            pollBottomAd={pollBottomAd}
           />
         ) : (
           <EmptyState

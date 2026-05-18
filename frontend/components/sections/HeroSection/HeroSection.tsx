@@ -1,8 +1,10 @@
 import type { Article } from '@/lib/types';
 import type { Poll as PollType } from '@/lib/data/polls';
+import type { Ad } from '@/lib/types/ad';
 import { HeroSlider } from './HeroSlider';
 import { HeroSidebar } from './HeroSidebar';
 import { Poll } from '@/components/ui';
+import { AdSlot } from '@/components/ads';
 
 interface HeroSectionProps {
   heroArticles: Article[];
@@ -10,13 +12,20 @@ interface HeroSectionProps {
   // Array now — Poll component handles slider behaviour for multi-poll lists.
   // Single-poll deployments still work (just an array of length 1).
   activePolls?: PollType[];
+  pollBottomAd?: Ad | null;
 }
 
 export function HeroSection({
   heroArticles,
   sidebarArticles,
   activePolls,
+  pollBottomAd,
 }: HeroSectionProps) {
+  const hasRenderablePollBottomAd =
+    !!pollBottomAd &&
+    ((pollBottomAd.adType === 'html' && !!pollBottomAd.htmlContent) ||
+      (pollBottomAd.adType !== 'html' && !!pollBottomAd.imageUrl));
+
   return (
     <section className="py-2">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -25,6 +34,16 @@ export function HeroSection({
           {activePolls && activePolls.length > 0 && (
             <div className="mt-4 pt-4 border-t border-[var(--color-border)] animate-fade-in-up stagger-3">
               <Poll polls={activePolls} compact />
+              {hasRenderablePollBottomAd && (
+                <div className="mt-6 flex justify-center">
+                  <AdSlot
+                    placement="landing_poll_bottom"
+                    ad={pollBottomAd}
+                    className="w-full shadow-sm rounded-md overflow-hidden bg-white"
+                    aspectClassName="aspect-[728/154]"
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
