@@ -131,13 +131,11 @@ export default async function HomePage() {
       </div>
 
       {/* Footer Ad */}
-      <div className="container pb-10 flex justify-center mt-auto">
-        <div className="w-full max-w-[728px]">
-          <AdSlot
-            placement="footer_banner"
-            aspectClassName="aspect-[728/90]"
-          />
-        </div>
+      <div className="w-full pb-10 mt-auto">
+        <AdSlot
+          placement="footer_banner"
+          aspectClassName="aspect-[728/73]"
+        />
       </div>
     </div>
   );
