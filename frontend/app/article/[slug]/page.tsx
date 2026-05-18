@@ -138,10 +138,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <ArticleContent html={article.content || ''} />
 
           {/* Inline Ad — half-height banner; bottom-clipped so top stays upright */}
-          <div className="my-10 w-full overflow-hidden aspect-4/1 sm:aspect-4/1">
+          <div className="my-10 w-full">
             <AdSlot
               placement="article_inline"
               className="block w-full"
+              aspectClassName="aspect-[4/1] sm:aspect-[4/1]"
             />
           </div>
 
