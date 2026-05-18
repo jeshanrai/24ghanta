@@ -9,6 +9,20 @@ import { ConfirmDialogProvider } from "@/components/ui/ConfirmDialog";
 
 type AdminRole = "admin" | "author";
 
+/**
+ * Returns up to two uppercase initials from a display name. "Bijay Sharma"
+ * → "BS"; "Bijay" → "B"; "Bijay Kumar Sharma" → "BS" (first + last). Strips
+ * stray whitespace so usernames like "  bijay " behave sensibly. Returns
+ * an empty string when the input has no alphanumeric content.
+ */
+function initialsFor(name: string | null | undefined): string {
+  if (!name) return "";
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "";
+  if (words.length === 1) return words[0].charAt(0).toUpperCase();
+  return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+}
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -229,9 +243,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </Link>
             <div className="hidden sm:block w-px h-6 bg-gray-200" />
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-red-100 to-red-200 border border-red-300 flex items-center justify-center font-bold text-red-700 shadow-sm shrink-0">
-                {(displayName || user) ? (displayName || user)!.charAt(0).toUpperCase() : "A"}
-              </div>
+              {role === "admin" ? (
+                // Admins get the brand logo — the admin role represents the
+                // publication itself, so it makes sense to wear its mark.
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border border-red-300 shadow-sm shrink-0 bg-white">
+                  <Image
+                    src="/24ghantalogo.jpg"
+                    alt="24 Ghanta"
+                    width={36}
+                    height={36}
+                    className="w-full h-full object-cover"
+                    priority
+                  />
+                </div>
+              ) : (
+                // Authors get their own initials — first + last name when both
+                // are present, single initial otherwise. Falls back to "A".
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-red-100 to-red-200 border border-red-300 flex items-center justify-center font-bold text-red-700 shadow-sm shrink-0">
+                  {initialsFor(displayName || user) || "A"}
+                </div>
+              )}
               <div className="hidden sm:block text-sm">
                 <p className="font-semibold text-gray-900 leading-none">{displayName || user}</p>
                 <p className="text-gray-500 text-xs mt-1">{role === "author" ? "Author" : "Administrator"}</p>
