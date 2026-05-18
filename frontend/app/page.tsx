@@ -82,16 +82,12 @@ export default async function HomePage() {
             variant="hero-split"
             sidebarSlot={
               sportsSidebarAdRenderable ? (
-                <div className="w-full flex justify-center">
-                  <div className="w-full max-w-[300px]">
-                    <AdSlot
-                      placement="landing_sports_sidebar"
-                      ad={sportsSidebarAd}
-                      className="shadow-sm rounded-md overflow-hidden bg-white"
-                      aspectClassName="aspect-[300/150]"
-                    />
-                  </div>
-                </div>
+                <AdSlot
+                  placement="landing_sports_sidebar"
+                  ad={sportsSidebarAd}
+                  className="shadow-sm rounded-md overflow-hidden bg-white w-full"
+                  aspectClassName="aspect-[728/180] sm:aspect-[600/180] lg:aspect-[300/150]"
+                />
               ) : null
             }
           />
