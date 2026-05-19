@@ -32,25 +32,22 @@ interface Placement {
   note?: string;
 }
 
-// Single source of truth for recommended ad sizes. The form computes the
-// target aspect ratio from width/height, then warns if the uploaded image
-// is more than ~25% off either dimension. Admin can still save — it's a
-// soft warning, not a hard reject — but the layout will look weird.
+// Single source of truth for recommended ad sizes. Dimensions are derived
+// from the actual rendered slot in the frontend (container width × the
+// `aspectClassName` height used by <AdSlot>). The form warns if the uploaded
+// image's aspect ratio is more than ~25% off; admin can still save, but the
+// slot reserves a fixed aspect-ratio box, so a wrong image will crop/letterbox.
 const PLACEMENTS: Placement[] = [
-  { value: "category_header_banner",   label: "Category header banner (above title)",            width: 1456, height: 180, note: "Displays as full-width banner above category titles." },
-  { value: "landing_poll_bottom",      label: "Landing — Below Quick Poll options",              width: 728,  height: 154, note: "Leaderboard banner shown directly under the Quick Poll options in the hero column." },
-  { value: "landing_poll_bottom_2",    label: "Landing — Below Quick Poll options (2nd)",         width: 728,  height: 154, note: "Second leaderboard banner shown directly under the first poll-bottom ad in the hero column." },
-  { value: "landing_sports_sidebar",   label: "Landing — Sports sidebar (below articles)",       width: 300,  height: 150, note: "IAB MPU half." },
+  { value: "category_header_banner",   label: "Category header banner (above title)",            width: 1456, height: 180, note: "Full-width banner above category titles. Aspect ratio 1456:180 (~8.09:1)." },
+  { value: "landing_poll_bottom",      label: "Landing — Below Quick Poll options",              width: 800,  height: 120, note: "Wide banner under the Quick Poll in the hero column (~2/3 of container). Aspect ratio ~6.4:1; renders 96–120px tall responsively." },
+  { value: "landing_poll_bottom_2",    label: "Landing — Below Quick Poll options (2nd)",         width: 800,  height: 120, note: "Second wide banner directly under the first poll-bottom ad. Same dimensions as landing_poll_bottom." },
+  { value: "landing_sports_sidebar",   label: "Landing — Sports sidebar (below articles)",       width: 400,  height: 140, note: "Sidebar banner rendered at ~400px wide × 112–140px tall (responsive). Aspect ratio ~2.86:1." },
 
-  { value: "article_inline",           label: "Article inline (mid-body)",                       width: 336,  height: 280 },
-  { value: "article_sidebar",          label: "Article sidebar",                                 width: 300,  height: 150, note: "IAB MPU half." },
-  { value: "article_more_in_category", label: "Article — More in category (in-list)",            width: 112,  height: 96 },
-  { value: "article_related_stories",  label: "Article — Related stories (in-list)",             width: 112,  height: 96 },
-  { value: "in_feed_list",             label: "In-feed list (after every 3rd article)",          width: 300,  height: 150, note: "IAB MPU half. Matches Landing Sports sidebar dimensions. Animated GIFs allowed." },
-  { value: "footer_banner",            label: "Footer banner",                                   width: 1920, height: 192, note: "Full-width banner. Aspect ratio 728:73 — image is scaled to viewport width." },
-  { value: "popup_landing",            label: "Landing popup",                                   width: 600,  height: 450 },
-  { value: "mobile_sticky",            label: "Mobile sticky bottom",                            width: 320,  height: 50  },
-  { value: "poll_sidebar",             label: "Poll sidebar (below options)",                    width: 300,  height: 150 },
+  { value: "article_inline",           label: "Article inline (mid-body)",                       width: 728,  height: 160, note: "Mid-article banner spanning the body column. Aspect ratio ~4.55:1; renders 120–160px tall responsively." },
+  { value: "article_sidebar",          label: "Article sidebar",                                 width: 300,  height: 150, note: "Sidebar MPU half. Aspect ratio collapses to 3:1 / 4:1 on small/medium screens and 300:150 (2:1) at lg+." },
+  { value: "in_feed_list",             label: "In-feed list (after every 3rd article)",          width: 400,  height: 140, note: "Used in category and article sidebars after every 3rd row. Aspect ratio ~2.86:1; renders 112–140px tall responsively. Animated GIFs allowed." },
+  { value: "popup_landing",            label: "Landing popup",                                   width: 512,  height: 320, note: "Modal overlay (max-w-lg). Image is cropped object-cover at 220/260/320px max-height. Aspect ratio 8:5." },
+  { value: "poll_sidebar",             label: "Poll sidebar (below options)",                    width: 320,  height: 160, note: "Compact 2:1 banner inside the Poll component (max 320px wide)." },
 ];
 
 function placementFor(value: string): Placement | undefined {
@@ -63,19 +60,41 @@ function placementFor(value: string): Placement | undefined {
  * representative path (e.g. any category page is fine for category_header_banner)
  * rather than enumerate every host page.
  */
+/**
+ * Per-placement base path. For article placements the slug is filled in at
+ * runtime from a live article fetched on mount — that way "View on site"
+ * actually lands on a page that *renders* the slot, not the homepage.
+ *
+ * `:slug` is the placeholder substituted with the resolved article slug.
+ */
 const PLACEMENT_PREVIEW_PATH: Record<string, string> = {
   category_header_banner: "/category/world",
-  article_inline: "/", // article slug-dependent; fall back to homepage
-  article_sidebar: "/",
-  article_more_in_category: "/",
-  article_related_stories: "/",
+  landing_poll_bottom: "/",
+  landing_poll_bottom_2: "/",
+  landing_sports_sidebar: "/",
+  article_inline: "/article/:slug",
+  article_sidebar: "/article/:slug",
   in_feed_list: "/category/world",
   poll_sidebar: "/",
-  // Surfaces with no public renderer right now — link to homepage as fallback.
-  footer_banner: "/",
   popup_landing: "/",
-  mobile_sticky: "/",
 };
+
+/**
+ * Build the deep-link URL for an "View on site" button. Appends
+ * `?adPreview=<placement>` so the public layout's <AdPreviewScroller> can
+ * scroll to the slot and highlight it briefly. Falls back to homepage if no
+ * mapping exists.
+ */
+function buildPreviewUrl(placement: string, articleSlug: string | null): string {
+  const base = PLACEMENT_PREVIEW_PATH[placement] || "/";
+  // For article-bound placements, substitute the real slug (or fall back to
+  // homepage if we couldn't fetch one — the scroller will just no-op).
+  const path = base.includes(":slug")
+    ? (articleSlug ? base.replace(":slug", articleSlug) : "/")
+    : base;
+  const sep = path.includes("?") ? "&" : "?";
+  return `${path}${sep}adPreview=${encodeURIComponent(placement)}`;
+}
 
 interface Ad {
   id: number;
@@ -125,6 +144,11 @@ export default function AdminAds() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
 
+  // A live article slug used to deep-link the article placements'
+  // "View on site" button to a page that actually renders the slot. Fetched
+  // once on mount; null until resolved (link falls back to homepage).
+  const [previewArticleSlug, setPreviewArticleSlug] = useState<string | null>(null);
+
   const token =
     typeof window !== "undefined"
       ? localStorage.getItem("24ghanta_admin_token")
@@ -160,6 +184,24 @@ export default function AdminAds() {
     }, 15_000);
     return () => clearInterval(id);
   }, [fetchAds, showForm]);
+
+  // Fetch one published article slug so the article placements' "View on
+  // site" link lands on a real article (where article_inline / article_sidebar
+  // / in_feed_list actually render). Public endpoint — no auth needed.
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API}/api/articles?limit=1`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled) return;
+        const slug = data?.data?.[0]?.slug;
+        if (typeof slug === "string" && slug) setPreviewArticleSlug(slug);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Measure the chosen image whenever the URL changes. Resolves /uploads/...
   // paths to absolute URLs so the in-browser <img> can fetch from the API
@@ -495,11 +537,11 @@ export default function AdminAds() {
                       {p.note && <p className="text-[11px] text-gray-400 mt-0.5">{p.note}</p>}
                     </div>
                     <a
-                      href={PLACEMENT_PREVIEW_PATH[p.value] || "/"}
+                      href={buildPreviewUrl(p.value, previewArticleSlug)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors shrink-0"
-                      title="Open the page where this slot appears"
+                      title="Open the page where this slot appears — scrolls to and highlights the ad"
                     >
                       <Eye className="w-3.5 h-3.5" /> View on site
                     </a>

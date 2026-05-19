@@ -29,16 +29,26 @@ export function AdPopup({ ad, delayMs = 5000 }: AdPopupProps) {
     setMounted(true);
     if (typeof window === 'undefined') return;
     if (!ad) return;
-    if (sessionStorage.getItem(STORAGE_KEY) === '1') return;
+    // Admin preview override — `?adPreview=popup_landing` bypasses the
+    // session-dismissed guard so the admin can re-open the popup on demand
+    // from the ads dashboard.
+    const isAdminPreview =
+      new URLSearchParams(window.location.search).get('adPreview') === 'popup_landing';
+    if (!isAdminPreview && sessionStorage.getItem(STORAGE_KEY) === '1') return;
 
-    const timer = setTimeout(() => {
-      setOpen(true);
-      // Track impression
-      fetch(`${API}/api/ads/${ad.id}/impression`, {
-        method: 'POST',
-        keepalive: true,
-      }).catch(() => {});
-    }, delayMs);
+    const timer = setTimeout(
+      () => {
+        setOpen(true);
+        // Track impression
+        fetch(`${API}/api/ads/${ad.id}/impression`, {
+          method: 'POST',
+          keepalive: true,
+        }).catch(() => {});
+      },
+      // Show near-immediately in preview mode — admin wants to see the
+      // popup, not wait 5s through the normal landing delay.
+      isAdminPreview ? 200 : delayMs
+    );
     return () => clearTimeout(timer);
   }, [delayMs, ad]);
 

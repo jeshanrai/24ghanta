@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist, Martian_Mono } from "next/font/google";
 import ClientLayoutWrapper from "./ClientLayoutWrapper";
+import { AdPreviewScroller } from "@/components/ads";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,6 +36,9 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${martianMono.variable} antialiased`}
       >
         <ClientLayoutWrapper popupAd={popupAd}>
+          <Suspense fallback={null}>
+            <AdPreviewScroller />
+          </Suspense>
           <div className="flex flex-col min-h-screen">
             <div className="flex-1">
               {children}

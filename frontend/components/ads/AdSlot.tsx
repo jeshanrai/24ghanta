@@ -29,10 +29,15 @@ export async function AdSlot({
     </span>
   );
 
+  // `scroll-mt-24` offsets the sticky header when the admin "View on site"
+  // button deep-links here via ?adPreview=<placement> (handled by AdPreviewScroller).
+  // We rely on the existing `data-ad-placement` attribute instead of an `id`
+  // because some placements (in_feed_list, article_sidebar) render multiple
+  // times on the same page and duplicate ids would be invalid HTML.
   if (ad.adType === 'html' && ad.htmlContent) {
     return (
       <div
-        className={`relative w-full ${className}`}
+        className={`relative w-full scroll-mt-24 ${className}`}
         data-ad-placement={placement}
       >
         {sponsoredLabel}
@@ -66,13 +71,13 @@ export async function AdSlot({
       href={clickHref}
       target="_blank"
       rel="sponsored noopener noreferrer"
-      className={`block ${className}`}
+      className={`block scroll-mt-24 ${className}`}
       data-ad-placement={placement}
     >
       {inner}
     </a>
   ) : (
-    <div className={className} data-ad-placement={placement}>
+    <div className={`scroll-mt-24 ${className}`} data-ad-placement={placement}>
       {inner}
     </div>
   );
