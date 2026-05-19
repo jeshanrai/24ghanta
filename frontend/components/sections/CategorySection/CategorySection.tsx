@@ -76,7 +76,8 @@ function HeroSplitLayout({
   sidebarSlot?: ReactNode;
 }) {
   const [main, ...rest] = articles;
-  const sidebarArticles = rest.slice(0, sidebarSlot ? 2 : 4);
+  const sidebarArticles = rest.slice(0, 4);
+  const adAfterIndex = sidebarSlot ? 1 : -1;
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 animate-fade-in-up">
@@ -90,22 +91,23 @@ function HeroSplitLayout({
       </div>
       <div className="lg:col-span-1">
         {sidebarArticles.map((article, idx) => (
-          <div
-            key={article.id}
-            className="animate-fade-in-up"
-            style={{ animationDelay: `${120 + idx * 70}ms` }}
-          >
-            <ArticleCardList article={article} titleClassName="text-sidebar-title" />
+          <div key={article.id}>
+            <div
+              className="animate-fade-in-up"
+              style={{ animationDelay: `${120 + idx * 70}ms` }}
+            >
+              <ArticleCardList article={article} titleClassName="text-sidebar-title" />
+            </div>
+            {idx === adAfterIndex && (
+              <div
+                className="mt-4 mb-4 animate-fade-in-up"
+                style={{ animationDelay: `${120 + (idx + 1) * 70}ms` }}
+              >
+                {sidebarSlot}
+              </div>
+            )}
           </div>
         ))}
-        {sidebarSlot && (
-          <div
-            className="mt-4 animate-fade-in-up"
-            style={{ animationDelay: `${120 + sidebarArticles.length * 70}ms` }}
-          >
-            {sidebarSlot}
-          </div>
-        )}
       </div>
     </div>
   );
