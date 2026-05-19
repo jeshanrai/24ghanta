@@ -45,7 +45,7 @@ export function HeroSection({
                     placement="landing_poll_bottom"
                     ad={pollBottomAd}
                     className="w-full shadow-sm rounded-md overflow-hidden bg-white"
-                    aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
+                    aspectClassName="h-[96px] sm:h-[109px] lg:h-[120px]"
                   />
                 </div>
               )}
@@ -55,7 +55,7 @@ export function HeroSection({
                     placement="landing_poll_bottom_2"
                     ad={pollBottomAd2}
                     className="w-full shadow-sm rounded-md overflow-hidden bg-white"
-                    aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
+                    aspectClassName="h-[96px] sm:h-[109px] lg:h-[120px]"
                   />
                 </div>
               )}

@@ -57,7 +57,7 @@ export default async function HomePage() {
 
   return (
     <div>
-      <div className="container pt-6 pb-2">
+      <div className="container pt-6 pb-10">
         {heroArticles.length > 0 ? (
           <HeroSection
             heroArticles={heroArticles}
