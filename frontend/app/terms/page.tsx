@@ -10,8 +10,7 @@ export default function TermsPage() {
     <div className="container py-8 sm:py-10 lg:py-14 animate-fade-in-up">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center mb-6">
-          <span className="w-8 sm:w-12 h-1 bg-[var(--color-primary)] mr-3 sm:mr-4 animate-expand-x shrink-0" />
-          <h1 className="text-[22px]! sm:text-[26px]! lg:text-[32px]! font-bold uppercase tracking-wide">
+          <h1 className="text-[22px]! sm:text-[26px]! lg:text-[30px]! font-bold uppercase tracking-wide">
             Terms of Service
           </h1>
         </div>
