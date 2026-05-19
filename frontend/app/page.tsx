@@ -1,4 +1,4 @@
-import { HeroSection, CategorySection, LatestStrip } from '@/components/sections';
+import { HeroSection, CategorySection, LatestStrip, ReelsSection } from '@/components/sections';
 import { AdPopup } from '@/components/ui';
 import { AdSlot } from '@/components/ads';
 import {
@@ -115,6 +115,8 @@ export default async function HomePage() {
           />
         )}
       </div>
+
+      <ReelsSection />
 
     </div>
   );

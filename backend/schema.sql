@@ -170,7 +170,7 @@ CREATE TABLE IF NOT EXISTS video_tags (
 CREATE TABLE IF NOT EXISTS polls (
   id SERIAL PRIMARY KEY,
   question TEXT NOT NULL,
-  image_url TEXT,
+  image_url TEXT NOT NULL DEFAULT '',
   total_votes INTEGER DEFAULT 0,
   ends_at TIMESTAMP,
   is_active BOOLEAN DEFAULT TRUE,
@@ -178,6 +178,13 @@ CREATE TABLE IF NOT EXISTS polls (
 );
 
 ALTER TABLE polls ADD COLUMN IF NOT EXISTS image_url TEXT;
+-- Image is now compulsory for new/edited polls. Back-fill existing NULL
+-- rows to empty string so the NOT NULL constraint applies cleanly; the
+-- admin form blocks empty submissions, and any pre-existing empties will
+-- need to be re-edited with a real image to be saved again.
+UPDATE polls SET image_url = '' WHERE image_url IS NULL;
+ALTER TABLE polls ALTER COLUMN image_url SET DEFAULT '';
+ALTER TABLE polls ALTER COLUMN image_url SET NOT NULL;
 -- Back-compat for DBs created before display_order existed. Used by the public
 -- slider to order multiple active polls (lower number = shown first).
 ALTER TABLE polls ADD COLUMN IF NOT EXISTS display_order INTEGER DEFAULT 0;
@@ -340,3 +347,21 @@ CREATE TABLE IF NOT EXISTS media (
 );
 
 CREATE INDEX IF NOT EXISTS idx_media_original_name ON media(original_name);
+
+-- Reels (social-platform Shorts/Reels rail on the homepage)
+-- Holds links to live posts on TikTok / Instagram / Facebook / YouTube,
+-- rendered via each platform's official embed SDK. Separate from `videos`
+-- which represents internally-hosted/curated video records.
+CREATE TABLE IF NOT EXISTS reels (
+  id SERIAL PRIMARY KEY,
+  platform TEXT NOT NULL CHECK (platform IN ('tiktok', 'instagram', 'facebook', 'youtube')),
+  url TEXT NOT NULL,
+  caption TEXT DEFAULT '',
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_reels_active_sort
+  ON reels(is_active, sort_order);

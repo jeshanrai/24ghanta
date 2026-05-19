@@ -9,12 +9,6 @@ export function Footer() {
   return (
     <footer className="bg-[#1a1a1a] text-white mt-12">
       <div className="container py-10 md:py-12">
-        {/* Mobile: logo + tagline + socials stacked at the top, centered */}
-        <div className="md:hidden flex flex-col items-center text-center pb-8 mb-8 border-b border-white/10">
-          <FooterLogo centered />
-          <SocialLinks centered />
-        </div>
-
         {/* Link columns. On mobile: 2-col grid. On md+: 6-col grid with logo block. */}
         <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:gap-x-10 md:grid-cols-6 md:gap-8">
           {/* Logo / tagline / socials — md+ only */}
@@ -26,6 +20,12 @@ export function Footer() {
           {footerColumns.map((column) => (
             <FooterColumn key={column.id} column={column} />
           ))}
+        </div>
+
+        {/* Mobile: logo + tagline + socials stacked at the bottom, centered */}
+        <div className="md:hidden flex flex-col items-center text-center pt-8 mt-8 border-t border-white/10">
+          <FooterLogo centered />
+          <SocialLinks centered />
         </div>
 
         {/* Bottom legal bar */}

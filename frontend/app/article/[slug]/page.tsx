@@ -79,7 +79,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </div>
 
           {/* Title */}
-          <h1 className="font-headline text-base leading-tight sm:text-2xl sm:leading-snug md:text-3xl lg:text-h1 text-[var(--color-text-primary)] transition-all duration-500 ease-out drop-shadow-md mb-3 sm:mb-4 break-words hyphens-auto">
+          <h1 className="font-headline text-xl leading-tight sm:text-2xl sm:leading-snug md:text-[28px] lg:text-[30px] lg:leading-[1.1] text-[var(--color-text-primary)] transition-all duration-500 ease-out drop-shadow-md mb-3 sm:mb-4 break-words hyphens-auto">
             {article.title}
           </h1>
 
@@ -137,12 +137,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           {/* Article Content (rich HTML from Tiptap, sanitised server-side) */}
           <ArticleContent html={article.content || ''} />
 
-          {/* Inline Ad — half-height banner; bottom-clipped so top stays upright */}
+          {/* Inline Ad */}
           <div className="my-10 w-full">
             <AdSlot
               placement="article_inline"
               className="block w-full"
-              aspectClassName="aspect-[4/1] sm:aspect-[4/1]"
             />
           </div>
 

@@ -80,6 +80,9 @@ router.post('/', async (req: AuthRequest, res: Response) => {
       .status(400)
       .json({ error: 'Question and at least 2 options are required' });
   }
+  if (typeof image_url !== 'string' || !image_url.trim()) {
+    return res.status(400).json({ error: 'Poll image is required' });
+  }
 
   // Multiple polls can be active at once now (homepage slider).
   // Default new polls to the end of the order so they don't shove others around.
@@ -92,7 +95,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     const { rows } = await client.query(
       `INSERT INTO polls (question, image_url, total_votes, ends_at, is_active, display_order)
        VALUES ($1, $2, 0, $3, $4, $5) RETURNING *`,
-      [question, image_url || null, ends_at || null, is_active ?? true, order]
+      [question, image_url.trim(), ends_at || null, is_active ?? true, order]
     );
     const pollId = rows[0].id;
 
@@ -132,6 +135,9 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
   if (!question) {
     return res.status(400).json({ error: 'Question is required' });
   }
+  if (typeof image_url !== 'string' || !image_url.trim()) {
+    return res.status(400).json({ error: 'Poll image is required' });
+  }
 
   const order = parseDisplayOrder(display_order);
 
@@ -151,7 +157,7 @@ router.put('/:id', async (req: AuthRequest, res: Response) => {
 
     const { rows } = await client.query(updateQuery, [
       question,
-      image_url || null,
+      image_url.trim(),
       ends_at || null,
       is_active ?? true,
       order,

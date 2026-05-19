@@ -7,7 +7,6 @@ import {
   Eye,
   ArrowUpRight,
   Plus,
-  Video,
   Folder,
   Tag,
   UserPen,
@@ -111,7 +110,6 @@ export default function AdminDashboard() {
         {[
           { href: "/admin/articles", icon: FileText, color: "blue", label: "Articles", value: s.articles.total, sub: `${s.articles.published} published` },
           { href: "/admin/articles", icon: Eye, color: "purple", label: "Total Views", value: fmt(s.articles.totalViews), sub: "All time" },
-          { href: "/admin/videos", icon: Video, color: "red", label: "Videos", value: s.videos.total, sub: "Multimedia" },
           { href: "/admin/categories", icon: Folder, color: "green", label: "Categories", value: s.categories.total, sub: "Sections" },
           { href: "/admin/tags", icon: Tag, color: "orange", label: "Tags", value: s.tags.total, sub: "SEO tags" },
           { href: "/admin/authors", icon: UserPen, color: "indigo", label: "Authors", value: s.authors.total, sub: "Writers" },

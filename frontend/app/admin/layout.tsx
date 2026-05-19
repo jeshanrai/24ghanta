@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { LogOut, LayoutDashboard, FileText, Settings, ExternalLink, Menu, BarChart3, Video, Tag, UserPen, Mail, Vote, TrendingUp, Megaphone, Images, Folder, Send } from "lucide-react";
+import { LogOut, LayoutDashboard, FileText, Settings, ExternalLink, Menu, BarChart3, Film, Tag, UserPen, Mail, Vote, TrendingUp, Megaphone, Images, Folder, Send } from "lucide-react";
 import { ConfirmDialogProvider } from "@/components/ui/ConfirmDialog";
 
 type AdminRole = "admin" | "author";
@@ -52,7 +52,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     // /admin/ads is the one exception: authors with `can_manage_ads` can use
     // it, so we resolve their perms first and only redirect if they don't
     // have the grant. All other admin-only pages stay strictly admin.
-    const strictAdminOnly = ["/admin/categories", "/admin/tags", "/admin/authors", "/admin/subscribers", "/admin/newsletter", "/admin/polls", "/admin/trending", "/admin/settings"];
+    const strictAdminOnly = ["/admin/categories", "/admin/tags", "/admin/authors", "/admin/subscribers", "/admin/newsletter", "/admin/polls", "/admin/trending", "/admin/reels", "/admin/settings"];
     const isOnAdsPage = pathname === "/admin/ads" || pathname.startsWith("/admin/ads/");
 
     if (resolvedRole === "author" && strictAdminOnly.some(p => pathname === p || pathname.startsWith(p + "/"))) {
@@ -159,7 +159,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/media", label: "Media Library", icon: Images },
     { href: "/admin/articles", label: "Articles", icon: FileText },
-    { href: "/admin/videos", label: "Videos", icon: Video },
+    { href: "/admin/reels", label: "Reels", icon: Film },
     // { href: "/admin/gallery", label: "Gallery", icon: Images },
     { href: "/admin/categories", label: "Categories", icon: Folder },
     { href: "/admin/tags", label: "Tags", icon: Tag },
@@ -175,7 +175,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/media", label: "Media Library", icon: Images },
     { href: "/admin/articles", label: "My Articles", icon: FileText },
-    { href: "/admin/videos", label: "My Videos", icon: Video },
     // Conditional: only authors with can_manage_ads see this entry. Admins
     // already have it in adminNav.
     ...(canManageAds ? [{ href: "/admin/ads", label: "Advertisements", icon: Megaphone }] : []),

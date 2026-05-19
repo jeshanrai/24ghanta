@@ -113,6 +113,10 @@ export default function AdminPolls() {
       setFormError("Question is required");
       return;
     }
+    if (!imageUrl.trim()) {
+      setFormError("Image is required");
+      return;
+    }
     if (cleanOptions.length < 2) {
       setFormError("At least 2 options are required");
       return;
@@ -124,7 +128,7 @@ export default function AdminPolls() {
     try {
       const body = {
         question: question.trim(),
-        image_url: imageUrl.trim() || null,
+        image_url: imageUrl.trim(),
         options: cleanOptions,
         is_active: isActive,
         ends_at: endsAt || null,
@@ -437,17 +441,21 @@ export default function AdminPolls() {
                 />
               </div>
 
-              {/* Image URL */}
+              {/* Image URL — required */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Image URL{" "}
-                  <span className="text-gray-400 font-normal">(optional)</span>
+                  Image URL <span className="text-red-600">*</span>
                 </label>
                 <ImageUploadField
                   value={imageUrl}
                   onChange={setImageUrl}
                   placeholder="https://example.com/poll-image.webp"
                 />
+                {!imageUrl.trim() && (
+                  <p className="text-[11px] text-gray-500 mt-1">
+                    Required — upload or paste an image URL.
+                  </p>
+                )}
               </div>
 
               {/* Options */}
