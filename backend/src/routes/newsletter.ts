@@ -86,8 +86,8 @@ router.get('/unsubscribe', async (req: Request, res: Response) => {
 <meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
 <div style="max-width:480px;margin:80px auto;padding:32px;background:#ffffff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,0.06);text-align:center;">
-  <h1 style="margin:0 0 12px;font-size:24px;color:#111;">${success ? 'Unsubscribed' : 'Unsubscribe failed'}</h1>
-  <p style="margin:0 0 24px;color:#555;font-size:15px;line-height:1.55;">${message}</p>
+  <h1 style="margin:0 0 12px;font-size:30px;color:#111;">${success ? 'Unsubscribed' : 'Unsubscribe failed'}</h1>
+  <p style="margin:0 0 24px;color:#555;font-size:16px;line-height:1.55;">${message}</p>
   <a href="${(process.env.FRONTEND_URL || 'http://localhost:3000').split(',')[0]}" style="display:inline-block;background:#dc2626;color:#fff;text-decoration:none;padding:10px 24px;border-radius:6px;font-weight:600;font-size:14px;">Back to 24 Ghanta Nepal</a>
 </div>
 </body></html>`);

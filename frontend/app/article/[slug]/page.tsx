@@ -79,13 +79,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </div>
 
           {/* Title */}
-          <h1 className="font-headline text-xl leading-tight sm:text-2xl sm:leading-snug md:text-[28px] lg:text-[30px] lg:leading-[1.1] text-[var(--color-text-primary)] transition-all duration-500 ease-out drop-shadow-md mb-3 sm:mb-4 break-words hyphens-auto">
+          <h1 className="font-headline text-h1 leading-[1.12] text-[var(--color-text-primary)] transition-all duration-300 drop-shadow-md mb-3 sm:mb-4 break-words hyphens-auto">
             {article.title}
           </h1>
 
           {/* Excerpt */}
           {article.excerpt && (
-            <p className="text-deck text-[var(--color-text-secondary)] mb-4 sm:mb-6 leading-relaxed">
+            <p className="text-deck text-[var(--color-text-secondary)] mb-4 sm:mb-6 leading-7 md:leading-8 max-w-prose">
               {article.excerpt}
             </p>
           )}
@@ -142,6 +142,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             <AdSlot
               placement="article_inline"
               className="block w-full"
+              aspectClassName="h-[120px] sm:h-[140px] lg:h-[160px]"
             />
           </div>
 

@@ -117,7 +117,7 @@ export function AdPopup({ ad, delayMs = 5000 }: AdPopupProps) {
               <img
                 src={resolveImageSrc(ad.imageUrl)}
                 alt={ad.altText || ad.name || 'Advertisement'}
-                className="w-full h-auto block"
+                className="w-full object-cover max-h-[220px] sm:max-h-[260px] md:max-h-[320px] block rounded-md"
               />
             </a>
           ) : (
@@ -125,7 +125,7 @@ export function AdPopup({ ad, delayMs = 5000 }: AdPopupProps) {
             <img
               src={ad.imageUrl}
               alt={ad.altText || ad.name || 'Advertisement'}
-              className="w-full h-auto block"
+              className="w-full object-cover max-h-[220px] sm:max-h-[260px] md:max-h-[320px] block rounded-md"
             />
           )
         ) : null}

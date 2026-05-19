@@ -215,9 +215,9 @@ export function renderDigestHtml(opts: {
           ${hero}
           ${a.category_name ? `<div style="font-size:11px;font-weight:600;color:#dc2626;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">${esc(a.category_name)}</div>` : ''}
           <a href="${link}" style="text-decoration:none;color:#111827;">
-            <div style="font-size:18px;font-weight:700;line-height:1.35;margin-bottom:8px;">${esc(a.title)}</div>
+            <div style="font-size:30px;font-weight:700;line-height:1.35;margin-bottom:8px;">${esc(a.title)}</div>
           </a>
-          ${a.excerpt ? `<p style="color:#4b5563;font-size:14px;line-height:1.6;margin:0 0 12px;">${esc(a.excerpt)}</p>` : ''}
+          ${a.excerpt ? `<p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 12px;">${esc(a.excerpt)}</p>` : ''}
           <a href="${link}" style="font-size:13px;font-weight:600;color:#dc2626;text-decoration:none;">Read article →</a>
         </td></tr>`;
     })
@@ -239,7 +239,7 @@ export function renderDigestHtml(opts: {
           ${logoBlock()}
           <div style="font-size:13px;color:#6b7280;margin-top:8px;">Weekly Digest</div>
         </div>
-        <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 8px;">Here are the top stories from 24 Ghanta Nepal this week.</p>
+        <p style="color:#374151;font-size:16px;line-height:1.6;margin:0 0 8px;">Here are the top stories from 24 Ghanta Nepal this week.</p>
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
           ${cards || `<tr><td style="padding:32px 0;text-align:center;color:#9ca3af;">No new stories this week.</td></tr>`}
         </table>
@@ -299,9 +299,9 @@ export function renderArticleAlertHtml(opts: {
       <tr><td style="padding:20px 24px 8px;">
         ${a.category_name ? `<div style="font-size:11px;font-weight:600;color:#dc2626;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">${esc(a.category_name)}</div>` : ''}
         <a href="${link}" style="text-decoration:none;color:#111827;">
-          <h1 style="margin:0 0 12px;font-size:22px;font-weight:700;line-height:1.3;">${esc(a.title)}</h1>
+          <h1 style="margin:0 0 12px;font-size:30px;font-weight:700;line-height:1.3;">${esc(a.title)}</h1>
         </a>
-        ${a.excerpt ? `<p style="color:#4b5563;font-size:15px;line-height:1.6;margin:0 0 20px;">${esc(a.excerpt)}</p>` : ''}
+        ${a.excerpt ? `<p style="color:#4b5563;font-size:16px;line-height:1.6;margin:0 0 20px;">${esc(a.excerpt)}</p>` : ''}
         <a href="${link}" style="display:inline-block;background:#dc2626;color:#ffffff;padding:11px 22px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:600;">Read full article</a>
         ${a.author_name ? `<p style="margin:18px 0 0;font-size:12px;color:#9ca3af;">By ${esc(a.author_name)}</p>` : ''}
       </td></tr>
