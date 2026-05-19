@@ -21,7 +21,7 @@ const SOCIAL_LINKS: { id: string; label: string; href: string; Icon: typeof Tikt
   { id: 'youtube',   label: 'YouTube',   href: 'https://www.youtube.com/@24GhantaNepal',         Icon: YouTubeIcon,   brand: 'hover:bg-[#FF0000] hover:text-white hover:border-[#FF0000]' },
 ];
 
-type Platform = 'tiktok' | 'instagram' | 'facebook' | 'youtube';
+type Platform = 'tiktok' | 'instagram' | 'youtube';
 
 interface ReelRow {
   id: number;
@@ -33,14 +33,12 @@ interface ReelRow {
 const PLATFORM_LABEL: Record<Platform, string> = {
   tiktok: 'TikTok',
   instagram: 'Instagram',
-  facebook: 'Facebook',
   youtube: 'YouTube',
 };
 
 const PLATFORM_ICON: Record<Platform, typeof TiktokIcon> = {
   tiktok: TiktokIcon,
   instagram: InstagramIcon,
-  facebook: FacebookIcon,
   youtube: YouTubeIcon,
 };
 
@@ -53,7 +51,6 @@ const PLATFORM_ICON: Record<Platform, typeof TiktokIcon> = {
 const FALLBACK_DURATION_MS: Record<Platform, number> = {
   tiktok: 15_000,
   instagram: 18_000,
-  facebook: 25_000,
   youtube: 0, // unused — YouTube uses the real IFrame Player API
 };
 
@@ -104,10 +101,7 @@ function isEmbeddablePermalink(platform: Platform, rawUrl: string): boolean {
       );
     case 'instagram':
       return /(^|\.)instagram\.com$/.test(host) && /^\/(p|reel|tv)\/[^/]+\/?$/.test(path);
-    case 'facebook':
-      if (/(^|\.)fb\.watch$/.test(host)) return true;
-      if (!/(^|\.)facebook\.com$/.test(host)) return false;
-      return /\/(videos|reel|posts|watch)\b/.test(path);
+
     case 'youtube':
       return extractYouTubeId(rawUrl) !== null;
   }
@@ -361,7 +355,7 @@ export function ReelsSection() {
            anything taller (IG captions, FB's plugin chrome, etc.). The
            !important is needed because the platform SDKs inject their
            own inline width/max-width styles. */
-        .reels-rail .reel-frame > * {
+        .reels-rail .reel-frame > div {
           position: absolute !important;
           inset: 0 !important;
           width: 100% !important;
@@ -371,12 +365,18 @@ export function ReelsSection() {
           min-width: 0 !important;
         }
         /* Platform iframes inside their wrapper elements also need to
-           stretch — the SDKs hardcode width/height attributes. */
+           stretch — the SDKs hardcode width attributes. */
         .reels-rail .reel-frame iframe {
           width: 100% !important;
-          height: 100% !important;
           min-width: 0 !important;
           border: 0 !important;
+        }
+        /* YouTube needs explicit height 100%. Instagram and TikTok 
+           SDKs calculate and inject their own heights which we want to preserve 
+           so the video itself isn't shrunk or clipped incorrectly. The parent 
+           frame's overflow:hidden will crop their excess caption height. */
+        .reels-rail .youtube-embed iframe {
+          height: 100% !important;
         }
         /* YouTube wrapper has no children to position absolutely — its
            single iframe is the direct child, already covered above. */
@@ -527,9 +527,7 @@ function EmbedSwitch({ reel, onEnded }: { reel: ReelRow; onEnded: () => void }) 
   if (reel.platform === 'instagram') {
     return <InstagramEmbed permalink={reel.url} onEnded={onEnded} />;
   }
-  if (reel.platform === 'facebook') {
-    return <FacebookEmbed url={reel.url} onEnded={onEnded} />;
-  }
+
   if (reel.platform === 'youtube') {
     const id = extractYouTubeId(reel.url);
     if (!id) return null;
@@ -784,41 +782,6 @@ function YouTubeEmbed({ id, onEnded }: { id: string; onEnded: () => void }) {
         src={`https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`}
         title="YouTube video player"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowFullScreen
-      />
-    </div>
-  );
-}
-
-// Facebook embeds via the direct plugin iframe URL — same one the FB SDK
-// would eventually load. We skip the SDK because it depends on a global
-// #fb-root + auto-XFBML scan that's fragile in SPA navigation. Videos FB
-// blocks for copyright will render an "Unavailable" message inside this
-// iframe; that's a content-side restriction we can't bypass.
-function FacebookEmbed({ url, onEnded }: { url: string; onEnded: () => void }) {
-  const wrapRef = useRef<HTMLDivElement | null>(null);
-  useViewportTimer(wrapRef, FALLBACK_DURATION_MS.facebook, onEnded);
-
-  const pluginUrl =
-    `https://www.facebook.com/plugins/video.php?` +
-    new URLSearchParams({
-      href: url,
-      show_text: 'false',
-      width: '340',
-      height: '600',
-      autoplay: 'true',
-      mute: '1',
-      allowfullscreen: 'true',
-    }).toString();
-
-  return (
-    <div ref={wrapRef} className="fb-video-direct">
-      <iframe
-        src={pluginUrl}
-        title="Facebook video player"
-        scrolling="no"
-        frameBorder="0"
-        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
         allowFullScreen
       />
     </div>

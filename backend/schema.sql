@@ -354,7 +354,7 @@ CREATE INDEX IF NOT EXISTS idx_media_original_name ON media(original_name);
 -- which represents internally-hosted/curated video records.
 CREATE TABLE IF NOT EXISTS reels (
   id SERIAL PRIMARY KEY,
-  platform TEXT NOT NULL CHECK (platform IN ('tiktok', 'instagram', 'facebook', 'youtube')),
+  platform TEXT NOT NULL CHECK (platform IN ('tiktok', 'instagram', 'youtube')),
   url TEXT NOT NULL,
   caption TEXT DEFAULT '',
   sort_order INTEGER NOT NULL DEFAULT 0,

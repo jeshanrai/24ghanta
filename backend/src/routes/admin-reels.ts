@@ -5,7 +5,7 @@ import { requireAdmin, AuthRequest } from '../middleware/auth';
 const router = Router();
 router.use(requireAdmin);
 
-const PLATFORMS = ['tiktok', 'instagram', 'facebook', 'youtube'] as const;
+const PLATFORMS = ['tiktok', 'instagram', 'youtube'] as const;
 type Platform = (typeof PLATFORMS)[number];
 
 function isValidPlatform(p: unknown): p is Platform {
@@ -63,20 +63,7 @@ function validatePermalink(platform: Platform, rawUrl: string): { ok: true } | {
         reason: 'Instagram URL must be a reel or post permalink (instagram.com/reel/<id>/ or instagram.com/p/<id>/). Profile pages cannot be embedded.',
       };
     }
-    case 'facebook': {
-      if (!/(^|\.)facebook\.com$/.test(host) && !/(^|\.)fb\.watch$/.test(host)) {
-        return { ok: false, reason: 'Facebook URL must be on facebook.com or fb.watch.' };
-      }
-      // Page URLs (facebook.com/<page>) without a /videos|/reel|/posts
-      // segment refuse to embed. fb.watch short links resolve server-side
-      // to a video, so accept those wholesale.
-      if (/(^|\.)fb\.watch$/.test(host)) return { ok: true };
-      if (/\/(videos|reel|posts|watch)\b/.test(path)) return { ok: true };
-      return {
-        ok: false,
-        reason: 'Facebook URL must point to a specific video, reel, or post (facebook.com/<page>/videos/<id>, /reel/<id>, or /posts/<id>). Page URLs cannot be embedded.',
-      };
-    }
+
     case 'youtube': {
       // Already extracted by extractYouTubeId on the frontend — accept any
       // youtube.com / youtu.be URL. Bad shapes fall through to the
@@ -109,7 +96,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     const { platform, url, caption, sort_order, is_active } = req.body ?? {};
 
     if (!isValidPlatform(platform)) {
-      return res.status(400).json({ error: 'platform must be tiktok, instagram, facebook, or youtube' });
+      return res.status(400).json({ error: 'platform must be tiktok, instagram, or youtube' });
     }
     if (!isValidUrl(url)) {
       return res.status(400).json({ error: 'url is required and must be a valid http(s) URL (max 2048 chars)' });

@@ -9,7 +9,7 @@ function getToken() {
   return typeof window === "undefined" ? "" : localStorage.getItem("24ghanta_admin_token") || "";
 }
 
-type Platform = "tiktok" | "instagram" | "facebook" | "youtube";
+type Platform = "tiktok" | "instagram" | "youtube";
 
 interface Reel {
   id: number;
@@ -23,14 +23,12 @@ interface Reel {
 const PLATFORM_LABEL: Record<Platform, string> = {
   tiktok: "TikTok",
   instagram: "Instagram",
-  facebook: "Facebook",
   youtube: "YouTube",
 };
 
 const PLATFORM_COLOR: Record<Platform, string> = {
   tiktok: "bg-black text-white",
   instagram: "bg-gradient-to-tr from-[#feda75] via-[#d62976] to-[#4f5bd5] text-white",
-  facebook: "bg-[#1877F2] text-white",
   youtube: "bg-[#FF0000] text-white",
 };
 
@@ -45,14 +43,12 @@ const emptyForm: Omit<Reel, "id"> = {
 const URL_PLACEHOLDER: Record<Platform, string> = {
   tiktok: "https://www.tiktok.com/@24ghanta_nepal/video/<id>",
   instagram: "https://www.instagram.com/reel/<shortcode>/",
-  facebook: "https://www.facebook.com/<page>/videos/<id>/",
   youtube: "https://www.youtube.com/watch?v=<id>  (or /shorts/<id>)",
 };
 
 const URL_HELP: Record<Platform, string> = {
   tiktok: "Post link only — tiktok.com/@user/video/<id> or a vm./vt.tiktok.com short link.",
   instagram: "Must be a reel or post permalink (instagram.com/reel/<id>/ or /p/<id>/). Profile pages can't be embedded.",
-  facebook: "Must point to a specific video, reel, or post (/videos/<id>, /reel/<id>, /posts/<id>). Page URLs can't be embedded.",
   youtube: "Any YouTube watch / shorts / youtu.be link.",
 };
 
@@ -83,13 +79,7 @@ function validatePermalink(platform: Platform, rawUrl: string): { ok: true } | {
       }
       if (/^\/(p|reel|tv)\/[^/]+\/?$/.test(path)) return { ok: true };
       return { ok: false, reason: URL_HELP.instagram };
-    case "facebook":
-      if (!/(^|\.)facebook\.com$/.test(host) && !/(^|\.)fb\.watch$/.test(host)) {
-        return { ok: false, reason: "Facebook URL must be on facebook.com or fb.watch." };
-      }
-      if (/(^|\.)fb\.watch$/.test(host)) return { ok: true };
-      if (/\/(videos|reel|posts|watch)\b/.test(path)) return { ok: true };
-      return { ok: false, reason: URL_HELP.facebook };
+
     case "youtube":
       if (/(^|\.)youtube\.com$/.test(host) || /(^|\.)youtu\.be$/.test(host) || /(^|\.)youtube-nocookie\.com$/.test(host)) {
         return { ok: true };
