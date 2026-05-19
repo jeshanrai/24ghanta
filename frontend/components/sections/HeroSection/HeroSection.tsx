@@ -13,7 +13,6 @@ interface HeroSectionProps {
   // Single-poll deployments still work (just an array of length 1).
   activePolls?: PollType[];
   pollBottomAd?: Ad | null;
-  pollBottomAd2?: Ad | null;
 }
 
 export function HeroSection({
@@ -21,7 +20,6 @@ export function HeroSection({
   sidebarArticles,
   activePolls,
   pollBottomAd,
-  pollBottomAd2,
 }: HeroSectionProps) {
   const isRenderable = (ad?: Ad | null) =>
     !!ad &&
@@ -29,7 +27,6 @@ export function HeroSection({
       (ad.adType !== 'html' && !!ad.imageUrl));
 
   const hasRenderablePollBottomAd = isRenderable(pollBottomAd);
-  const hasRenderablePollBottomAd2 = isRenderable(pollBottomAd2);
 
   return (
     <section className="py-2">
@@ -39,26 +36,16 @@ export function HeroSection({
           {activePolls && activePolls.length > 0 && (
             <div className="mt-4 pt-4 border-t border-[var(--color-border)] animate-fade-in-up stagger-3">
               <Poll polls={activePolls} compact />
-              {hasRenderablePollBottomAd && (
-                <div className="mt-6">
-                  <AdSlot
-                    placement="landing_poll_bottom"
-                    ad={pollBottomAd}
-                    className="w-full shadow-sm rounded-md overflow-hidden bg-white"
-                    aspectClassName="h-[96px] sm:h-[109px] lg:h-[120px]"
-                  />
-                </div>
-              )}
-              {hasRenderablePollBottomAd2 && (
-                <div className="mt-3">
-                  <AdSlot
-                    placement="landing_poll_bottom_2"
-                    ad={pollBottomAd2}
-                    className="w-full shadow-sm rounded-md overflow-hidden bg-white"
-                    aspectClassName="h-[96px] sm:h-[109px] lg:h-[120px]"
-                  />
-                </div>
-              )}
+            </div>
+          )}
+          {hasRenderablePollBottomAd && (
+            <div className="mt-6 animate-fade-in-up">
+              <AdSlot
+                placement="landing_poll_bottom"
+                ad={pollBottomAd}
+                className="w-full shadow-sm rounded-md overflow-hidden bg-white"
+                aspectClassName="h-[180px] sm:h-[200px] lg:h-[220px]"
+              />
             </div>
           )}
         </div>

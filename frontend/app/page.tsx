@@ -1,6 +1,7 @@
 import { HeroSection, CategorySection, LatestStrip, ReelsSection } from '@/components/sections';
 import { AdPopup } from '@/components/ui';
 import { AdSlot } from '@/components/ads';
+import { ArticleCardList } from '@/components/cards';
 import {
   fetchHeroArticles,
   fetchLatestArticles,
@@ -25,10 +26,12 @@ export default async function HomePage() {
     activePolls,
     sportsSidebarAd,
     pollBottomAd,
-    pollBottomAd2,
+    justInSportsBetweenAd,
+    justInSportsBetweenAd2,
+    sportsBottomAd,
   ] = await Promise.all([
     fetchHeroArticles(),
-    fetchLatestArticles(14),
+    fetchLatestArticles(16),
     fetchCategoryBySlug('sports'),
     fetchArticlesByCategory('sports', 5),
     fetchCategoryBySlug('business'),
@@ -38,7 +41,9 @@ export default async function HomePage() {
     fetchActivePolls(),
     fetchAd('landing_sports_sidebar'),
     fetchAd('landing_poll_bottom'),
-    fetchAd('landing_poll_bottom_2'),
+    fetchAd('landing_between_justin_sports'),
+    fetchAd('landing_between_justin_sports_2'),
+    fetchAd('landing_sports_bottom'),
   ]);
 
   // Exclude hero articles from sidebar and strip to avoid duplicates
@@ -46,6 +51,8 @@ export default async function HomePage() {
   const nonHeroLatest = latestArticles.filter((a) => !heroIds.has(a.id));
   const justInArticles = nonHeroLatest.slice(0, 4);
   const sidebarArticles = nonHeroLatest.slice(4, 9);
+  // Companion article rendered next to the ad below the Sports section.
+  const sportsBottomCompanion = nonHeroLatest[9] ?? null;
 
   // An ad is renderable only if it has displayable content for its type.
   const hasRenderableAd = (ad: any) =>
@@ -54,6 +61,9 @@ export default async function HomePage() {
       (ad.adType !== 'html' && !!ad.imageUrl));
 
   const sportsSidebarAdRenderable = hasRenderableAd(sportsSidebarAd);
+  const sportsBottomAdRenderable = hasRenderableAd(sportsBottomAd);
+  const justInSportsBetweenAdRenderable = hasRenderableAd(justInSportsBetweenAd);
+  const justInSportsBetweenAd2Renderable = hasRenderableAd(justInSportsBetweenAd2);
 
   return (
     <div>
@@ -64,7 +74,6 @@ export default async function HomePage() {
             sidebarArticles={sidebarArticles}
             activePolls={activePolls}
             pollBottomAd={pollBottomAd}
-            pollBottomAd2={pollBottomAd2}
           />
         ) : (
           <EmptyState
@@ -80,23 +89,70 @@ export default async function HomePage() {
         </div>
       )}
 
-      <div className="container py-12 space-y-14">
+      {(justInSportsBetweenAdRenderable || justInSportsBetweenAd2Renderable) && (
+        <div className="container pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 animate-fade-in-up">
+            {justInSportsBetweenAdRenderable && (
+              <AdSlot
+                placement="landing_between_justin_sports"
+                ad={justInSportsBetweenAd}
+                className="w-full shadow-sm rounded-md overflow-hidden bg-white"
+                aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
+              />
+            )}
+            {justInSportsBetweenAd2Renderable && (
+              <AdSlot
+                placement="landing_between_justin_sports_2"
+                ad={justInSportsBetweenAd2}
+                className="w-full shadow-sm rounded-md overflow-hidden bg-white"
+                aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="container pt-6 pb-12 space-y-14">
         {sportsCategory && sportsArticles.length > 0 && (
-          <CategorySection
-            category={sportsCategory}
-            articles={sportsArticles}
-            variant="hero-split"
-            sidebarSlot={
-              sportsSidebarAdRenderable ? (
-                <AdSlot
-                  placement="landing_sports_sidebar"
-                  ad={sportsSidebarAd}
-                  className="shadow-sm rounded-md overflow-hidden bg-white w-full"
-                  aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
-                />
-              ) : null
-            }
-          />
+          <>
+            <CategorySection
+              category={sportsCategory}
+              articles={sportsArticles}
+              variant="hero-split"
+              sidebarSlot={
+                sportsSidebarAdRenderable ? (
+                  <AdSlot
+                    placement="landing_sports_sidebar"
+                    ad={sportsSidebarAd}
+                    className="shadow-sm rounded-md overflow-hidden bg-white w-full"
+                    aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
+                  />
+                ) : null
+              }
+            />
+            {(sportsBottomAdRenderable || sportsBottomCompanion) && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 animate-fade-in-up mt-2!">
+                <div className="lg:col-span-2">
+                  {sportsBottomAdRenderable && (
+                    <AdSlot
+                      placement="landing_sports_bottom"
+                      ad={sportsBottomAd}
+                      className="w-full shadow-sm rounded-md overflow-hidden bg-white"
+                      aspectClassName="h-[140px] sm:h-[160px] lg:h-[180px]"
+                    />
+                  )}
+                </div>
+                <div className="lg:col-span-1">
+                  {sportsBottomCompanion && (
+                    <ArticleCardList
+                      article={sportsBottomCompanion}
+                      titleClassName="text-sidebar-title"
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {businessCategory && businessArticles.length > 0 && (

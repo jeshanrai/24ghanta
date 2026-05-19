@@ -373,13 +373,56 @@ async function seedAds(): Promise<void> {
       priority: 10,
       is_active: true
     },
+    // Landing-page banners introduced when the home page was reorganised into
+    // ad+news-card rows. These match the placements declared in
+    // frontend/app/admin/ads/page.tsx.
     {
-      name: 'Surya Nepal — poll sidebar',
-      placement: 'poll_sidebar',
+      name: 'NIC Asia Bank — landing below Quick Poll',
+      placement: 'landing_poll_bottom',
       ad_type: 'image',
-      image_url: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&h=300&fit=crop&q=80',
-      link_url: 'https://example.com/sponsor/surya-nepal',
-      alt_text: 'Surya Nepal — Crafted with care since 1986',
+      image_url: 'https://images.unsplash.com/photo-1556742031-c6961e8560b0?w=970&h=220&fit=crop&q=80',
+      link_url: 'https://example.com/sponsor/nic-asia',
+      alt_text: 'NIC Asia Bank — Open a digital savings account in 5 minutes',
+      priority: 10,
+      is_active: true
+    },
+    {
+      name: 'Daraz Nepal — landing between Just In and Sports (left)',
+      placement: 'landing_between_justin_sports',
+      ad_type: 'image',
+      image_url: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&h=160&fit=crop&q=80',
+      link_url: 'https://example.com/sponsor/daraz',
+      alt_text: 'Daraz Nepal — Big Days mega-sale, free delivery on orders above Rs 1,000',
+      priority: 10,
+      is_active: true
+    },
+    {
+      name: 'Ncell — landing between Just In and Sports (right)',
+      placement: 'landing_between_justin_sports_2',
+      ad_type: 'image',
+      image_url: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&h=160&fit=crop&q=80',
+      link_url: 'https://example.com/sponsor/ncell',
+      alt_text: 'Ncell — Unlimited 5G data, free roaming across SAARC',
+      priority: 10,
+      is_active: true
+    },
+    {
+      name: 'Buddha Air — landing sports sidebar',
+      placement: 'landing_sports_sidebar',
+      ad_type: 'image',
+      image_url: 'https://images.unsplash.com/photo-1542296332-2e4473faf563?w=400&h=140&fit=crop&q=80',
+      link_url: 'https://example.com/sponsor/buddha-air',
+      alt_text: 'Buddha Air — Daily flights to Pokhara, Bharatpur, Janakpur and more',
+      priority: 10,
+      is_active: true
+    },
+    {
+      name: 'Himalayan Java — landing below Sports section',
+      placement: 'landing_sports_bottom',
+      ad_type: 'image',
+      image_url: 'https://images.unsplash.com/photo-1511920170033-f8396924c348?w=800&h=160&fit=crop&q=80',
+      link_url: 'https://example.com/sponsor/himalayan-java',
+      alt_text: 'Himalayan Java — Premium Nepali coffee delivered nationwide',
       priority: 10,
       is_active: true
     }

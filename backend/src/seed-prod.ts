@@ -11,7 +11,7 @@
  *   • 8 videos
  *   • 3 polls
  *   • 5 trending bar items
- *   • 5 ads                    (one per common placement, all inactive by default)
+ *   • 13 ads                   (one per common placement, all inactive by default)
  *
  * IMPORTANT — credentials must be supplied via environment variables. The
  * script refuses to run without them, so no default/known passwords are ever
@@ -392,6 +392,12 @@ async function seedAds(): Promise<void> {
     { name: 'Article sidebar — placeholder',         placement: 'article_sidebar',   image_url: '/placeholder.svg', alt_text: 'Sponsored sidebar banner', priority: 10 },
     { name: 'Footer leaderboard — placeholder',      placement: 'footer_banner',     image_url: '/placeholder.svg', alt_text: 'Sponsored footer banner', priority: 10 },
     { name: 'Landing popup — placeholder',           placement: 'popup_landing',     image_url: '/placeholder.svg', alt_text: 'Sponsored landing popup', priority: 10 },
+    // Landing-page row placements paired with companion news cards on the home page.
+    { name: 'Landing — below Quick Poll — placeholder',                placement: 'landing_poll_bottom',                image_url: '/placeholder.svg', alt_text: 'Sponsored banner below Quick Poll',                  priority: 10 },
+    { name: 'Landing — between Just In and Sports (left) — placeholder',  placement: 'landing_between_justin_sports',   image_url: '/placeholder.svg', alt_text: 'Sponsored banner between Just In and Sports',       priority: 10 },
+    { name: 'Landing — between Just In and Sports (right) — placeholder', placement: 'landing_between_justin_sports_2', image_url: '/placeholder.svg', alt_text: 'Sponsored banner between Just In and Sports',       priority: 10 },
+    { name: 'Landing — Sports sidebar — placeholder',                  placement: 'landing_sports_sidebar',             image_url: '/placeholder.svg', alt_text: 'Sponsored sidebar banner in the Sports section',    priority: 10 },
+    { name: 'Landing — below Sports section — placeholder',            placement: 'landing_sports_bottom',              image_url: '/placeholder.svg', alt_text: 'Sponsored banner below the Sports section',         priority: 10 },
   ];
 
   for (const ad of ads) {

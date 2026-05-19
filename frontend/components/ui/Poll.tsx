@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Check, ChevronLeft, ChevronRight } from 'lucide-react';
-import { ClientAdSlot } from '@/components/ads';
 import { SafeImage } from '@/components/ui/Image/SafeImage';
 import type { Poll as PollType } from '@/lib/data/polls';
 
@@ -343,13 +342,6 @@ export function Poll({ polls: propPolls, poll: legacyPoll, compact = false }: Po
         </div>
       </div>
 
-      {!compact && (
-        <div className="mt-8 flex justify-center border-t border-[var(--color-border)] pt-6">
-          <div className="w-full max-w-[320px] opacity-80 hover:opacity-100 transition-opacity">
-            <ClientAdSlot placement="poll_sidebar" aspectClassName="aspect-[2/1]" />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

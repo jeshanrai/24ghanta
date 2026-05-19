@@ -39,15 +39,16 @@ interface Placement {
 // slot reserves a fixed aspect-ratio box, so a wrong image will crop/letterbox.
 const PLACEMENTS: Placement[] = [
   { value: "category_header_banner",   label: "Category header banner (above title)",            width: 1456, height: 180, note: "Full-width banner above category titles. Aspect ratio 1456:180 (~8.09:1)." },
-  { value: "landing_poll_bottom",      label: "Landing — Below Quick Poll options",              width: 800,  height: 120, note: "Wide banner under the Quick Poll in the hero column (~2/3 of container). Aspect ratio ~6.4:1; renders 96–120px tall responsively." },
-  { value: "landing_poll_bottom_2",    label: "Landing — Below Quick Poll options (2nd)",         width: 800,  height: 120, note: "Second wide banner directly under the first poll-bottom ad. Same dimensions as landing_poll_bottom." },
+  { value: "landing_poll_bottom",      label: "Landing — Below Quick Poll options",              width: 970,  height: 220, note: "Wide banner under the Quick Poll in the hero column (~2/3 of container). Aspect ratio ~4.4:1; renders 180–220px tall responsively." },
+  { value: "landing_between_justin_sports",   label: "Landing — Between Just In and Sports (left)",  width: 800,  height: 160, note: "First of a paired full-width banner row shown between the Just In strip and the Sports section. Aspect ratio ~5:1; renders 140–180px tall responsively." },
+  { value: "landing_between_justin_sports_2", label: "Landing — Between Just In and Sports (right)", width: 800,  height: 160, note: "Second of a paired full-width banner row shown between the Just In strip and the Sports section. Aspect ratio ~5:1; renders 140–180px tall responsively." },
   { value: "landing_sports_sidebar",   label: "Landing — Sports sidebar (below articles)",       width: 400,  height: 140, note: "Sidebar banner rendered at ~400px wide × 112–140px tall (responsive). Aspect ratio ~2.86:1." },
+  { value: "landing_sports_bottom",    label: "Landing — Below Sports section",                  width: 800,  height: 160, note: "Wide banner directly under the Sports category section (~2/3 of container). Paired with a news card on the right for a symmetric row. Aspect ratio ~5:1; renders 140–180px tall responsively." },
 
   { value: "article_inline",           label: "Article inline (mid-body)",                       width: 728,  height: 160, note: "Mid-article banner spanning the body column. Aspect ratio ~4.55:1; renders 120–160px tall responsively." },
   { value: "article_sidebar",          label: "Article sidebar",                                 width: 300,  height: 150, note: "Sidebar MPU half. Aspect ratio collapses to 3:1 / 4:1 on small/medium screens and 300:150 (2:1) at lg+." },
   { value: "in_feed_list",             label: "In-feed list (after every 3rd article)",          width: 400,  height: 140, note: "Used in category and article sidebars after every 3rd row. Aspect ratio ~2.86:1; renders 112–140px tall responsively. Animated GIFs allowed." },
   { value: "popup_landing",            label: "Landing popup",                                   width: 512,  height: 320, note: "Modal overlay (max-w-lg). Image is cropped object-cover at 220/260/320px max-height. Aspect ratio 8:5." },
-  { value: "poll_sidebar",             label: "Poll sidebar (below options)",                    width: 320,  height: 160, note: "Compact 2:1 banner inside the Poll component (max 320px wide)." },
 ];
 
 function placementFor(value: string): Placement | undefined {
@@ -70,12 +71,13 @@ function placementFor(value: string): Placement | undefined {
 const PLACEMENT_PREVIEW_PATH: Record<string, string> = {
   category_header_banner: "/category/world",
   landing_poll_bottom: "/",
-  landing_poll_bottom_2: "/",
+  landing_between_justin_sports: "/",
+  landing_between_justin_sports_2: "/",
   landing_sports_sidebar: "/",
+  landing_sports_bottom: "/",
   article_inline: "/article/:slug",
   article_sidebar: "/article/:slug",
   in_feed_list: "/category/world",
-  poll_sidebar: "/",
   popup_landing: "/",
 };
 
