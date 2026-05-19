@@ -52,17 +52,17 @@ export function HeroSidebar({ articles }: HeroSidebarProps) {
       )}
       {restArticles.length > 0 && (
         <div className="mt-4 animate-fade-in-up stagger-3 space-y-2">
-          {restArticles.slice(0, 2).map((article) => (
+          {restArticles.slice(0, 1).map((article) => (
             <ArticleCardList key={article.id} article={article} titleClassName="text-sidebar-title" />
           ))}
-          <div className="py-2">
+          <div className="py-4">
             <AdSlot
               placement="article_sidebar"
-              aspectClassName="aspect-[300/150]"
+              aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
               className="shadow-sm rounded-md overflow-hidden bg-white"
             />
           </div>
-          {restArticles.slice(2, 4).map((article) => (
+          {restArticles.slice(1, 4).map((article) => (
             <ArticleCardList key={article.id} article={article} titleClassName="text-sidebar-title" />
           ))}
         </div>

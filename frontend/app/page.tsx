@@ -89,7 +89,7 @@ export default async function HomePage() {
                   placement="landing_sports_sidebar"
                   ad={sportsSidebarAd}
                   className="shadow-sm rounded-md overflow-hidden bg-white w-full"
-                  aspectClassName="aspect-[728/180] sm:aspect-[600/180] lg:aspect-[300/150]"
+                  aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
                 />
               ) : null
             }
