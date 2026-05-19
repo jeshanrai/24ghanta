@@ -76,7 +76,7 @@ function HeroSplitLayout({
   sidebarSlot?: ReactNode;
 }) {
   const [main, ...rest] = articles;
-  const sidebarArticles = rest.slice(0, 4);
+  const sidebarArticles = rest.slice(0, sidebarSlot ? 3 : 4);
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 animate-fade-in-up">
