@@ -18,6 +18,11 @@ interface CategorySectionProps {
   variant?: CategorySectionVariant;
   /** Optional slot rendered below the sidebar list in the hero-split variant. */
   sidebarSlot?: ReactNode;
+  /**
+   * Optional slot rendered below the main (lead) article in the hero-split
+   * variant. Stretches vertically to bottom-align with the sidebar column.
+   */
+  mainSlot?: ReactNode;
 }
 
 export function CategorySection({
@@ -25,6 +30,7 @@ export function CategorySection({
   articles,
   variant = 'hero-split',
   sidebarSlot,
+  mainSlot,
 }: CategorySectionProps) {
   if (articles.length === 0) return null;
 
@@ -53,7 +59,7 @@ export function CategorySection({
       }
     >
       {variant === 'hero-split' && (
-        <HeroSplitLayout articles={articles} sidebarSlot={sidebarSlot} />
+        <HeroSplitLayout articles={articles} sidebarSlot={sidebarSlot} mainSlot={mainSlot} />
       )}
       {variant === 'triple-grid' && (
         <TripleGridLayout articles={articles} accent={accent} />
@@ -71,16 +77,17 @@ export function CategorySection({
 function HeroSplitLayout({
   articles,
   sidebarSlot,
+  mainSlot,
 }: {
   articles: Article[];
   sidebarSlot?: ReactNode;
+  mainSlot?: ReactNode;
 }) {
   const [main, ...rest] = articles;
-  const sidebarArticles = rest.slice(0, 3);
-  const adAfterIndex = sidebarSlot ? 1 : -1;
+  const sidebarArticles = rest;
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-2 animate-fade-in-up">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+      <div className="lg:col-span-2 animate-fade-in-up flex flex-col">
         {main && (
           <ArticleCardMedium
             article={main}
@@ -88,26 +95,30 @@ function HeroSplitLayout({
             titleClassName="text-sidebar-title"
           />
         )}
+        {mainSlot && (
+          <div className="mt-4 flex-1 min-h-45 animate-fade-in-up *:h-full">
+            {mainSlot}
+          </div>
+        )}
       </div>
       <div className="lg:col-span-1">
         {sidebarArticles.map((article, idx) => (
-          <div key={article.id}>
-            <div
-              className="animate-fade-in-up"
-              style={{ animationDelay: `${120 + idx * 70}ms` }}
-            >
-              <ArticleCardList article={article} titleClassName="text-sidebar-title" />
-            </div>
-            {idx === adAfterIndex && (
-              <div
-                className="mt-4 mb-4 animate-fade-in-up"
-                style={{ animationDelay: `${120 + (idx + 1) * 70}ms` }}
-              >
-                {sidebarSlot}
-              </div>
-            )}
+          <div
+            key={article.id}
+            className="animate-fade-in-up"
+            style={{ animationDelay: `${120 + idx * 70}ms` }}
+          >
+            <ArticleCardList article={article} titleClassName="text-sidebar-title" />
           </div>
         ))}
+        {sidebarSlot && (
+          <div
+            className="animate-fade-in-up"
+            style={{ animationDelay: `${120 + sidebarArticles.length * 70}ms` }}
+          >
+            {sidebarSlot}
+          </div>
+        )}
       </div>
     </div>
   );

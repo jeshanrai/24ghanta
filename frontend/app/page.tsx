@@ -1,7 +1,6 @@
 import { HeroSection, CategorySection, LatestStrip, ReelsSection } from '@/components/sections';
 import { AdPopup } from '@/components/ui';
 import { AdSlot } from '@/components/ads';
-import { ArticleCardList } from '@/components/cards';
 import {
   fetchHeroArticles,
   fetchLatestArticles,
@@ -33,7 +32,7 @@ export default async function HomePage() {
     fetchHeroArticles(),
     fetchLatestArticles(16),
     fetchCategoryBySlug('sports'),
-    fetchArticlesByCategory('sports', 5),
+    fetchArticlesByCategory('sports', 6),
     fetchCategoryBySlug('business'),
     fetchArticlesByCategory('business', 5),
     fetchCategoryBySlug('entertainment'),
@@ -51,8 +50,6 @@ export default async function HomePage() {
   const nonHeroLatest = latestArticles.filter((a) => !heroIds.has(a.id));
   const justInArticles = nonHeroLatest.slice(0, 4);
   const sidebarArticles = nonHeroLatest.slice(4, 9);
-  // Companion article rendered next to the ad below the Sports section.
-  const sportsBottomCompanion = nonHeroLatest[9] ?? null;
 
   // An ad is renderable only if it has displayable content for its type.
   const hasRenderableAd = (ad: any) =>
@@ -114,45 +111,31 @@ export default async function HomePage() {
 
       <div className="container pt-6 pb-12 space-y-14">
         {sportsCategory && sportsArticles.length > 0 && (
-          <>
-            <CategorySection
-              category={sportsCategory}
-              articles={sportsArticles}
-              variant="hero-split"
-              sidebarSlot={
-                sportsSidebarAdRenderable ? (
-                  <AdSlot
-                    placement="landing_sports_sidebar"
-                    ad={sportsSidebarAd}
-                    className="shadow-sm rounded-md overflow-hidden bg-white w-full"
-                    aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
-                  />
-                ) : null
-              }
-            />
-            {(sportsBottomAdRenderable || sportsBottomCompanion) && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 animate-fade-in-up mt-2!">
-                <div className="lg:col-span-2">
-                  {sportsBottomAdRenderable && (
-                    <AdSlot
-                      placement="landing_sports_bottom"
-                      ad={sportsBottomAd}
-                      className="w-full shadow-sm rounded-md overflow-hidden bg-white"
-                      aspectClassName="h-[140px] sm:h-[160px] lg:h-[180px]"
-                    />
-                  )}
-                </div>
-                <div className="lg:col-span-1">
-                  {sportsBottomCompanion && (
-                    <ArticleCardList
-                      article={sportsBottomCompanion}
-                      titleClassName="text-sidebar-title"
-                    />
-                  )}
-                </div>
-              </div>
-            )}
-          </>
+          <CategorySection
+            category={sportsCategory}
+            articles={sportsArticles}
+            variant="hero-split"
+            sidebarSlot={
+              sportsSidebarAdRenderable ? (
+                <AdSlot
+                  placement="landing_sports_sidebar"
+                  ad={sportsSidebarAd}
+                  className="shadow-sm rounded-md overflow-hidden bg-white w-full"
+                  aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
+                />
+              ) : null
+            }
+            mainSlot={
+              sportsBottomAdRenderable ? (
+                <AdSlot
+                  placement="landing_sports_bottom"
+                  ad={sportsBottomAd}
+                  className="w-full h-full shadow-sm rounded-md overflow-hidden bg-white"
+                  aspectClassName="h-full"
+                />
+              ) : null
+            }
+          />
         )}
 
         {businessCategory && businessArticles.length > 0 && (
