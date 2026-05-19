@@ -18,6 +18,8 @@ interface CategorySectionProps {
   variant?: CategorySectionVariant;
   /** Optional slot rendered below the sidebar list in the hero-split variant. */
   sidebarSlot?: ReactNode;
+  /** Optional slot rendered below the main article in the hero-split variant. */
+  mainSlot?: ReactNode;
 }
 
 export function CategorySection({
@@ -25,6 +27,7 @@ export function CategorySection({
   articles,
   variant = 'hero-split',
   sidebarSlot,
+  mainSlot,
 }: CategorySectionProps) {
   if (articles.length === 0) return null;
 
@@ -53,7 +56,7 @@ export function CategorySection({
       }
     >
       {variant === 'hero-split' && (
-        <HeroSplitLayout articles={articles} sidebarSlot={sidebarSlot} />
+        <HeroSplitLayout articles={articles} sidebarSlot={sidebarSlot} mainSlot={mainSlot} />
       )}
       {variant === 'triple-grid' && (
         <TripleGridLayout articles={articles} accent={accent} />
@@ -71,9 +74,11 @@ export function CategorySection({
 function HeroSplitLayout({
   articles,
   sidebarSlot,
+  mainSlot,
 }: {
   articles: Article[];
   sidebarSlot?: ReactNode;
+  mainSlot?: ReactNode;
 }) {
   const [main, ...rest] = articles;
   const sidebarArticles = rest.slice(0, 3);
@@ -87,6 +92,11 @@ function HeroSplitLayout({
             showCategory={false}
             titleClassName="text-sidebar-title"
           />
+        )}
+        {mainSlot && (
+          <div className="mt-6 animate-fade-in-up">
+            {mainSlot}
+          </div>
         )}
       </div>
       <div className="lg:col-span-1">

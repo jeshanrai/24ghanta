@@ -40,6 +40,7 @@ const PLACEMENTS: Placement[] = [
   { value: "category_header_banner",   label: "Category header banner (above title)",            width: 1456, height: 180, note: "Displays as full-width banner above category titles." },
   { value: "landing_poll_bottom",      label: "Landing — Below Quick Poll options",              width: 728,  height: 154, note: "Leaderboard banner shown directly under the Quick Poll options in the hero column." },
   { value: "landing_sports_sidebar",   label: "Landing — Sports sidebar (below articles)",       width: 300,  height: 150, note: "IAB MPU half." },
+  { value: "landing_between_sports_business", label: "Landing — Between Sports and Business",     width: 970,  height: 120, note: "Full-width in-content banner shown between the Sports and Business sections on the homepage." },
   { value: "article_inline",           label: "Article inline (mid-body)",                       width: 336,  height: 280 },
   { value: "article_sidebar",          label: "Article sidebar",                                 width: 300,  height: 150, note: "IAB MPU half." },
   { value: "article_more_in_category", label: "Article — More in category (in-list)",            width: 112,  height: 96 },
@@ -68,6 +69,7 @@ const PLACEMENT_PREVIEW_PATH: Record<string, string> = {
   article_more_in_category: "/",
   article_related_stories: "/",
   in_feed_list: "/category/world",
+  landing_between_sports_business: "/",
   poll_sidebar: "/",
   // Surfaces with no public renderer right now — link to homepage as fallback.
   footer_banner: "/",
