@@ -86,7 +86,7 @@ function HeroSplitLayout({
   const [main, ...rest] = articles;
   const sidebarArticles = rest.slice(0, 4);
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 animate-fade-in-up flex flex-col">
         {main && (
           <ArticleCardMedium
@@ -96,8 +96,10 @@ function HeroSplitLayout({
           />
         )}
         {mainSlot && (
-          <div className="mt-4 mb-4 flex-1 min-h-45 animate-fade-in-up *:h-full">
-            {mainSlot}
+          <div className="mt-4 animate-fade-in-up h-35 sm:h-40 lg:h-45">
+            <div className="w-full h-full *:h-full">
+              {mainSlot}
+            </div>
           </div>
         )}
       </div>
