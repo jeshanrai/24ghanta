@@ -40,22 +40,22 @@ export function HeroSection({
             <div className="mt-4 pt-4 border-t border-[var(--color-border)] animate-fade-in-up stagger-3">
               <Poll polls={activePolls} compact />
               {hasRenderablePollBottomAd && (
-                <div className="mt-6 flex justify-center">
+                <div className="mt-6">
                   <AdSlot
                     placement="landing_poll_bottom"
                     ad={pollBottomAd}
-                    className="w-full max-w-[728px] mx-auto shadow-sm rounded-md overflow-hidden bg-white"
-                    aspectClassName="aspect-[3/1] sm:aspect-[5/1] md:aspect-[728/125]"
+                    className="w-full shadow-sm rounded-md overflow-hidden bg-white"
+                    aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
                   />
                 </div>
               )}
               {hasRenderablePollBottomAd2 && (
-                <div className="mt-6 flex justify-center">
+                <div className="mt-3">
                   <AdSlot
                     placement="landing_poll_bottom_2"
                     ad={pollBottomAd2}
-                    className="w-full max-w-[728px] mx-auto shadow-sm rounded-md overflow-hidden bg-white"
-                    aspectClassName="aspect-[3/1] sm:aspect-[5/1] md:aspect-[728/125]"
+                    className="w-full shadow-sm rounded-md overflow-hidden bg-white"
+                    aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
                   />
                 </div>
               )}
