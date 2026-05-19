@@ -103,21 +103,25 @@ function HeroSplitLayout({
       </div>
       <div className="lg:col-span-1">
         {sidebarArticles.map((article, idx) => (
-          <div
-            key={article.id}
-            className="animate-fade-in-up"
-            style={{ animationDelay: `${120 + idx * 70}ms` }}
-          >
-            <ArticleCardList article={article} titleClassName="text-sidebar-title" />
+          <div key={article.id}>
+            <div
+              className="animate-fade-in-up"
+              style={{ animationDelay: `${120 + idx * 70}ms` }}
+            >
+              <ArticleCardList article={article} titleClassName="text-sidebar-title" />
+            </div>
+            {sidebarSlot && idx === 1 && (
+              <div
+                className="animate-fade-in-up"
+                style={{ animationDelay: `${120 + (idx + 1) * 70}ms` }}
+              >
+                {sidebarSlot}
+              </div>
+            )}
           </div>
         ))}
-        {sidebarSlot && (
-          <div
-            className="animate-fade-in-up"
-            style={{ animationDelay: `${120 + sidebarArticles.length * 70}ms` }}
-          >
-            {sidebarSlot}
-          </div>
+        {sidebarSlot && sidebarArticles.length < 2 && (
+          <div className="animate-fade-in-up">{sidebarSlot}</div>
         )}
       </div>
     </div>
