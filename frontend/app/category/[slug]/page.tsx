@@ -108,8 +108,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                     <div className="py-4 border-b border-[var(--color-border-light)]">
                       <AdSlot
                         placement="in_feed_list"
-                        className="w-full"
-                        aspectClassName="aspect-[7/6]"
+                        className="shadow-sm rounded-md overflow-hidden bg-white w-full"
+                        aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
                       />
                     </div>
                   )}

@@ -215,8 +215,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                     {(idx + 1) % 3 === 0 && (
                       <AdSlot
                         placement="in_feed_list"
-                        className="w-20 h-20 sm:w-28 sm:h-24"
-                        aspectClassName="aspect-square"
+                        className="shadow-sm rounded-md overflow-hidden bg-white w-full"
+                        aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
                       />
                     )}
                   </Fragment>
@@ -238,8 +238,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                     {(idx + 1) % 3 === 0 && (
                       <AdSlot
                         placement="in_feed_list"
-                        className="w-full"
-                        aspectClassName="aspect-[7/6]"
+                        className="shadow-sm rounded-md overflow-hidden bg-white w-full"
+                        aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
                       />
                     )}
                   </Fragment>

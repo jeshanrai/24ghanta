@@ -44,7 +44,7 @@ const PLACEMENTS: Placement[] = [
   { value: "article_sidebar",          label: "Article sidebar",                                 width: 300,  height: 150, note: "IAB MPU half." },
   { value: "article_more_in_category", label: "Article — More in category (in-list)",            width: 112,  height: 96 },
   { value: "article_related_stories",  label: "Article — Related stories (in-list)",             width: 112,  height: 96 },
-  { value: "in_feed_list",             label: "In-feed list (after every 3rd article)",          width: 112,  height: 96, note: "Compact square ads matching article card size. Animated GIFs allowed." },
+  { value: "in_feed_list",             label: "In-feed list (after every 3rd article)",          width: 300,  height: 150, note: "IAB MPU half. Matches Landing Sports sidebar dimensions. Animated GIFs allowed." },
   { value: "footer_banner",            label: "Footer banner",                                   width: 1920, height: 192, note: "Full-width banner. Aspect ratio 728:73 — image is scaled to viewport width." },
   { value: "popup_landing",            label: "Landing popup",                                   width: 600,  height: 450 },
   { value: "mobile_sticky",            label: "Mobile sticky bottom",                            width: 320,  height: 50  },
