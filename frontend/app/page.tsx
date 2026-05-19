@@ -25,6 +25,7 @@ export default async function HomePage() {
     activePolls,
     sportsSidebarAd,
     pollBottomAd,
+    pollBottomAd2,
     sportsBusinessBetweenAd,
   ] = await Promise.all([
     fetchHeroArticles(),
@@ -38,6 +39,7 @@ export default async function HomePage() {
     fetchActivePolls(),
     fetchAd('landing_sports_sidebar'),
     fetchAd('landing_poll_bottom'),
+    fetchAd('landing_poll_bottom_2'),
     fetchAd('landing_between_sports_business'),
   ]);
 
@@ -65,6 +67,7 @@ export default async function HomePage() {
             sidebarArticles={sidebarArticles}
             activePolls={activePolls}
             pollBottomAd={pollBottomAd}
+            pollBottomAd2={pollBottomAd2}
           />
         ) : (
           <EmptyState

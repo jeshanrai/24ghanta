@@ -39,6 +39,7 @@ interface Placement {
 const PLACEMENTS: Placement[] = [
   { value: "category_header_banner",   label: "Category header banner (above title)",            width: 1456, height: 180, note: "Displays as full-width banner above category titles." },
   { value: "landing_poll_bottom",      label: "Landing — Below Quick Poll options",              width: 728,  height: 154, note: "Leaderboard banner shown directly under the Quick Poll options in the hero column." },
+  { value: "landing_poll_bottom_2",    label: "Landing — Below Quick Poll options (2nd)",         width: 728,  height: 154, note: "Second leaderboard banner shown directly under the first poll-bottom ad in the hero column." },
   { value: "landing_sports_sidebar",   label: "Landing — Sports sidebar (below articles)",       width: 300,  height: 150, note: "IAB MPU half." },
   { value: "landing_between_sports_business", label: "Landing — Between Sports and Business",     width: 970,  height: 120, note: "Full-width in-content banner shown between the Sports and Business sections on the homepage." },
   { value: "article_inline",           label: "Article inline (mid-body)",                       width: 336,  height: 280 },

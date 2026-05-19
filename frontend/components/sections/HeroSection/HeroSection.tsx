@@ -13,6 +13,7 @@ interface HeroSectionProps {
   // Single-poll deployments still work (just an array of length 1).
   activePolls?: PollType[];
   pollBottomAd?: Ad | null;
+  pollBottomAd2?: Ad | null;
 }
 
 export function HeroSection({
@@ -20,11 +21,15 @@ export function HeroSection({
   sidebarArticles,
   activePolls,
   pollBottomAd,
+  pollBottomAd2,
 }: HeroSectionProps) {
-  const hasRenderablePollBottomAd =
-    !!pollBottomAd &&
-    ((pollBottomAd.adType === 'html' && !!pollBottomAd.htmlContent) ||
-      (pollBottomAd.adType !== 'html' && !!pollBottomAd.imageUrl));
+  const isRenderable = (ad?: Ad | null) =>
+    !!ad &&
+    ((ad.adType === 'html' && !!ad.htmlContent) ||
+      (ad.adType !== 'html' && !!ad.imageUrl));
+
+  const hasRenderablePollBottomAd = isRenderable(pollBottomAd);
+  const hasRenderablePollBottomAd2 = isRenderable(pollBottomAd2);
 
   return (
     <section className="py-2">
@@ -39,8 +44,18 @@ export function HeroSection({
                   <AdSlot
                     placement="landing_poll_bottom"
                     ad={pollBottomAd}
-                    className="w-full shadow-sm rounded-md overflow-hidden bg-white"
-                    aspectClassName="aspect-[728/154]"
+                    className="w-full max-w-[728px] mx-auto shadow-sm rounded-md overflow-hidden bg-white"
+                    aspectClassName="aspect-[3/1] sm:aspect-[5/1] md:aspect-[728/125]"
+                  />
+                </div>
+              )}
+              {hasRenderablePollBottomAd2 && (
+                <div className="mt-6 flex justify-center">
+                  <AdSlot
+                    placement="landing_poll_bottom_2"
+                    ad={pollBottomAd2}
+                    className="w-full max-w-[728px] mx-auto shadow-sm rounded-md overflow-hidden bg-white"
+                    aspectClassName="aspect-[3/1] sm:aspect-[5/1] md:aspect-[728/125]"
                   />
                 </div>
               )}
