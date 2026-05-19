@@ -26,7 +26,6 @@ export default async function HomePage() {
     sportsSidebarAd,
     pollBottomAd,
     pollBottomAd2,
-    sportsBusinessBetweenAd,
   ] = await Promise.all([
     fetchHeroArticles(),
     fetchLatestArticles(14),
@@ -40,7 +39,6 @@ export default async function HomePage() {
     fetchAd('landing_sports_sidebar'),
     fetchAd('landing_poll_bottom'),
     fetchAd('landing_poll_bottom_2'),
-    fetchAd('landing_between_sports_business'),
   ]);
 
   // Exclude hero articles from sidebar and strip to avoid duplicates
@@ -56,7 +54,6 @@ export default async function HomePage() {
       (ad.adType !== 'html' && !!ad.imageUrl));
 
   const sportsSidebarAdRenderable = hasRenderableAd(sportsSidebarAd);
-  const sportsBusinessBetweenAdRenderable = hasRenderableAd(sportsBusinessBetweenAd);
 
   return (
     <div>
@@ -96,16 +93,6 @@ export default async function HomePage() {
                   ad={sportsSidebarAd}
                   className="shadow-sm rounded-md overflow-hidden bg-white w-full"
                   aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
-                />
-              ) : null
-            }
-            mainSlot={
-              sportsBusinessBetweenAdRenderable ? (
-                <AdSlot
-                  placement="landing_between_sports_business"
-                  ad={sportsBusinessBetweenAd}
-                  className="block w-full rounded-md overflow-hidden bg-white shadow-sm"
-                  aspectClassName="aspect-[970/120]"
                 />
               ) : null
             }
