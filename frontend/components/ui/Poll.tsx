@@ -180,9 +180,9 @@ export function Poll({ polls: propPolls, poll: legacyPoll, compact = false }: Po
   return (
     <div className="relative overflow-hidden group">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 gap-3">
+      <div className="flex items-center justify-between mb-3 gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <span className="text-xl md:text-2xl font-headline font-extrabold uppercase tracking-tight text-[var(--color-text-primary)]">
+          <span className="text-base md:text-lg font-headline font-extrabold uppercase tracking-tight text-[var(--color-text-primary)]">
             Quick Poll
           </span>
           {hasMultiple && (
@@ -247,7 +247,7 @@ export function Poll({ polls: propPolls, poll: legacyPoll, compact = false }: Po
         <div className={`flex flex-col justify-start ${poll.imageUrl ? 'max-h-[500px]' : ''}`}>
           <h3
             className={`font-headline text-[var(--color-text-primary)] tracking-tight ${
-              compact ? 'text-base md:text-lg mb-4 leading-snug' : 'text-lg md:text-2xl mb-5'
+              compact ? 'text-sm md:text-base mb-3 leading-snug' : 'text-lg md:text-2xl mb-5'
             }`}
           >
             {poll.question}
@@ -305,7 +305,7 @@ export function Poll({ polls: propPolls, poll: legacyPoll, compact = false }: Po
                         {isSelected && showResults && <Check className="w-2.5 h-2.5 text-white" />}
                       </div>
                       <span
-                        className={`text-sm md:text-base font-normal transition-colors flex-grow ${
+                        className={`text-xs md:text-[13px] font-normal transition-colors flex-grow ${
                           isSelected && showResults
                             ? 'text-[#c41d2f]'
                             : 'text-[var(--color-text-primary)]'
@@ -315,7 +315,7 @@ export function Poll({ polls: propPolls, poll: legacyPoll, compact = false }: Po
                       </span>
                       {showResults && (
                         <span
-                          className={`text-sm font-bold tabular-nums animate-fade-in ${
+                          className={`text-xs font-bold tabular-nums animate-fade-in ${
                             isSelected ? 'text-[#c41d2f]' : 'text-[var(--color-text-muted)]'
                           }`}
                         >
@@ -329,12 +329,12 @@ export function Poll({ polls: propPolls, poll: legacyPoll, compact = false }: Po
             })}
           </div>
 
-          <div className="mt-6 flex items-center justify-between border-t border-[var(--color-border)] pt-4">
-            <p className="text-[10px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+          <div className="mt-4 flex items-center justify-between border-t border-[var(--color-border)] pt-3">
+            <p className="text-[9px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
               {formatVotes(totalVotes)} votes
             </p>
             {hasVoted && (
-              <p className="text-[10px] font-bold text-[#c41d2f] uppercase tracking-wider animate-fade-in-up">
+              <p className="text-[9px] font-bold text-[#c41d2f] uppercase tracking-wider animate-fade-in-up">
                 Thanks for your opinion!
               </p>
             )}
