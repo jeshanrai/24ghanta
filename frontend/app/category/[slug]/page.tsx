@@ -34,11 +34,6 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   if (articles.length === 0) {
     return (
       <div className="container py-8 animate-fade-in-up">
-        <AdSlot
-          placement="category_header_banner"
-          className="my-2 w-full"
-          aspectClassName="aspect-[1456/180]"
-        />
         <div className="flex items-center mb-6">
           <div
             className="w-12 h-1 mr-4 animate-expand-x"
@@ -58,11 +53,6 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   return (
     <div className="container py-8 animate-fade-in-up">
-      <AdSlot
-        placement="category_header_banner"
-        className="my-2 w-full"
-        aspectClassName="aspect-[1456/180]"
-      />
       <div className="flex items-center mb-8 animate-fade-in-left">
         <span
           className="w-12 h-1 mr-4 animate-expand-x"
