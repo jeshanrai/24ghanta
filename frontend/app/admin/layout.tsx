@@ -30,6 +30,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [role, setRole] = useState<AdminRole>("admin");
   const [canManageAds, setCanManageAds] = useState(false);
+  const [canManagePolls, setCanManagePolls] = useState(false);
+  const [canManageReels, setCanManageReels] = useState(false);
   const [checking, setChecking] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -49,11 +51,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setRole(resolvedRole);
 
     // Authors don't get access to admin-only sections — redirect them home.
-    // /admin/ads is the one exception: authors with `can_manage_ads` can use
-    // it, so we resolve their perms first and only redirect if they don't
-    // have the grant. All other admin-only pages stay strictly admin.
-    const strictAdminOnly = ["/admin/categories", "/admin/tags", "/admin/authors", "/admin/subscribers", "/admin/newsletter", "/admin/polls", "/admin/trending", "/admin/reels", "/admin/settings"];
+    // /admin/ads, /admin/polls, /admin/reels are the exceptions: authors with
+    // the matching can_manage_* flag can use them, so we resolve their perms
+    // first and only redirect if they don't have the grant. All other
+    // admin-only pages stay strictly admin.
+    const strictAdminOnly = ["/admin/categories", "/admin/tags", "/admin/authors", "/admin/subscribers", "/admin/newsletter", "/admin/trending", "/admin/settings"];
     const isOnAdsPage = pathname === "/admin/ads" || pathname.startsWith("/admin/ads/");
+    const isOnPollsPage = pathname === "/admin/polls" || pathname.startsWith("/admin/polls/");
+    const isOnReelsPage = pathname === "/admin/reels" || pathname.startsWith("/admin/reels/");
 
     if (resolvedRole === "author" && strictAdminOnly.some(p => pathname === p || pathname.startsWith(p + "/"))) {
       router.replace("/admin");
@@ -62,25 +67,32 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     if (resolvedRole === "admin") {
       setCanManageAds(true);
+      setCanManagePolls(true);
+      setCanManageReels(true);
       setChecking(false);
       return;
     }
 
-    // Author: fetch perms so we can both render the right nav AND gate /admin/ads.
+    // Author: fetch perms so we can render the right nav AND gate the
+    // permission-protected pages (ads / polls / reels).
     const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
     fetch(`${API}/api/admin/me`, { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => (r.ok ? r.json() : null))
       .then((me) => {
-        const allowed = !!me?.can_manage_ads;
-        setCanManageAds(allowed);
-        if (isOnAdsPage && !allowed) {
+        const adsAllowed = !!me?.can_manage_ads;
+        const pollsAllowed = !!me?.can_manage_polls;
+        const reelsAllowed = !!me?.can_manage_reels;
+        setCanManageAds(adsAllowed);
+        setCanManagePolls(pollsAllowed);
+        setCanManageReels(reelsAllowed);
+        if ((isOnAdsPage && !adsAllowed) || (isOnPollsPage && !pollsAllowed) || (isOnReelsPage && !reelsAllowed)) {
           router.replace("/admin");
           return;
         }
         setChecking(false);
       })
       .catch(() => {
-        if (isOnAdsPage) router.replace("/admin");
+        if (isOnAdsPage || isOnPollsPage || isOnReelsPage) router.replace("/admin");
         else setChecking(false);
       });
   }, [router, isLoginRoute, pathname]);
@@ -175,8 +187,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/media", label: "Media Library", icon: Images },
     { href: "/admin/articles", label: "My Articles", icon: FileText },
-    // Conditional: only authors with can_manage_ads see this entry. Admins
-    // already have it in adminNav.
+    // Conditional entries: only authors with the matching can_manage_* flag
+    // see these. Admins already have them in adminNav.
+    ...(canManageReels ? [{ href: "/admin/reels", label: "Reels", icon: Film }] : []),
+    ...(canManagePolls ? [{ href: "/admin/polls", label: "Polls", icon: Vote }] : []),
     ...(canManageAds ? [{ href: "/admin/ads", label: "Advertisements", icon: Megaphone }] : []),
     { href: "/admin/profile", label: "My Profile", icon: UserPen },
   ];

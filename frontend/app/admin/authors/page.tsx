@@ -24,6 +24,8 @@ type Author = {
   can_create_tags: boolean;
   can_send_newsletter: boolean;
   can_manage_ads: boolean;
+  can_manage_polls: boolean;
+  can_manage_reels: boolean;
   article_count?: number;
 };
 
@@ -43,6 +45,8 @@ type FormState = {
   can_create_tags: boolean;
   can_send_newsletter: boolean;
   can_manage_ads: boolean;
+  can_manage_polls: boolean;
+  can_manage_reels: boolean;
 };
 
 const emptyForm: FormState = {
@@ -61,6 +65,8 @@ const emptyForm: FormState = {
   can_create_tags: true,
   can_send_newsletter: false,
   can_manage_ads: false,
+  can_manage_polls: false,
+  can_manage_reels: false,
 };
 
 type PermKey =
@@ -73,7 +79,9 @@ type PermKey =
   | "can_mark_breaking"
   | "can_create_tags"
   | "can_send_newsletter"
-  | "can_manage_ads";
+  | "can_manage_ads"
+  | "can_manage_polls"
+  | "can_manage_reels";
 
 const PERMISSIONS: { key: PermKey; title: string; description: string }[] = [
   { key: "is_active",            title: "Can sign in",          description: "Allow this author to log into the CMS." },
@@ -86,6 +94,8 @@ const PERMISSIONS: { key: PermKey; title: string; description: string }[] = [
   { key: "can_create_tags",      title: "Create tags",          description: "Author can add new tags from the article editor." },
   { key: "can_send_newsletter",  title: "Send newsletter alerts", description: "Author can email subscribers when publishing an article." },
   { key: "can_manage_ads",       title: "Manage advertisements", description: "Author can create, edit, and delete ads alongside admins." },
+  { key: "can_manage_polls",     title: "Manage polls",          description: "Author can create, edit, and delete homepage polls." },
+  { key: "can_manage_reels",     title: "Manage reels",          description: "Author can add, edit, and remove social reels from the homepage rail." },
 ];
 
 export default function AuthorsPage() {
@@ -124,6 +134,8 @@ export default function AuthorsPage() {
       can_create_tags: item.can_create_tags !== false,
       can_send_newsletter: item.can_send_newsletter === true,
       can_manage_ads: item.can_manage_ads === true,
+      can_manage_polls: item.can_manage_polls === true,
+      can_manage_reels: item.can_manage_reels === true,
     });
   }
   function startNew() { setShowNew(true); setEditing(null); setForm(emptyForm); setError(""); }

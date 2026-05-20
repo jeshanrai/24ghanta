@@ -27,6 +27,8 @@ export default function EditArticlePage() {
   const [role, setRole] = useState<"admin" | "author">("admin");
   const [currentAuthorId, setCurrentAuthorId] = useState<string>("");
   const [canSendNewsletter, setCanSendNewsletter] = useState(false);
+  const [canFeature, setCanFeature] = useState(false);
+  const [canBreaking, setCanBreaking] = useState(false);
   const [form, setForm] = useState({
     title: "", slug: "", excerpt: "", content: "", category_id: "", author_id: "",
     image_url: "", image_alt: "", is_featured: false, is_breaking: false, is_published: false,
@@ -67,14 +69,24 @@ export default function EditArticlePage() {
       }
       setLoading(false);
     });
-    // Permissions for the "Send to subscribers" toggle.
+    // Permissions for the Featured / Breaking / newsletter toggles.
     if (storedRole === "admin") {
       setCanSendNewsletter(true);
+      setCanFeature(true);
+      setCanBreaking(true);
     } else {
       fetch(`${API}/api/admin/me`, { headers: h })
         .then(r => r.ok ? r.json() : null)
-        .then(me => setCanSendNewsletter(!!me?.can_send_newsletter))
-        .catch(() => setCanSendNewsletter(false));
+        .then(me => {
+          setCanSendNewsletter(!!me?.can_send_newsletter);
+          setCanFeature(!!me?.can_feature_articles);
+          setCanBreaking(!!me?.can_mark_breaking);
+        })
+        .catch(() => {
+          setCanSendNewsletter(false);
+          setCanFeature(false);
+          setCanBreaking(false);
+        });
     }
   }, [id]);
 
@@ -261,22 +273,28 @@ export default function EditArticlePage() {
                 </button>
               </form>
           </div>
-          {role !== "author" && (
+          {(canFeature || canBreaking || role !== "author") && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
-              <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={form.is_featured} onChange={e => update("is_featured", e.target.checked)} className="w-4 h-4 text-red-600 rounded" /><span className="text-sm text-gray-700">Featured Article</span></label>
-              <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={form.is_breaking} onChange={e => update("is_breaking", e.target.checked)} className="w-4 h-4 text-red-600 rounded" /><span className="text-sm text-gray-700">Breaking News</span></label>
-              <div className="pt-2 border-t border-gray-100">
-                <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Display Order</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={form.display_order}
-                  onChange={e => update("display_order", e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"
-                  placeholder="e.g., 1"
-                />
-                <p className="text-xs text-gray-400 mt-1.5">Lower number = higher on the page. Leave blank to sort by published date.</p>
-              </div>
+              {canFeature && (
+                <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={form.is_featured} onChange={e => update("is_featured", e.target.checked)} className="w-4 h-4 text-red-600 rounded" /><span className="text-sm text-gray-700">Featured Article</span></label>
+              )}
+              {canBreaking && (
+                <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" checked={form.is_breaking} onChange={e => update("is_breaking", e.target.checked)} className="w-4 h-4 text-red-600 rounded" /><span className="text-sm text-gray-700">Breaking News</span></label>
+              )}
+              {role !== "author" && (
+                <div className="pt-2 border-t border-gray-100">
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Display Order</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.display_order}
+                    onChange={e => update("display_order", e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                    placeholder="e.g., 1"
+                  />
+                  <p className="text-xs text-gray-400 mt-1.5">Lower number = higher on the page. Leave blank to sort by published date.</p>
+                </div>
+              )}
             </div>
           )}
 

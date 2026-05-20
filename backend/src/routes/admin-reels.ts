@@ -1,9 +1,25 @@
-import { Router, Response } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import pool from '../db';
-import { requireAdmin, AuthRequest } from '../middleware/auth';
+import { requireAuth, AuthRequest } from '../middleware/auth';
+import { loadAuthorPerms } from '../utils/authorPerms';
 
 const router = Router();
-router.use(requireAdmin);
+router.use(requireAuth);
+
+/**
+ * Reels mutations are admin-by-default. Authors need an explicit per-account
+ * `can_manage_reels` flag — granted in /admin/authors — to create, edit, or
+ * delete reels. Mirrors the can_manage_ads pattern.
+ */
+async function requireReelRights(req: AuthRequest, res: Response, next: NextFunction) {
+  if (req.role === 'admin') return next();
+  if (req.role === 'author') {
+    const perms = await loadAuthorPerms(req.authorId!);
+    if (perms?.can_manage_reels) return next();
+  }
+  return res.status(403).json({ error: 'You do not have permission to manage reels' });
+}
+router.use(requireReelRights);
 
 const PLATFORMS = ['tiktok', 'instagram', 'youtube'] as const;
 type Platform = (typeof PLATFORMS)[number];
