@@ -31,6 +31,8 @@ interface Category {
   color?: string | null;
   parent_id: number | null;
   article_count?: number;
+  show_in_nav?: boolean;
+  nav_order?: number;
 }
 
 interface PanelArticle {
@@ -54,7 +56,14 @@ export default function CategoriesPage() {
   const [editing, setEditing] = useState<Category | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState("");
-  const [form, setForm] = useState({ name: "", slug: "", color: "#ef4444", parent_id: "" as string });
+  const [form, setForm] = useState({
+    name: "",
+    slug: "",
+    color: "#ef4444",
+    parent_id: "" as string,
+    show_in_nav: true,
+    nav_order: 0,
+  });
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   // Roots expanded by default; user can collapse. Persists in-session only.
@@ -172,6 +181,8 @@ export default function CategoriesPage() {
       slug: item.slug,
       color: item.color || "#ef4444",
       parent_id: item.parent_id ? String(item.parent_id) : "",
+      show_in_nav: item.show_in_nav ?? true,
+      nav_order: item.nav_order ?? 0,
     });
     setError("");
     setShowModal(true);
@@ -184,6 +195,8 @@ export default function CategoriesPage() {
       slug: "",
       color: "#ef4444",
       parent_id: parentId ? String(parentId) : "",
+      show_in_nav: true,
+      nav_order: 0,
     });
     setError("");
     setShowModal(true);
@@ -198,6 +211,8 @@ export default function CategoriesPage() {
       slug: form.slug || slugify(form.name),
       color: form.color || null,
       parent_id: form.parent_id ? Number(form.parent_id) : null,
+      show_in_nav: form.show_in_nav,
+      nav_order: form.nav_order,
     };
     if (!body.name) { setError("Name is required"); return; }
 
@@ -437,6 +452,14 @@ function TreeNode({
             <code className="text-[11px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
               /{node.slug}
             </code>
+            {node.show_in_nav === false && (
+              <span
+                className="text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded"
+                title="Hidden from main navigation"
+              >
+                Hidden
+              </span>
+            )}
           </div>
         </div>
 
@@ -581,8 +604,8 @@ function Modal({
   onSave,
 }: {
   editing: Category | null;
-  form: { name: string; slug: string; color: string; parent_id: string };
-  setForm: React.Dispatch<React.SetStateAction<{ name: string; slug: string; color: string; parent_id: string }>>;
+  form: { name: string; slug: string; color: string; parent_id: string; show_in_nav: boolean; nav_order: number };
+  setForm: React.Dispatch<React.SetStateAction<{ name: string; slug: string; color: string; parent_id: string; show_in_nav: boolean; nav_order: number }>>;
   saving: boolean;
   error: string;
   items: Category[];
@@ -703,6 +726,41 @@ function Modal({
                   className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 transition-all uppercase"
                 />
               </div>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-gray-100" />
+
+          <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest">
+            <Info className="w-3 h-3" />
+            Header Navigation
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+            <label className="md:col-span-2 flex items-start gap-3 p-3 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-100/70 transition-colors">
+              <input
+                type="checkbox"
+                checked={form.show_in_nav}
+                onChange={(e) => setForm((f) => ({ ...f, show_in_nav: e.target.checked }))}
+                className="mt-0.5 w-4 h-4 accent-red-600"
+              />
+              <div>
+                <div className="text-sm font-semibold text-gray-900">Show in main navigation</div>
+                <p className="text-[11px] text-gray-500 mt-0.5">
+                  Categories with no published articles are hidden automatically regardless of this setting.
+                </p>
+              </div>
+            </label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-gray-700">Nav order</label>
+              <input
+                type="number"
+                value={form.nav_order}
+                onChange={(e) => setForm((f) => ({ ...f, nav_order: parseInt(e.target.value, 10) || 0 }))}
+                placeholder="0"
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 transition-all"
+              />
+              <p className="text-[11px] text-gray-400">Lower numbers appear first.</p>
             </div>
           </div>
         </div>

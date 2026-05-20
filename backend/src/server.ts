@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -47,7 +48,24 @@ function isAllowedOrigin(origin: string): boolean {
 }
 
 // ── Middleware ──
+// Trust the first proxy hop so req.ip reflects the real client IP behind
+// Render/Vercel's load balancer. Required for accurate per-IP rate limiting.
 app.set('trust proxy', 1);
+
+// Security headers — sane defaults from helmet. CSP is intentionally
+// disabled here: the API serves JSON and a single self-contained
+// unsubscribe page (HTML strings built server-side, no external scripts),
+// so a strict CSP would either be inert or break the unsubscribe HTML.
+// Cross-Origin-Resource-Policy set to cross-origin so the frontend
+// (different origin) can load /uploads images.
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    crossOriginOpenerPolicy: { policy: 'same-origin' },
+  })
+);
+
 app.use(cors({
   origin: (origin, callback) => {
     // Allow non-browser requests (curl, server-to-server, health checks)
@@ -57,8 +75,13 @@ app.use(cors({
   },
   credentials: true,
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// Body size caps. JSON payloads in this app are tiny (form fields, small
+// arrays of IDs) — 100kb is already 100× what we need; multer handles
+// file uploads on its own route with its own 5 MB cap. urlencoded is
+// kept small because we don't accept large form-encoded payloads.
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 app.use(morgan('dev'));
 
 // ── Rate Limiting ──

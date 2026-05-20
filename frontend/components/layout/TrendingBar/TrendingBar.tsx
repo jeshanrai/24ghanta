@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { trendingTopics } from '@/lib/constants';
 import { TrendingLink } from './TrendingLink';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -13,15 +12,13 @@ interface Topic {
   badge: string | null;
 }
 
-const fallbackTopics: Topic[] = trendingTopics.map(t => ({ 
-  id: t.id, 
-  label: t.label, 
-  href: t.href, 
-  badge: t.badge ?? null 
-}));
-
 export function TrendingBar() {
-  const [topics, setTopics] = useState<Topic[]>(fallbackTopics);
+  // Start empty so the bar stays hidden until the server confirms there are
+  // items to show. Previously this fell back to a hardcoded constants list,
+  // which made the deployed bar look stale when the admin hadn't populated
+  // trending_items yet — empty is more honest than wrong.
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -30,27 +27,28 @@ export function TrendingBar() {
       .then(payload => {
         if (cancelled) return;
         const items = payload?.data ?? [];
-        if (items.length > 0) {
-          const uniqueItems = items.filter((item: any, index: number, self: any[]) =>
-            index === self.findIndex((t) => t.label === item.label)
-          );
-          setTopics(
-            uniqueItems.map((i: { id: number; label: string; href: string; badge: string | null }) => ({
-              id: String(i.id),
-              label: i.label,
-              href: i.href,
-              badge: i.badge,
-            }))
-          );
-        }
+        const uniqueItems = items.filter((item: any, index: number, self: any[]) =>
+          index === self.findIndex((t) => t.label === item.label)
+        );
+        setTopics(
+          uniqueItems.map((i: { id: number; label: string; href: string; badge: string | null }) => ({
+            id: String(i.id),
+            label: i.label,
+            href: i.href,
+            badge: i.badge,
+          }))
+        );
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoaded(true);
+      });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  if (topics.length === 0) return null;
+  if (!loaded || topics.length === 0) return null;
 
   return (
     <div className="bg-[var(--color-surface)] border-b border-[var(--color-border)] animate-fade-in-down">

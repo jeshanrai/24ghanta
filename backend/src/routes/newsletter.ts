@@ -1,15 +1,21 @@
 import { Router, Request, Response } from 'express';
 import pool from '../db';
 import { newUnsubscribeToken } from '../services/newsletter';
+import { newsletterLimiter } from '../middleware/rateLimiters';
 
 const router = Router();
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// RFC 5321 caps the local-part at 64 and domain at 255; 254 is the
+// practical max for the full address. Reject anything longer up-front
+// instead of carrying it into the regex/DB.
+const EMAIL_MAX = 254;
 
 // POST /api/newsletter — subscribe an email (idempotent; reactivates if previously inactive)
-router.post('/', async (req: Request, res: Response) => {
-  const email =
+router.post('/', newsletterLimiter, async (req: Request, res: Response) => {
+  const raw =
     typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+  const email = raw.slice(0, EMAIL_MAX);
 
   if (!email || !EMAIL_RE.test(email)) {
     return res.status(400).json({ error: 'A valid email address is required' });
@@ -34,9 +40,10 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // POST /api/newsletter/unsubscribe — explicit email-based unsubscribe (legacy / form-based)
-router.post('/unsubscribe', async (req: Request, res: Response) => {
-  const email =
+router.post('/unsubscribe', newsletterLimiter, async (req: Request, res: Response) => {
+  const raw =
     typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+  const email = raw.slice(0, EMAIL_MAX);
   if (!email || !EMAIL_RE.test(email)) {
     return res.status(400).json({ error: 'A valid email address is required' });
   }

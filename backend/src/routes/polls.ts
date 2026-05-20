@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
 import pool from '../db';
+import { pollVoteLimiter } from '../middleware/rateLimiters';
 
 const router = Router();
 
@@ -164,7 +165,7 @@ router.get('/:id', async (req: Request, res: Response) => {
  * check is enforced atomically by the PRIMARY KEY on poll_votes — no
  * application-level race window between "check" and "insert".
  */
-router.post('/:id/vote', async (req: Request, res: Response) => {
+router.post('/:id/vote', pollVoteLimiter, async (req: Request, res: Response) => {
   const id = parseInt(req.params.id, 10);
   const optionId = parseInt(req.body?.optionId, 10);
   if (isNaN(id) || isNaN(optionId)) {

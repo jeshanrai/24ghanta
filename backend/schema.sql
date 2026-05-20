@@ -75,6 +75,15 @@ CREATE TABLE IF NOT EXISTS categories (
 ALTER TABLE categories ADD COLUMN IF NOT EXISTS parent_id INTEGER REFERENCES categories(id) ON DELETE RESTRICT;
 CREATE INDEX IF NOT EXISTS idx_categories_parent ON categories(parent_id);
 
+-- Nav visibility + ordering. Drives the header's category strip:
+-- show_in_nav lets admins hide niche categories from the bar; nav_order
+-- gives them deliberate placement (lower = earlier; ties broken by name).
+-- Empty categories (no published articles) are filtered out server-side
+-- regardless, so admins don't need to babysit this flag every time.
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS show_in_nav BOOLEAN DEFAULT TRUE;
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS nav_order INTEGER DEFAULT 0;
+CREATE INDEX IF NOT EXISTS idx_categories_nav ON categories(show_in_nav, nav_order, name) WHERE show_in_nav = TRUE;
+
 CREATE TABLE IF NOT EXISTS tags (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,

@@ -79,6 +79,23 @@ router.get('/', requireAuth, async (_req: AuthRequest, res: Response) => {
   }
 });
 
+// Coerce nav inputs from form data — checkboxes can arrive as boolean,
+// strings, or undefined depending on the client. Default visible=true so
+// new categories show up in the nav by default (admin opts out, not in).
+function normaliseNavInputs(body: any): { showInNav: boolean; navOrder: number } {
+  const raw = body.show_in_nav;
+  const showInNav =
+    raw === undefined || raw === null
+      ? true
+      : raw === true || raw === 'true' || raw === 1 || raw === '1';
+  const orderRaw = body.nav_order;
+  const navOrder =
+    orderRaw === undefined || orderRaw === null || orderRaw === ''
+      ? 0
+      : parseInt(String(orderRaw), 10);
+  return { showInNav, navOrder: Number.isFinite(navOrder) ? navOrder : 0 };
+}
+
 // POST /api/admin/categories
 router.post('/', requireAdmin, async (req: AuthRequest, res: Response) => {
   const { name, slug, color, parent_id, meta_title, meta_description, meta_keywords } = req.body;
@@ -87,12 +104,14 @@ router.post('/', requireAdmin, async (req: AuthRequest, res: Response) => {
   const parentCheck = await validateParent(null, parent_id);
   if ('error' in parentCheck) return res.status(400).json({ error: parentCheck.error });
 
+  const { showInNav, navOrder } = normaliseNavInputs(req.body);
+
   try {
     const { rows } = await pool.query(
-      `INSERT INTO categories (name, slug, color, parent_id, meta_title, meta_description, meta_keywords)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO categories (name, slug, color, parent_id, meta_title, meta_description, meta_keywords, show_in_nav, nav_order)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
-      [name, slug, color || null, parentCheck.value, meta_title || null, meta_description || null, meta_keywords || null]
+      [name, slug, color || null, parentCheck.value, meta_title || null, meta_description || null, meta_keywords || null, showInNav, navOrder]
     );
     res.status(201).json(rows[0]);
   } catch (error: any) {
@@ -113,14 +132,17 @@ router.put('/:id', requireAdmin, async (req: AuthRequest, res: Response) => {
   const parentCheck = await validateParent(id, parent_id);
   if ('error' in parentCheck) return res.status(400).json({ error: parentCheck.error });
 
+  const { showInNav, navOrder } = normaliseNavInputs(req.body);
+
   try {
     const { rows } = await pool.query(
       `UPDATE categories
           SET name = $1, slug = $2, color = $3, parent_id = $4,
-              meta_title = $5, meta_description = $6, meta_keywords = $7
-        WHERE id = $8
+              meta_title = $5, meta_description = $6, meta_keywords = $7,
+              show_in_nav = $8, nav_order = $9
+        WHERE id = $10
         RETURNING *`,
-      [name, slug, color || null, parentCheck.value, meta_title || null, meta_description || null, meta_keywords || null, id]
+      [name, slug, color || null, parentCheck.value, meta_title || null, meta_description || null, meta_keywords || null, showInNav, navOrder, id]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Category not found' });
     res.json(rows[0]);

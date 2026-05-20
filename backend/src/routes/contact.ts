@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import pool from '../db';
+import { contactLimiter } from '../middleware/rateLimiters';
 
 const router = Router();
 
@@ -9,7 +10,7 @@ const str = (v: unknown, max: number): string =>
   typeof v === 'string' ? v.trim().slice(0, max) : '';
 
 // POST /api/contact  — submit a contact form
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', contactLimiter, async (req: Request, res: Response) => {
   const name = str(req.body?.name, 120);
   const email = str(req.body?.email, 180).toLowerCase();
   const subject = str(req.body?.subject, 200);
