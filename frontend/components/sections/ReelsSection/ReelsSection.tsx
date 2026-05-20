@@ -268,7 +268,7 @@ export function ReelsSection() {
   if (loaded && reels.length === 0) return null;
 
   return (
-    <section className="container py-10 lg:py-12 animate-fade-in-up">
+    <section className="animate-fade-in-up -mt-10">
       {/* Header — underline style, matches the "Top stories / Business"
           pattern used by category sections. Right side carries follow
           pills + (desktop only) scroll arrows. */}

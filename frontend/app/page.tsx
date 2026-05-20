@@ -153,9 +153,9 @@ export default async function HomePage() {
             variant="magazine"
           />
         )}
-      </div>
 
-      <ReelsSection />
+        <ReelsSection />
+      </div>
 
     </div>
   );
