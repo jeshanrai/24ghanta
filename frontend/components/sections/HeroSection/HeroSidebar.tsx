@@ -59,10 +59,10 @@ export function HeroSidebar({ articles }: HeroSidebarProps) {
             <AdSlot
               placement="article_sidebar"
               aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
-              className="shadow-sm rounded-md overflow-hidden bg-white"
+              className="shadow-sm rounded-md overflow-hidden bg-white w-full"
             />
           </div>
-          {restArticles.slice(1, 4).map((article) => (
+          {[restArticles[1], restArticles[3]].filter(Boolean).map((article) => (
             <ArticleCardList key={article.id} article={article} titleClassName="text-sidebar-title" />
           ))}
         </div>

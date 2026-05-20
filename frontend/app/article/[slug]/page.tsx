@@ -141,7 +141,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <div className="my-10 w-full">
             <AdSlot
               placement="article_inline"
-              className="block w-full"
+              className="shadow-sm rounded-md overflow-hidden bg-white w-full"
               aspectClassName="h-[120px] sm:h-[140px] lg:h-[160px]"
             />
           </div>
@@ -190,13 +190,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         <aside className="lg:col-span-1">
           {/* Sidebar Ad */}
           <div className="mb-8 w-full">
-            {/* Below lg the aside stacks at full container width, so a 2:1
-                ratio reads as a billboard. Flatten to banner ratios on
-                small/medium and restore 300×150 (IAB MPU half) at lg+ where
-                the column is ~1/3 wide. */}
             <AdSlot
               placement="article_sidebar"
-              aspectClassName="aspect-[3/1] sm:aspect-[4/1] lg:aspect-[300/150]"
+              className="shadow-sm rounded-md overflow-hidden bg-white w-full"
+              aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
             />
           </div>
 

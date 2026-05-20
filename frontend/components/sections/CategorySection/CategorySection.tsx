@@ -96,7 +96,7 @@ function HeroSplitLayout({
           />
         )}
         {mainSlot && (
-          <div className="mt-4 animate-fade-in-up h-35 sm:h-40 lg:h-45">
+          <div className="mt-4 animate-fade-in-up h-[112px] sm:h-[128px] lg:h-[140px]">
             <div className="w-full h-full *:h-full">
               {mainSlot}
             </div>

@@ -46,7 +46,7 @@ const PLACEMENTS: Placement[] = [
   { value: "landing_sports_bottom",    label: "Landing — Below Sports section",                  width: 800,  height: 160, note: "Wide banner directly under the Sports category section (~2/3 of container). Paired with a news card on the right for a symmetric row. Aspect ratio ~5:1; renders 140–180px tall responsively." },
 
   { value: "article_inline",           label: "Article inline (mid-body)",                       width: 728,  height: 160, note: "Mid-article banner spanning the body column. Aspect ratio ~4.55:1; renders 120–160px tall responsively." },
-  { value: "article_sidebar",          label: "Article sidebar",                                 width: 300,  height: 150, note: "Sidebar MPU half. Aspect ratio collapses to 3:1 / 4:1 on small/medium screens and 300:150 (2:1) at lg+." },
+  { value: "article_sidebar",          label: "Article sidebar",                                 width: 400,  height: 140, note: "Sidebar banner shown on article pages and the homepage hero sidebar. Aspect ratio ~2.86:1; renders 112–140px tall responsively. Matches the in-feed-list slot." },
   { value: "in_feed_list",             label: "In-feed list (after every 3rd article)",          width: 400,  height: 140, note: "Used in category and article sidebars after every 3rd row. Aspect ratio ~2.86:1; renders 112–140px tall responsively. Animated GIFs allowed." },
   { value: "popup_landing",            label: "Landing popup",                                   width: 512,  height: 320, note: "Modal overlay (max-w-lg). Image is cropped object-cover at 220/260/320px max-height. Aspect ratio 8:5." },
 ];
@@ -414,18 +414,40 @@ export default function AdminAds() {
       list.push(ad);
       byPlacement.set(ad.placement, list);
     }
-    // Render order = the curated PLACEMENTS list, so placements appear in the
-    // order admins are used to seeing them in the dropdown.
-    return PLACEMENTS
-      .map((p) => {
-        const list = (byPlacement.get(p.value) || []).slice().sort((a, b) => {
-          if (a.is_active !== b.is_active) return a.is_active ? -1 : 1;
-          if (b.priority !== a.priority) return b.priority - a.priority;
-          return b.id - a.id;
-        });
-        const liveId = list.find((a) => a.is_active)?.id ?? null;
-        return { placement: p, ads: list, liveId };
-      })
+    const sortAds = (list: Ad[]) =>
+      list.slice().sort((a, b) => {
+        if (a.is_active !== b.is_active) return a.is_active ? -1 : 1;
+        if (b.priority !== a.priority) return b.priority - a.priority;
+        return b.id - a.id;
+      });
+
+    const curated = PLACEMENTS.map((p) => {
+      const list = sortAds(byPlacement.get(p.value) || []);
+      const liveId = list.find((a) => a.is_active)?.id ?? null;
+      return { placement: p, ads: list, liveId };
+    });
+
+    // Surface legacy / orphan placements — any ad whose placement isn't in
+    // the curated list still needs to be visible so admins can edit or delete
+    // it. Without this, ads with stale placement strings vanish from the UI.
+    const knownValues = new Set(PLACEMENTS.map((p) => p.value));
+    const orphanPlacements = Array.from(byPlacement.keys()).filter(
+      (v) => !knownValues.has(v),
+    );
+    const orphans = orphanPlacements.map((value) => {
+      const list = sortAds(byPlacement.get(value) || []);
+      const liveId = list.find((a) => a.is_active)?.id ?? null;
+      const placeholder: Placement = {
+        value,
+        label: `${value} (legacy)`,
+        width: 0,
+        height: 0,
+        note: "Legacy placement — not used by the live site. Consider deleting or moving these ads to a current slot.",
+      };
+      return { placement: placeholder, ads: list, liveId };
+    });
+
+    return [...curated, ...orphans]
       // Hide placements that have NO ads at all when the user is searching
       // (otherwise the page would be mostly empty headers). Always show all
       // placements when no search is active — that's how admins find empty slots.
@@ -528,9 +550,11 @@ export default function AdminAds() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h2 className="text-sm font-bold text-gray-900 truncate">{p.label}</h2>
-                        <span className="text-[10px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
-                          {p.width}×{p.height}
-                        </span>
+                        {p.width > 0 && p.height > 0 && (
+                          <span className="text-[10px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">
+                            {p.width}×{p.height}
+                          </span>
+                        )}
                         <span className="text-[10px] text-gray-400">
                           {slotAds.length} ad{slotAds.length === 1 ? "" : "s"}
                           {liveId == null && slotAds.length > 0 && " · none live"}

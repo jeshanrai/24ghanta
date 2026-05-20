@@ -44,7 +44,7 @@ export function HeroSection({
                 placement="landing_poll_bottom"
                 ad={pollBottomAd}
                 className="w-full shadow-sm rounded-md overflow-hidden bg-white"
-                aspectClassName="h-[180px] sm:h-[200px] lg:h-[220px]"
+                aspectClassName="h-[112px] sm:h-[128px] lg:h-[140px]"
               />
             </div>
           )}
