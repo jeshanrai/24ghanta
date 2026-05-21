@@ -1,9 +1,9 @@
-import { Router, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import crypto from 'crypto';
 import pool from '../db';
 import { requireAuth, requireAdmin, AuthRequest } from '../middleware/auth';
-import { validateImage } from '../utils/imageValidation';
+import { validateImage, MAX_FILE_SIZE, ALLOWED_TYPES } from '../utils/imageValidation';
 import { storageService } from '../utils/storage';
 import { safeFetchImage } from '../utils/safeFetch';
 import sharp from 'sharp';
@@ -11,7 +11,36 @@ import sharp from 'sharp';
 const router = Router();
 
 // Store files in memory so we can validate before touching the disk.
-const upload = multer({ storage: multer.memoryStorage() });
+// Multer's ceiling sits ~1 MB above the validator so oversized uploads still
+// reach validateImage() and receive the descriptive size-limit message,
+// rather than multer's generic "File too large" error.
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MAX_FILE_SIZE + 1024 * 1024, files: 1 },
+  fileFilter(_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) {
+    const allowedMime = ['image/webp', 'image/jpeg', 'image/png', 'image/gif'];
+    if (allowedMime.includes(file.mimetype)) return cb(null, true);
+    cb(new Error(
+      `Unsupported file type "${file.mimetype || 'unknown'}". Only ${ALLOWED_TYPES.join(', ')} images are accepted.`
+    ));
+  },
+});
+
+function describeMulterError(err: unknown): string {
+  if (err instanceof multer.MulterError) {
+    switch (err.code) {
+      case 'LIMIT_FILE_SIZE':
+        return `Image is too large. Maximum allowed size is ${Math.round(MAX_FILE_SIZE / (1024 * 1024))} MB.`;
+      case 'LIMIT_FILE_COUNT':
+      case 'LIMIT_UNEXPECTED_FILE':
+        return 'Only one image can be uploaded at a time.';
+      default:
+        return err.message || 'Upload failed.';
+    }
+  }
+  if (err instanceof Error) return err.message;
+  return 'Upload failed.';
+}
 
 // Protect all media administrative routes
 router.use(requireAuth);
@@ -71,12 +100,17 @@ router.get('/', async (req: AuthRequest, res: Response) => {
  * POST /api/admin/media
  * Accepts single file upload. Validates, checks for deduplication, and saves.
  */
-router.post('/', upload.single('file'), async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    if (!req.file) {
-      res.status(400).json({ error: 'No file provided' });
+router.post('/', (req: AuthRequest, res: Response): void => {
+  upload.single('file')(req, res, async (uploadErr) => {
+    if (uploadErr) {
+      res.status(400).json({ error: describeMulterError(uploadErr) });
       return;
     }
+    try {
+      if (!req.file) {
+        res.status(400).json({ error: 'No file provided. Please select an image to upload.' });
+        return;
+      }
 
     const originalName = req.file.originalname;
     
@@ -154,16 +188,17 @@ router.post('/', upload.single('file'), async (req: AuthRequest, res: Response):
       res.status(201).json({ message: 'Upload successful', media: result.rows[0] });
     } catch (dbError) {
       console.error('Database connection failed during upload. Cleaning up file.', dbError);
-      
+
       // Cleanup the orphaned physical file
       await storageService.remove(storageKey);
-      
+
       res.status(500).json({ error: 'Database error. Upload rolled back.' });
     }
-  } catch (error) {
-    console.error('Crash during media upload:', error);
-    res.status(500).json({ error: 'Internal server error during upload.' });
-  }
+    } catch (error) {
+      console.error('Crash during media upload:', error);
+      res.status(500).json({ error: 'Internal server error during upload.' });
+    }
+  });
 });
 
 /**

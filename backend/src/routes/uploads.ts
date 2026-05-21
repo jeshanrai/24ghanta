@@ -5,6 +5,7 @@ import fs from 'fs';
 import crypto from 'crypto';
 import rateLimit from 'express-rate-limit';
 import { requireAuth } from '../middleware/auth';
+import { validateImage, MAX_FILE_SIZE, ALLOWED_TYPES } from '../utils/imageValidation';
 
 const router = Router();
 
@@ -20,16 +21,42 @@ const storage = multer.memoryStorage();
 function fileFilter(_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) {
   const allowedMime = ['image/webp', 'image/jpeg', 'image/png', 'image/gif'];
   if (allowedMime.includes(file.mimetype)) return cb(null, true);
-  cb(new Error('Only JPEG, PNG, WebP, and GIF images are allowed'));
+  cb(new Error(
+    `Unsupported file type "${file.mimetype || 'unknown'}". Only ${ALLOWED_TYPES.join(', ')} images are accepted.`
+  ));
 }
 
+// Give multer a slightly larger ceiling than the validator so oversized uploads
+// reach validateImage() and get the descriptive size-limit message instead of
+// multer's generic "File too large". The 1 MB cushion is small enough that we
+// still reject obviously abusive payloads at the stream layer.
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+  limits: { fileSize: MAX_FILE_SIZE + 1024 * 1024, files: 1 },
 });
 
-import { validateImage } from '../utils/imageValidation';
+// Translates multer's terse error codes into user-friendly messages.
+function describeMulterError(err: unknown): string {
+  if (err instanceof multer.MulterError) {
+    switch (err.code) {
+      case 'LIMIT_FILE_SIZE':
+        return `Image is too large. Maximum allowed size is ${Math.round(MAX_FILE_SIZE / (1024 * 1024))} MB.`;
+      case 'LIMIT_FILE_COUNT':
+      case 'LIMIT_UNEXPECTED_FILE':
+        return 'Only one image can be uploaded at a time.';
+      case 'LIMIT_PART_COUNT':
+      case 'LIMIT_FIELD_KEY':
+      case 'LIMIT_FIELD_VALUE':
+      case 'LIMIT_FIELD_COUNT':
+        return 'The upload request is malformed. Please try again.';
+      default:
+        return err.message || 'Upload failed.';
+    }
+  }
+  if (err instanceof Error) return err.message;
+  return 'Upload failed.';
+}
 
 // Tight per-IP limiter: prevents disk-fill / abuse even with valid auth.
 const uploadLimiter = rateLimit({
@@ -47,10 +74,9 @@ import sharp from 'sharp';
 router.post('/image', uploadLimiter, requireAuth, (req: Request, res: Response) => {
   upload.single('file')(req, res, async (err) => {
     if (err) {
-      const msg = err instanceof Error ? err.message : 'Upload failed';
-      return res.status(400).json({ error: msg });
+      return res.status(400).json({ error: describeMulterError(err) });
     }
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded. Please select an image to upload.' });
 
     let validation;
     try {
@@ -74,8 +100,8 @@ router.post('/image', uploadLimiter, requireAuth, (req: Request, res: Response) 
       //
       // GIFs are stored as-is — Sharp's default reader only decodes the first
       // frame, so resizing or re-encoding would silently strip the animation.
-      // The validator already caps GIFs at 1920 px / 8 MB, so the original is
-      // safe to ship to clients directly.
+      // The validator already enforces file-size and dimension limits, so the
+      // original is safe to ship to clients directly.
       if (validation.ext === 'gif') {
         finalFilename = `${stamp}-${rand}.gif`;
         finalBuffer = req.file.buffer;
